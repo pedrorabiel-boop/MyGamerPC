@@ -1,0 +1,112 @@
+import { useState } from "react";
+import { config } from "../config";
+import { RES_BY_ID, type ResId } from "../content";
+import { DEBUG_ENABLED, engine, useEngine } from "../engine";
+import { MapView } from "../render/MapView";
+import { tapBook } from "../sim/actions";
+import { BookPanel } from "./BookPanel";
+import { BuildPanel } from "./BuildPanel";
+import { DebugPanel } from "./DebugPanel";
+import { formatNumber } from "./format";
+import { TopBar } from "./TopBar";
+import { VillagerCard } from "./VillagerCard";
+import { VillagersPanel } from "./VillagersPanel";
+
+type Tab = "mapa" | "libro" | "construir" | "aldeanos" | "debug";
+
+export function App() {
+  const { s, ui, offlineSummary } = useEngine();
+  const [tab, setTab] = useState<Tab>("mapa");
+  const [bump, setBump] = useState(0);
+
+  const lastLog = s.log[s.log.length - 1];
+  const toast = ui.toast && Date.now() - ui.toast.at < 4000 ? ui.toast.msg : lastLog && Date.now() - lastLog.at < 4000 ? lastLog.msg : null;
+
+  const tabs: [Tab, string, string][] = [
+    ["mapa", "🗺️", "Mapa"],
+    ["libro", "📖", "Libro"],
+    ["construir", "🔨", "Construir"],
+    ["aldeanos", "👥", "Aldeanos"],
+  ];
+  if (DEBUG_ENABLED) tabs.push(["debug", "🐞", "Debug"]);
+
+  return (
+    <div className="app">
+      <TopBar />
+      <main className="stage">
+        <MapView />
+
+        {tab === "mapa" && <VillagerCard />}
+
+        {engine.ui.placing && (
+          <div className="placing">
+            Colocando… toca una casilla marcada
+            <button onClick={() => { engine.ui.placing = null; engine.notify(); }}>Cancelar</button>
+          </div>
+        )}
+
+        <button
+          className={"book-tap" + (bump % 2 ? " bump" : "")}
+          onClick={() => { tapBook(s); setBump((b) => b + 1); engine.notify(); }}
+          aria-label="Tocar el Libro"
+        >
+          📖
+        </button>
+
+        {toast && <div className="toast">{toast}</div>}
+
+        {tab !== "mapa" && (
+          <div className={"sheet" + (tab === "libro" || tab === "debug" ? " tall" : "")}>
+            <div className="sheet-head">
+              <b>{tabs.find((t) => t[0] === tab)?.[2]}</b>
+              <button className="x" onClick={() => setTab("mapa")}>✕</button>
+            </div>
+            <div className="sheet-body">
+              {tab === "libro" && <BookPanel />}
+              {tab === "construir" && <BuildPanel onPick={() => setTab("mapa")} />}
+              {tab === "aldeanos" && <VillagersPanel />}
+              {tab === "debug" && <DebugPanel />}
+            </div>
+          </div>
+        )}
+
+        {s.prototypeEnded && (
+          <div className="modal">
+            <div className="modal-box">
+              <h2>🏁 ¡Fin del prototipo!</h2>
+              <p>Tu tribu llegó a la <b>Edad de Bronce</b>. Hasta aquí llega esta versión.</p>
+              <p className="muted">Años: {Math.floor(s.time / config.TIEMPO_POR_AÑO)} · Nacimientos: {s.stats.births} · Muertes: {s.stats.deaths}</p>
+              <button className="primary" onClick={() => { s.prototypeEnded = false; engine.notify(); }}>Seguir jugando</button>
+            </div>
+          </div>
+        )}
+
+        {offlineSummary && (
+          <div className="modal">
+            <div className="modal-box">
+              <h2>🌙 Mientras no estabas…</h2>
+              <p>
+                Pasaron <b>{Math.floor(offlineSummary.years)} años</b>. Nacieron {offlineSummary.births} y murieron {offlineSummary.deaths}.
+              </p>
+              <ul>
+                {Object.entries(offlineSummary.gained).map(([r, n]) => (
+                  <li key={r}>{RES_BY_ID[r as ResId].icon} {RES_BY_ID[r as ResId].name}: {n! > 0 ? "+" : "−"}{formatNumber(Math.abs(n!))}</li>
+                ))}
+              </ul>
+              <button className="primary" onClick={() => { engine.offlineSummary = null; engine.notify(); }}>Seguir</button>
+            </div>
+          </div>
+        )}
+      </main>
+
+      <nav className="tabs">
+        {tabs.map(([id, icon, label]) => (
+          <button key={id} className={tab === id ? "sel" : ""} onClick={() => setTab(tab === id ? "mapa" : id)}>
+            <span>{icon}</span>
+            <small>{label}</small>
+          </button>
+        ))}
+      </nav>
+    </div>
+  );
+}

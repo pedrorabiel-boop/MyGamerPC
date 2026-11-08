@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>El Libro — visor del árbol tecnológico</title>
+<style>
+  :root {
+    --bg: #14121a; --panel: #1d1a25; --card: #262231; --card-hi: #2f2a3d;
+    --text: #ece8f4; --muted: #9a93ab; --line: #3a3448;
+    --accent: #ff6b4a; --anc: #ffb347; --desc: #6ec6ff; --opt: #7fd67f; --pc: #c792ff;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text);
+    font: 14px/1.4 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  header { position: sticky; top: 0; z-index: 5; background: var(--panel);
+    border-bottom: 1px solid var(--line); padding: 10px 14px; display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; }
+  header h1 { font-size: 16px; margin: 0; }
+  header .meta { color: var(--muted); font-size: 12px; }
+  input[type=search], select { background: var(--card); color: var(--text); border: 1px solid var(--line);
+    border-radius: 8px; padding: 6px 10px; font: inherit; }
+  input[type=search] { width: 200px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .chip { background: var(--card); border: 1px solid var(--line); color: var(--text); border-radius: 999px;
+    padding: 3px 10px; cursor: pointer; font: inherit; font-size: 12px; user-select: none; }
+  .chip.on { border-color: var(--accent); background: #3a2226; }
+  main { display: flex; min-height: calc(100vh - 60px); }
+  #board { position: relative; flex: 1; overflow: auto; padding: 14px; }
+  #cols { display: flex; gap: 14px; align-items: flex-start; position: relative; z-index: 1; }
+  svg#wires { position: absolute; left: 0; top: 0; pointer-events: none; z-index: 0; overflow: visible; }
+  .col { width: 210px; flex: none; }
+  .col h2 { font-size: 13px; margin: 0 0 2px; }
+  .col .ms { color: var(--muted); font-size: 11px; margin-bottom: 8px; min-height: 30px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 7px 9px;
+    margin-bottom: 7px; cursor: pointer; transition: opacity .15s, border-color .15s, background .15s; }
+  .card:hover { background: var(--card-hi); }
+  .card .top { display: flex; gap: 6px; align-items: baseline; }
+  .card .id { color: var(--muted); font-size: 11px; font-variant-numeric: tabular-nums; }
+  .card .name { font-weight: 600; flex: 1; }
+  .card .icons { font-size: 12px; margin-top: 3px; letter-spacing: 1px; }
+  .badge { display: inline-block; font-size: 10px; border-radius: 6px; padding: 0 5px; margin: 3px 3px 0 0; border: 1px solid; }
+  .badge.zone { color: var(--desc); border-color: var(--desc); }
+  .badge.pc { color: var(--pc); border-color: var(--pc); }
+  .badge.partial { color: var(--muted); border-color: var(--line); }
+  .card.optional { border-style: dashed; }
+  .card.selected { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent); }
+  .card.anc { border-color: var(--anc); }
+  .card.desc { border-color: var(--desc); }
+  .card.dim { opacity: .22; }
+  .card.hidden { display: none; }
+  aside { width: 340px; flex: none; background: var(--panel); border-left: 1px solid var(--line);
+    padding: 14px; overflow: auto; max-height: calc(100vh - 60px); position: sticky; top: 60px; }
+  aside h3 { margin: 0 0 4px; font-size: 18px; }
+  aside .sub { color: var(--muted); font-size: 12px; margin-bottom: 10px; }
+  aside h4 { margin: 14px 0 6px; font-size: 12px; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); }
+  aside .links { display: flex; flex-wrap: wrap; gap: 5px; }
+  aside .links .chip { font-size: 11px; }
+  aside ul { margin: 0; padding-left: 18px; }
+  .legend { color: var(--muted); font-size: 12px; }
+  .legend b { color: var(--text); font-weight: 600; }
+  .sw { display: inline-block; width: 10px; height: 10px; border-radius: 3px; vertical-align: -1px; margin-right: 3px; }
+  #err { padding: 24px; color: var(--accent); }
+  @media (max-width: 800px) {
+    main { flex-direction: column; }
+    aside { width: auto; position: static; max-height: none; border-left: 0; border-top: 1px solid var(--line); }
+  }
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <h1>📖 El Libro — árbol tecnológico</h1>
+    <div class="meta" id="meta">Cargando…</div>
+  </div>
+  <input type="search" id="q" placeholder="Buscar (nombre, ID, efecto)…">
+  <select id="piece"><option value="">Ruta a una pieza del PC…</option></select>
+  <div class="chips" id="filters"></div>
+  <div class="legend">
+    <span class="sw" style="background:var(--accent)"></span><b>seleccionada</b>
+    <span class="sw" style="background:var(--anc)"></span>la necesita
+    <span class="sw" style="background:var(--desc)"></span>la desbloquea
+    · borde punteado = 🌿 opcional
+  </div>
+</header>
+<main>
+  <div id="board"><svg id="wires"></svg><div id="cols"></div></div>
+  <aside id="detail"><div class="legend">Toca una tecnología para ver qué la necesita y qué desbloquea.</div></aside>
+</main>
+<div id="err" hidden></div>
+
+<script>
+const TYPE_LABEL = {
+  knowledge: "Saber", building: "Edificio", tool: "Herramienta", job: "Oficio", resource: "Recurso",
+  automation: "Automatización", institution: "Institución", pcPiece: "Pieza del PC", other: "Otro",
+};
+let tree, byId, children, selected = null, pieceFilter = null;
+const activeTypes = new Set();
+let optionalOnly = false;
+
+const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const mdInline = (s) => esc(s).replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>").replace(/\*(.+?)\*/g, "<em>$1</em>");
+
+function closure(id, edges) {
+  const seen = new Set();
+  const stack = [...(edges(id) || [])];
+  while (stack.length) {
+    const x = stack.pop();
+    if (seen.has(x)) continue;
+    seen.add(x);
+    stack.push(...(edges(x) || []));
+  }
+  return seen;
+}
+const ancestors = (id) => closure(id, (x) => byId[x]?.requires);
+const descendants = (id) => closure(id, (x) => children[x]);
+
+async function load() {
+  try {
+    const res = await fetch("../data/tech-tree.json", { cache: "no-store" });
+    if (!res.ok) throw new Error(res.status);
+    tree = await res.json();
+  } catch (e) {
+    const err = document.getElementById("err");
+    err.hidden = false;
+    err.textContent = "No se pudo cargar data/tech-tree.json. Abre este visor con un servidor local (ver README de tools).";
+    return;
+  }
+  byId = Object.fromEntries(tree.techs.map((t) => [t.id, t]));
+  children = {};
+  for (const t of tree.techs) for (const r of t.requires) (children[r] ??= []).push(t.id);
+
+  const opt = tree.techs.filter((t) => t.optional).length;
+  document.getElementById("meta").textContent =
+    `Versión ${tree.version} · ${tree.techs.length} tecnologías · ${opt} opcionales · ${tree.zones.length} zonas · ${tree.pcPieces.length} piezas del PC`;
+
+  const sel = document.getElementById("piece");
+  for (const p of tree.pcPieces) sel.insertAdjacentHTML("beforeend", `<option value="${esc(p.completedBy)}">🖥️ ${esc(p.name)}</option>`);
+  sel.onchange = () => { pieceFilter = sel.value || null; apply(); };
+
+  const f = document.getElementById("filters");
+  for (const [type, icon] of Object.entries(tree.manifestationTypes)) {
+    const b = document.createElement("button");
+    b.className = "chip"; b.textContent = `${icon} ${TYPE_LABEL[type]}`;
+    b.onclick = () => { activeTypes.has(type) ? activeTypes.delete(type) : activeTypes.add(type); b.classList.toggle("on"); apply(); };
+    f.appendChild(b);
+  }
+  const o = document.createElement("button");
+  o.className = "chip"; o.textContent = "🌿 Solo opcionales";
+  o.onclick = () => { optionalOnly = !optionalOnly; o.classList.toggle("on"); apply(); };
+  f.appendChild(o);
+
+  document.getElementById("q").oninput = apply;
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape") select(null); });
+  window.addEventListener("resize", drawWires);
+  render();
+}
+
+function render() {
+  const cols = document.getElementById("cols");
+  cols.innerHTML = "";
+  for (const era of tree.eras) {
+    const col = document.createElement("section");
+    col.className = "col";
+    const ms = era.milestone;
+    col.innerHTML = `<h2>${era.id}. ${esc(era.name)}</h2>
+      <div class="ms">${ms.name && ms.name !== "inicio" ? `Hito «${esc(ms.name)}»: ${ms.requires.join(", ")}` : "Inicio"}${ms.population ? ` · ${ms.population.toLocaleString("es")} hab.` : ""}</div>`;
+    for (const t of tree.techs.filter((x) => x.era === era.id).sort((a, b) => a.order - b.order)) {
+      const icons = [...new Set(t.manifestations.map((m) => tree.manifestationTypes[m.type] || ""))].join("");
+      const card = document.createElement("div");
+      card.className = "card" + (t.optional ? " optional" : "");
+      card.id = "c-" + t.id;
+      card.innerHTML = `<div class="top"><span class="id">${t.id}</span><span class="name">${esc(t.name)}</span>${t.optional ? "🌿" : ""}</div>
+        <div class="icons">${icons}</div>
+        ${t.unlocksZone ? `<span class="badge zone">zona: ${esc(t.unlocksZone)}</span>` : ""}
+        ${t.completesPcPiece ? `<span class="badge pc">🖥️ ${esc(t.completesPcPiece)}</span>` : ""}
+        ${(t.advancesPcPieces || []).map((p) => `<span class="badge partial">◐ ${esc(p)}</span>`).join("")}`;
+      card.onclick = () => select(selected === t.id ? null : t.id);
+      col.appendChild(card);
+    }
+    cols.appendChild(col);
+  }
+  apply();
+}
+
+function select(id) {
+  selected = id;
+  apply();
+  showDetail(id);
+  if (id) document.getElementById("c-" + id)?.scrollIntoView({ block: "nearest", inline: "nearest", behavior: "smooth" });
+}
+
+function apply() {
+  const q = document.getElementById("q").value.trim().toLowerCase();
+  const anc = selected ? ancestors(selected) : null;
+  const desc = selected ? descendants(selected) : null;
+  const route = pieceFilter ? new Set([pieceFilter, ...ancestors(pieceFilter)]) : null;
+  for (const t of tree.techs) {
+    const el = document.getElementById("c-" + t.id);
+    if (!el) continue;
+    const matchesType = !activeTypes.size || t.manifestations.some((m) => activeTypes.has(m.type));
+    const matchesQ = !q || `${t.id} ${t.name} ${t.effect}`.toLowerCase().includes(q);
+    const matchesOpt = !optionalOnly || t.optional;
+    el.classList.toggle("hidden", !(matchesType && matchesQ && matchesOpt));
+    el.classList.toggle("selected", t.id === selected);
+    el.classList.toggle("anc", !!anc?.has(t.id));
+    el.classList.toggle("desc", !!desc?.has(t.id));
+    const outOfRoute = route && !route.has(t.id);
+    const unrelated = selected && t.id !== selected && !anc.has(t.id) && !desc.has(t.id);
+    el.classList.toggle("dim", !!(outOfRoute || unrelated));
+  }
+  requestAnimationFrame(drawWires);
+}
+
+function drawWires() {
+  const svg = document.getElementById("wires");
+  const board = document.getElementById("board");
+  const cols = document.getElementById("cols");
+  svg.setAttribute("width", cols.scrollWidth + 28);
+  svg.setAttribute("height", cols.scrollHeight + 28);
+  svg.innerHTML = "";
+  if (!selected) return;
+  const base = board.getBoundingClientRect();
+  const pos = (id, side) => {
+    const el = document.getElementById("c-" + id);
+    if (!el || el.classList.contains("hidden")) return null;
+    const r = el.getBoundingClientRect();
+    return { x: (side === "right" ? r.right : r.left) - base.left + board.scrollLeft, y: r.top + r.height / 2 - base.top + board.scrollTop };
+  };
+  const wire = (from, to, color) => {
+    const a = pos(from, "right"), b = pos(to, "left");
+    if (!a || !b) return;
+    const dx = Math.max(30, (b.x - a.x) / 2);
+    svg.insertAdjacentHTML("beforeend",
+      `<path d="M${a.x},${a.y} C${a.x + dx},${a.y} ${b.x - dx},${b.y} ${b.x},${b.y}" fill="none" stroke="${color}" stroke-width="1.6" opacity=".85"/>`);
+  };
+  for (const r of byId[selected].requires) wire(r, selected, "var(--anc)");
+  for (const c of children[selected] || []) wire(selected, c, "var(--desc)");
+}
+
+function showDetail(id) {
+  const box = document.getElementById("detail");
+  if (!id) { box.innerHTML = `<div class="legend">Toca una tecnología para ver qué la necesita y qué desbloquea.</div>`; return; }
+  const t = byId[id];
+  const era = tree.eras.find((e) => e.id === t.era);
+  const link = (x) => `<button class="chip" onclick="select('${x}')">${x} ${esc(byId[x]?.name ?? "?")}</button>`;
+  const req = t.requires.map(link).join("") || "<span class='legend'>Nada: disponible al abrir la era.</span>";
+  const kids = (children[id] || []).map(link).join("") || "<span class='legend'>Ninguna (nodo final).</span>";
+  const allAnc = ancestors(id).size;
+  const man = t.manifestations.map((m) =>
+    `<li>${tree.manifestationTypes[m.type] || ""} <b>${TYPE_LABEL[m.type]}</b>${m.name ? ": " + esc(m.name) : ""}</li>`).join("");
+  const extra = [
+    t.requiresPopulation ? `Población mínima: ${t.requiresPopulation}` : "",
+    ...(t.requiresNotes || []).map((n) => `Además: ${esc(n)}`),
+    t.unlocksZone ? `Abre la zona <b>${esc(t.unlocksZone)}</b>` : "",
+    t.completesPcPiece ? `Completa la pieza <b>🖥️ ${esc(t.completesPcPiece)}</b>` : "",
+    t.advancesPcPieces ? `Avance parcial de: ${t.advancesPcPieces.map(esc).join(", ")}` : "",
+  ].filter(Boolean).map((x) => `<li>${x}</li>`).join("");
+  box.innerHTML = `
+    <h3>${esc(t.name)} ${t.optional ? "🌿" : ""}</h3>
+    <div class="sub">${t.id} · Era ${era.id}: ${esc(era.name)} · ${allAnc} prerrequisitos en total${t.optional ? " · opcional" : ""}</div>
+    <div>${mdInline(t.effect || "—")}</div>
+    <h4>Se manifiesta como</h4><ul>${man || "<li>—</li>"}</ul>
+    ${extra ? `<h4>Notas</h4><ul>${extra}</ul>` : ""}
+    <h4>Requiere</h4><div class="links">${req}</div>
+    <h4>Desbloquea</h4><div class="links">${kids}</div>`;
+}
+
+load();
+</script>
+</body>
+</html>
