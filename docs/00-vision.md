@@ -49,6 +49,8 @@ conocimiento necesario para fabricar un PC gamer desde cero.
 | Progreso offline | Rinde al **50%**, y al **100%** con el Almacenamiento magnético |
 | Silueta del PC | Cada pieza **se ilumina por partes** durante toda la partida. El contorno aparece en la Era 1 (pintura rupestre) |
 | Piezas del PC | Cada pieza se **fabrica** como un proyecto grande, una sola vez. **Completar una pieza es definitivo**: sin calidades ni rehacerlas |
+| Recursos resueltos | Con **X edificios + Y aldeanos fijos**, un recurso básico queda "✅ resuelto": sin cantidad, nunca falta, sin importar la población. Es su nivel máximo. La Comprensión nunca se resuelve |
+| Derrota | Con **1 aldeano o ninguno** la tribu está perdida: se ofrece empezar de nuevo |
 | Genios | Mecánica **incidental**: talento al nacer y Eureka. Sin sistemas extra para gestionarlos |
 | Interfaz | **Evoluciona con la tecnología**: "pocos/muchos" → números (Conteo) → estadísticas (Calculadora) → predicciones (Computadora) |
 

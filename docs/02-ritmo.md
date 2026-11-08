@@ -115,4 +115,7 @@ abajo y se vuelve a probar.
 
 ## 6. Historial de ajustes de ritmo
 
-*(Vacío hasta el primer playtest.)*
+### Playtest 1 (2026-11-08, celular)
+- **Se murieron todos los aldeanos.** Perder está bien, pero no había cómo reiniciar → se agregó la pantalla de derrota (1 aldeano o ninguno).
+- **Tocar el Libro era demasiado fuerte** comparado con los ancianos (≈ 8 toques por segundo contra 0,15/s por anciano) → `COMPRENSION_ANCIANO` ×10 (0,15 → 1,5). El chamán también ×10 (1 → 10 por ciclo, ≈ 4/s) para que siga por encima del anciano.
+- Antes del playtest: `COMIDA_INICIAL` 20 → 40 (sin recolectar, la comida se acababa en ≈ 50 s).

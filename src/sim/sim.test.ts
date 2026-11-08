@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { config } from "../config";
 import { BUILDINGS, JOBS } from "../content";
 import { TECH_BY_ID, techCost } from "../data/tree";
-import { changeJobCount, debugToggleInfinite, place, study, tapBook, techStatus } from "./actions";
+import { changeJobCount, debugAddVillagers, debugToggleInfinite, place, study, tapBook, techStatus } from "./actions";
 import { isTribeLost, pay, stageOf } from "./economy";
 import { simulateOffline } from "./save";
 import { createState, type GameState } from "./state";
@@ -68,6 +68,24 @@ describe("economía", () => {
     debugToggleInfinite(s, "piedra");
     expect(pay(s, { piedra: 999 })).toBe(true);
     expect(s.inv.piedra).toBe(0);
+  });
+});
+
+describe("recursos resueltos", () => {
+  it("la comida se resuelve con la infraestructura y aldeanos, y se pierde si faltan", () => {
+    const s = createState(4);
+    s.techs.P01 = s.techs.N01 = s.techs.N07 = true;
+    for (let i = 0; i < 4; i++) s.buildings.push({ id: s.nextId++, type: "parcela", x: i, y: 4, progress: 0, built: true });
+    s.buildings.push({ id: s.nextId++, type: "granero", x: 4, y: 4, progress: 0, built: true });
+    debugAddVillagers(s, 8);
+    for (let i = 0; i < 8; i++) changeJobCount(s, "agricultor", 1);
+    step(s, 0.1);
+    expect(s.resolved.comida).toBe(true);
+    expect(pay(s, { comida: 999 })).toBe(true); // no se gasta
+
+    s.villagers.find((v) => v.job === "agricultor")!.job = null;
+    step(s, 0.1);
+    expect(s.resolved.comida).toBe(false);
   });
 });
 

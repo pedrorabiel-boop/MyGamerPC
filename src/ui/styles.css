@@ -30,6 +30,14 @@ input, select, textarea { font: inherit; color: var(--text); background: var(--p
 .resources { display: flex; gap: 6px; overflow-x: auto; margin-top: 5px; scrollbar-width: none; }
 .res { background: var(--panel-2); border-radius: 999px; padding: 2px 9px; font-size: 13px; white-space: nowrap; }
 .res.inf { outline: 1px solid var(--accent); }
+.res.solved { background: #24401f; color: #b8f0a0; }
+
+/* Autosuficiencia */
+.solve { background: var(--panel-2); border: 1px solid var(--line); border-radius: 10px; padding: 8px 10px; font-size: 13px; }
+.solve.done { border-color: var(--ok); background: #1f3319; }
+.solve ul { margin: 4px 0 0; padding-left: 18px; }
+.solve li.ok { color: var(--ok); }
+.solve li.no { color: var(--muted); }
 
 /* Escenario */
 .stage { position: relative; flex: 1; min-height: 0; overflow: hidden; }
@@ -52,6 +60,12 @@ input, select, textarea { font: inherit; color: var(--text); background: var(--p
   padding: 6px 10px; border-radius: 10px; font-size: 13px; z-index: 4; display: flex; gap: 8px; align-items: center;
 }
 .placing button { background: #222; color: #fff; border: 0; border-radius: 6px; padding: 3px 8px; }
+
+.lostbar {
+  position: absolute; top: 8px; left: 50%; transform: translateX(-50%); background: #3a1414; border: 1px solid var(--danger);
+  padding: 6px 10px; border-radius: 10px; font-size: 13px; z-index: 6; display: flex; gap: 10px; align-items: center; white-space: nowrap;
+}
+.lostbar button { background: var(--danger); color: #fff; border: 0; border-radius: 6px; padding: 4px 10px; font-weight: 700; }
 
 /* Ficha del aldeano */
 .card {

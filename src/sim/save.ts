@@ -22,6 +22,7 @@ export function parseSave(text: string): GameState | null {
     // Recursos agregados después de que se creó la partida.
     for (const r of RESOURCES) s.inv[r.id] ??= 0;
     s.debug ??= { infinite: {}, unlockOnTap: false };
+    s.resolved ??= {};
     return s;
   } catch {
     return null;

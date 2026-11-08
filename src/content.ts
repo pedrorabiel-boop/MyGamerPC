@@ -64,7 +64,7 @@ export const JOBS: JobDef[] = [
   { id: "cazador", name: "Cazador", icon: "🏹", color: 0xa0522d, unlockedBy: "P05", kind: "gather", node: "manada", res: "comida", bonus: { res: "pieles", amt: 0.5 } },
   { id: "lenador", name: "Leñador", icon: "🪓", color: 0x8b6b3a, unlockedBy: "P07", kind: "gather", node: "arbol", res: "madera" },
   { id: "pigmentero", name: "Recolector de pigmento", icon: "🎨", color: 0xc0504d, unlockedBy: "P11", kind: "gather", node: "roca", res: "pigmento" },
-  { id: "chaman", name: "Chamán", icon: "🔮", color: 0x9b6bd0, unlockedBy: "P12", kind: "work", building: "circulo", cycle: 2.5, outputs: { comprension: 1 } },
+  { id: "chaman", name: "Chamán", icon: "🔮", color: 0x9b6bd0, unlockedBy: "P12", kind: "work", building: "circulo", cycle: 2.5, outputs: { comprension: 10 } },
   { id: "agricultor", name: "Agricultor", icon: "🌾", color: 0xe8c547, unlockedBy: "N01", kind: "work", building: "parcela", cycle: 2.5, outputs: { comida: 1 } },
   { id: "pastor", name: "Pastor", icon: "🐐", color: 0xd8d8c0, unlockedBy: "N02", kind: "work", building: "corral", cycle: 5, outputs: { comida: 0.75, lana: 0.5 } },
   { id: "arcillero", name: "Recolector de arcilla", icon: "🟫", color: 0xa0704a, unlockedBy: "N03", kind: "gather", node: "arcilla", res: "arcilla" },
@@ -111,6 +111,23 @@ export const BUILDINGS: BuildingDef[] = [
   { id: "muelle", name: "Muelle", icon: "⛵", color: 0x4a6a8a, unlockedBy: "N10", cost: { madera: 8 }, buildTime: 8, place: "orilla", slots: 2, desc: "Los pescadores producen comida. Va en la orilla del río." },
 ];
 export const BUILDING_BY_ID = Object.fromEntries(BUILDINGS.map((b) => [b.id, b])) as Record<string, BuildingDef>;
+
+// ---------- Recursos resueltos (autosuficiencia) ----------
+// Mientras existan los edificios y estén asignados los aldeanos, el recurso deja de tener
+// cantidad: se muestra "resuelto" y nunca falta. Es el nivel máximo de un recurso básico.
+// Ver docs/01-arbol-tecnologico.md, "Recursos resueltos".
+
+export interface ResolutionDef {
+  res: ResId;
+  tech: string; // tecnología necesaria
+  buildings: Record<string, number>; // edificio → cantidad mínima construida
+  workers: Record<string, number>; // oficio → aldeanos adultos asignados
+}
+
+export const RESOLUTIONS: ResolutionDef[] = [
+  // Prototipo: en el diseño final la comida se resuelve en la Era 3 (Arado + Irrigación).
+  { res: "comida", tech: "N07", buildings: { parcela: 4, granero: 1 }, workers: { agricultor: 8 } },
+];
 
 // Mensajes al desbloquear tecnologías con efectos especiales.
 export const UNLOCK_MESSAGES: Record<string, string> = {

@@ -4,6 +4,7 @@ import type { GameState } from "../sim/state";
 
 /** Antes de N09 Conteo, la tribu no sabe contar: los recursos se ven como palabras. */
 export function qty(s: GameState, res: ResId): string {
+  if (s.resolved[res]) return "✅ resuelto";
   const n = amount(s, res);
   if (n === Infinity) return "∞";
   if (res === "comprension" || has(s, "N09")) return formatNumber(n);

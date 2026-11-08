@@ -15,7 +15,7 @@ export const config = {
   R: 4,
   COSTO_POR_POSICION: 0.15,
   TOQUE_BASE: 1,
-  COMPRENSION_ANCIANO: 0.15, // por segundo, por anciano (requiere Lenguaje)
+  COMPRENSION_ANCIANO: 1.5, // por segundo, por anciano (requiere Lenguaje). Playtest 1: ×10, el toque era demasiado fuerte en comparación
 
   // Población
   COMIDA_INICIAL: 40,

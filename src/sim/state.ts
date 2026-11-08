@@ -68,6 +68,7 @@ export interface GameState {
   stats: { births: number; deaths: number };
   log: LogEntry[];
   debug: { infinite: Partial<Record<ResId, boolean>>; unlockOnTap: boolean };
+  resolved: Partial<Record<ResId, boolean>>; // recursos resueltos por infraestructura
   prototypeEnded: boolean;
   lostDismissed?: boolean; // el jugador eligió seguir mirando tras perder
   birthAcc: number;
@@ -154,6 +155,7 @@ export function createState(seed = Date.now() % 100000): GameState {
     stats: { births: 0, deaths: 0 },
     log: [],
     debug: { infinite: {}, unlockOnTap: false },
+    resolved: {},
     prototypeEnded: false,
     birthAcc: 0,
     savedAt: Date.now(),

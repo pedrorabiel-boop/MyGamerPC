@@ -82,6 +82,13 @@ export function App() {
           </div>
         )}
 
+        {isTribeLost(s) && s.lostDismissed && (
+          <div className="lostbar">
+            💀 Tribu extinta
+            <button onClick={() => engine.newGame()}>Empezar de nuevo</button>
+          </div>
+        )}
+
         {isTribeLost(s) && !s.lostDismissed && (
           <div className="modal">
             <div className="modal-box">

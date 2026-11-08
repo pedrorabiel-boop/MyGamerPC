@@ -20,7 +20,7 @@ export function TopBar() {
       </div>
       <div className="resources">
         {shown.map((r) => (
-          <span key={r.id} className={"res" + (s.debug.infinite[r.id] ? " inf" : "")} title={r.name}>
+          <span key={r.id} className={"res" + (s.resolved[r.id] ? " solved" : s.debug.infinite[r.id] ? " inf" : "")} title={r.name}>
             {r.icon} {qty(s, r.id)}
           </span>
         ))}

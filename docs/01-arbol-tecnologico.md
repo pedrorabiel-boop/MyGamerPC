@@ -158,6 +158,40 @@ Esto se suma a la idea de que el estilo visual de la interfaz cambie por era (ta
   - Los canales se colocan casilla por casilla desde el río, así que su trazado es un
     pequeño puzzle.
 
+### Recursos resueltos (autosuficiencia)
+
+Con el tiempo, vigilar todos los recursos se vuelve agotador y quita atención a las
+tecnologías nuevas. Por eso cada recurso básico tiene un **nivel máximo**: quedar
+**resuelto**.
+
+- **Regla:** mientras tengas **X edificios** con **Y aldeanos asignados de forma fija**
+  (y la tecnología correspondiente), el recurso **deja de tener cantidad**: se muestra
+  como **"✅ resuelto"**, nunca falta y no tiene límite, **sin importar cuánto crezca la
+  población**.
+- La infraestructura es **fija**, no proporcional a la población.
+- Los aldeanos asignados **siguen ocupados** en esa infraestructura (es su costo
+  permanente). La Jefatura mantiene la cuota sola.
+- Si falta un edificio o un aldeano asignado, el recurso **deja de estar resuelto** (con
+  aviso) y vuelve a tener la cantidad que tenía.
+- **💡 Comprensión nunca se resuelve:** es la moneda central del juego.
+- **Patrón:** un recurso se resuelve unas 2 o 3 eras después de aparecer, así que la
+  atención siempre está en lo de la era actual.
+
+**Tabla provisional** (los números se ajustan con playtests):
+
+| Recurso | Tecnología | Edificios (X) | Aldeanos fijos (Y) | Era |
+|---|---|---|---|---|
+| Comida | B08 Arado + B09 Irrigación | 4 parcelas + 1 granero | 8 agricultores | 3 |
+| Ramas, piedra, fibras | B04 Rueda | 1 granero + 1 depósito *(edificio por definir)* | 2 recolectores de cada uno | 3 |
+| Arcilla, cerámica | Alfarería Nv2 (torno) | 2 hornos | 2 alfareros + 2 arcilleros | 3–4 |
+| Madera | H12 Silvicultura | 3 bosques plantados | 3 leñadores | 4 |
+| Carbón vegetal | H12 Silvicultura | 2 carboneras | 2 carboneros | 4–5 |
+| Lana, pieles, tela | I03 Fábrica | Fábrica textil | por definir | 7 |
+| Cobre, estaño, bronce, hierro | I03 Fábrica + I05 Ferrocarril | Fábricas + estación | por definir | 7 |
+
+> **En el prototipo (Eras 1–2):** como la Era 3 todavía no existe, la comida se resuelve
+> con **N07 Granero** + 4 parcelas + 1 granero + 8 agricultores, para poder probarlo.
+
 ### Arco de energía
 
 La energía evoluciona en tres saltos. Cada uno hace más potente la automatización y

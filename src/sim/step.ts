@@ -1,12 +1,13 @@
 import { config } from "../config";
-import { BUILDING_BY_ID, JOB_BY_ID, NODE_DEFS, type JobDef, type ResId } from "../content";
+import { BUILDING_BY_ID, JOB_BY_ID, NODE_DEFS, RES_BY_ID, RESOLUTIONS, type JobDef, type ResId } from "../content";
 import { ERAS } from "../data/tree";
-import { add, canAfford, countBuilt, has, housing, pay, stageOf } from "./economy";
+import { add, canAfford, countBuilt, has, housing, isResolutionMet, pay, stageOf, unlimited } from "./economy";
 import { log, newVillager, rand, type Building, type GameState, type ResNode, type Villager } from "./state";
 
 /** Avanza la simulación `dt` segundos de juego. Usar pasos pequeños (≤ 0,5 s). */
 export function step(s: GameState, dt: number) {
   s.time += dt;
+  updateResolutions(s);
   regenNodes(s, dt);
   passiveBuildings(s, dt);
   updateAnimo(s);
@@ -21,6 +22,19 @@ export function step(s: GameState, dt: number) {
 }
 
 // ---------- mundo ----------
+
+/** Un recurso queda resuelto mientras existan sus edificios y aldeanos asignados. */
+function updateResolutions(s: GameState) {
+  for (const def of RESOLUTIONS) {
+    const met = isResolutionMet(s, def);
+    if (met === !!s.resolved[def.res]) continue;
+    s.resolved[def.res] = met;
+    const name = RES_BY_ID[def.res].name;
+    log(s, met
+      ? `✅ ¡${name} resuelta! Mientras mantengas esta infraestructura, nunca va a faltar.`
+      : `⚠️ ${name} dejó de estar resuelta: falta infraestructura o aldeanos asignados.`);
+  }
+}
 
 function regenNodes(s: GameState, dt: number) {
   for (const n of s.nodes) {
@@ -44,7 +58,7 @@ function updateAnimo(s: GameState) {
   a += Math.min(countBuilt(s, "pared"), 3) * (BUILDING_BY_ID.pared.animo ?? 0);
   if (has(s, "P10")) a += 0.05;
   if (s.villagers.length > housing(s)) a -= 0.2;
-  if (s.inv.comida <= 0 && !s.debug.infinite.comida) a -= 0.3;
+  if (s.inv.comida <= 0 && !unlimited(s, "comida")) a -= 0.3;
   s.animo = Math.max(0.4, Math.min(1.6, a));
 }
 
@@ -54,7 +68,7 @@ function eat(s: GameState, dt: number) {
 
 function ageAndDie(s: GameState, dt: number) {
   const years = dt / config.TIEMPO_POR_AÑO;
-  const hungry = s.inv.comida <= 0 && !s.debug.infinite.comida;
+  const hungry = s.inv.comida <= 0 && !unlimited(s, "comida");
   const healer = s.villagers.some((v) => v.job === "curandero" && v.task.kind === "work");
   const illness = config.MORTALIDAD_ENFERMEDAD * (healer ? 0.5 : 1) * (has(s, "P10") ? 0.8 : 1);
   const dead: Villager[] = [];
@@ -79,7 +93,7 @@ function ageAndDie(s: GameState, dt: number) {
 function births(s: GameState, dt: number) {
   const adults = s.villagers.filter((v) => stageOf(v) === "adult");
   if (adults.length < 2) return;
-  const fed = s.inv.comida > 2 || s.debug.infinite.comida;
+  const fed = s.inv.comida > 2 || unlimited(s, "comida");
   const room = s.villagers.length < housing(s);
   if (!fed || !room) return;
   const fire = countBuilt(s, "fogata") > 0 ? 1.2 : 1;
