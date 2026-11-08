@@ -4,6 +4,7 @@ import { RES_BY_ID, type ResId } from "../content";
 import { DEBUG_ENABLED, engine, useEngine } from "../engine";
 import { MapView } from "../render/MapView";
 import { tapBook } from "../sim/actions";
+import { isTribeLost } from "../sim/economy";
 import { BookPanel } from "./BookPanel";
 import { BuildPanel } from "./BuildPanel";
 import { DebugPanel } from "./DebugPanel";
@@ -81,7 +82,30 @@ export function App() {
           </div>
         )}
 
-        {offlineSummary && (
+        {isTribeLost(s) && !s.lostDismissed && (
+          <div className="modal">
+            <div className="modal-box">
+              <h2>💀 Tu tribu no puede continuar</h2>
+              <p>
+                {s.villagers.length === 1
+                  ? `Solo queda ${s.villagers[0].name}. Sin nadie más, no habrá una próxima generación.`
+                  : "No queda nadie."}
+                {offlineSummary && ` Pasó mientras no estabas (${Math.floor(offlineSummary.years)} años).`}
+              </p>
+              <p className="muted">
+                Años: {Math.floor(s.time / config.TIEMPO_POR_AÑO)} · Nacimientos: {s.stats.births} · Muertes: {s.stats.deaths} ·
+                Tecnologías: {Object.keys(s.techs).length}
+              </p>
+              <p className="muted"><em>"El Departamento lamenta informarle que su PC gamer ha sido postergado indefinidamente. Su alma, en cambio, sigue vigente."</em></p>
+              <div className="inline">
+                <button className="primary" onClick={() => engine.newGame()}>Empezar de nuevo</button>
+                <button onClick={() => { s.lostDismissed = true; engine.offlineSummary = null; engine.notify(); }}>Seguir mirando</button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {offlineSummary && !(isTribeLost(s) && !s.lostDismissed) && (
           <div className="modal">
             <div className="modal-box">
               <h2>🌙 Mientras no estabas…</h2>

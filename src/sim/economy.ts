@@ -46,4 +46,7 @@ export function housing(s: GameState): number {
   return cap;
 }
 
-export const countBuilt = (s: GameState, type: string) => s.buildings.filter((b) => b.built && b.type === type).length;
+/** Con 1 aldeano o ninguno, la tribu ya no puede tener hijos: la partida está perdida. */
+export const isTribeLost = (s: GameState) => s.villagers.length <= 1;
+
+export const countBuilt =(s: GameState, type: string) => s.buildings.filter((b) => b.built && b.type === type).length;

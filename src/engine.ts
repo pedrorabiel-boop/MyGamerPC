@@ -1,6 +1,7 @@
 // Motor: hace avanzar la simulación en tiempo real, guarda la partida y avisa a la interfaz.
 import { useEffect, useState } from "react";
 import { loadOrCreate, save, simulateOffline, type OfflineSummary } from "./sim/save";
+import { isTribeLost } from "./sim/economy";
 import { step } from "./sim/step";
 import { createState, type GameState } from "./sim/state";
 
@@ -24,7 +25,7 @@ class Engine {
   constructor() {
     this.s = loadOrCreate();
     const away = (Date.now() - this.s.savedAt) / 1000;
-    if (away > 30 && this.s.time > 0) this.offlineSummary = simulateOffline(this.s, away);
+    if (away > 30 && this.s.time > 0 && !isTribeLost(this.s)) this.offlineSummary = simulateOffline(this.s, away);
   }
 
   start() {
@@ -57,6 +58,7 @@ class Engine {
 
   replaceState(s: GameState) {
     this.s = s;
+    this.offlineSummary = null;
     this.ui.selected = null;
     this.ui.placing = null;
     save(s);

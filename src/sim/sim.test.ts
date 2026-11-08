@@ -3,7 +3,7 @@ import { config } from "../config";
 import { BUILDINGS, JOBS } from "../content";
 import { TECH_BY_ID, techCost } from "../data/tree";
 import { changeJobCount, debugToggleInfinite, place, study, tapBook, techStatus } from "./actions";
-import { pay, stageOf } from "./economy";
+import { isTribeLost, pay, stageOf } from "./economy";
 import { simulateOffline } from "./save";
 import { createState, type GameState } from "./state";
 import { step } from "./step";
@@ -78,6 +78,13 @@ describe("población", () => {
     for (let i = 0; i < 6; i++) s.buildings.push({ id: s.nextId++, type: "choza", x: i, y: 4, progress: 0, built: true });
     run(s, 300);
     expect(s.stats.births).toBeGreaterThan(0);
+  });
+
+  it("con un solo aldeano la tribu está perdida", () => {
+    const s = createState(2);
+    expect(isTribeLost(s)).toBe(false);
+    s.villagers.splice(1);
+    expect(isTribeLost(s)).toBe(true);
   });
 
   it("los aldeanos mueren al cumplir su esperanza de vida", () => {

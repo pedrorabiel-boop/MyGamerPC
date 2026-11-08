@@ -69,6 +69,7 @@ export interface GameState {
   log: LogEntry[];
   debug: { infinite: Partial<Record<ResId, boolean>>; unlockOnTap: boolean };
   prototypeEnded: boolean;
+  lostDismissed?: boolean; // el jugador eligió seguir mirando tras perder
   birthAcc: number;
   savedAt: number;
 }
