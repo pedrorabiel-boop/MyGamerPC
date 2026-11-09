@@ -3,6 +3,14 @@ import { NODE_DEFS, RESOURCES, VILLAGER_NAMES, type NodeType, type ResId, type R
 
 export type Tile = "pasto" | "rio" | "orilla" | "cueva";
 
+/** La Jefatura (N11): especialidades elegidas y prioridades de las categorías. */
+export interface JefaturaState {
+  priorities: Role[]; // orden de prioridad (Zipf: 1, 1/2, 1/3…)
+  specialties: Record<string, { full: boolean; n: number }>; // tipo de edificio → puestos pedidos
+  timer: number;
+}
+export const defaultJefatura = (): JefaturaState => ({ priorities: ["comida", "materiales", "construccion"], specialties: {}, timer: 0 });
+
 export type Task =
   | { kind: "idle"; t: number }
   | { kind: "toNode"; nodeId: number; res: ResId }
@@ -19,7 +27,7 @@ export interface Villager {
   lifespan: number; // años
   role: Role | null; // categoría de oficio
   workplace: number | null; // id del edificio si es especialista
-  parentRole: Role | null; // se hereda al llegar a adulto
+  manual: boolean; // tarea asignada a mano: queda fuera de la Jefatura
   wasAdult: boolean;
   x: number; // posición libre, en casillas
   y: number;
@@ -46,7 +54,6 @@ export interface Building {
   y: number;
   progress: number; // segundos de construcción acumulados
   built: boolean;
-  wanted: number; // especialistas pedidos (cuota, con N11 Aldea organizada)
 }
 
 export interface LogEntry { at: number; msg: string }
@@ -65,7 +72,7 @@ export interface GameState {
   inv: Record<ResId, number>;
   techs: Record<string, true>;
   erasOpen: number;
-  quotas: Partial<Record<Role, number>>; // cantidad por categoría
+  jefatura: JefaturaState;
   animo: number;
   stats: { births: number; deaths: number };
   log: LogEntry[];
@@ -92,7 +99,7 @@ export function log(s: GameState, msg: string) {
   if (s.log.length > 60) s.log.splice(0, s.log.length - 60);
 }
 
-export function newVillager(s: GameState, age: number, x: number, y: number, parentRole: Role | null = null): Villager {
+export function newVillager(s: GameState, age: number, x: number, y: number): Villager {
   const name = VILLAGER_NAMES[Math.floor(rand(s) * VILLAGER_NAMES.length)];
   const v: Villager = {
     id: s.nextId++,
@@ -101,7 +108,7 @@ export function newVillager(s: GameState, age: number, x: number, y: number, par
     lifespan: config.ESPERANZA_VIDA + (rand(s) * 2 - 1) * config.VARIACION_VIDA,
     role: null,
     workplace: null,
-    parentRole,
+    manual: false,
     wasAdult: age >= config.EDAD_ADULTO,
     x, y, tx: x, ty: y,
     task: { kind: "idle", t: 0 },
@@ -154,7 +161,7 @@ export function createState(seed = Date.now() % 100000): GameState {
     inv,
     techs: {},
     erasOpen: 1,
-    quotas: {},
+    jefatura: defaultJefatura(),
     animo: 1,
     stats: { births: 0, deaths: 0 },
     log: [],
@@ -176,7 +183,7 @@ export function createState(seed = Date.now() % 100000): GameState {
     s.nodes.push({ id: s.nextId++, type, x, y, stock });
   }
 
-  s.buildings.push({ id: s.nextId++, type: "pila", x: 3, y: 6, progress: 0, built: true, wanted: 0 });
+  s.buildings.push({ id: s.nextId++, type: "pila", x: 3, y: 6, progress: 0, built: true });
 
   for (const age of [19, 22, 31, 13, 6]) {
     newVillager(s, age, 3.5 + (rand(s) - 0.5) * 2, 6.5 + (rand(s) - 0.5) * 2);

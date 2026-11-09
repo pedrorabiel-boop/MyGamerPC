@@ -98,19 +98,37 @@ pierde parte de la maestría de su oficio. Cada hito posterior mejora la transmi
 | I12 Escuela pública | Los niños estudian (dan Comprensión) y entran a su primer oficio **sin período de aprendizaje** |
 | D09 Internet | Bonus global de aprendizaje (y memes) |
 
-### Reemplazo generacional
+### Reemplazo generacional y Jefatura
 
 Con 20 habitantes que viven unos 6 minutos, muere alguien cada ~18 segundos. Reasignar
-oficios a mano a ese ritmo sería un castigo, así que:
+oficios a mano a ese ritmo sería un castigo. La solución es la **Jefatura**.
 
-- **Desde P01 Lenguaje**, los jóvenes **heredan el oficio** de su padre o su madre al
-  llegar a adultos (oficios familiares).
-- **Desde N11 Aldea organizada** las cantidades de cada categoría y los especialistas
-  de cada edificio quedan como **cuotas**, y la tribu se reorganiza sola.
+- **Sin herencia** (playtest 3): los niños llegan a adultos **libres**. La herencia por
+  familia concentraba a toda la tribu en una sola categoría.
+- **Antes de la Jefatura** todo es manual: + y − por categoría, y los especialistas se
+  asignan tocando su edificio. Los libres ayudan a construir.
+- **Con N11 Aldea organizada aparece la Jefatura:** "alguien decide por uno". En vez de
+  contar personas, dices qué te importa:
+  1. **Especialidades (puestos fijos, elegidos por el jugador):** una lista de
+     especialidades (chamán, alfarero, tejedor, pastor, curandero…), cada una con
+     **"ocupación total"** o una **cantidad** elegida. **No se llenan todas por defecto.**
+     Las parcelas y el muelle no están en esta lista: los ocupa la gente de Comida.
+  2. **El resto se reparte con la regla de Zipf** según el orden de prioridades que
+     elige el jugador: la 1.ª categoría pesa 1, la 2.ª ½, la 3.ª ⅓… (por ejemplo, con 3
+     categorías activas: 55%, 27%, 18%).
+  3. **Nadie va a donde no hay trabajo:** una categoría sin trabajo se salta y su parte
+     se reparte entre las demás (Construcción sin planos, Materiales con los almacenes
+     llenos, Comida resuelta más allá de los puestos de parcelas y muelle).
+  - **Sin emergencia automática de comida:** enfrentar una hambruna es tarea del jugador.
+  - El jefe reasigna **de a una persona por vez** y nunca a alguien que va cargando algo.
+- **Tareas manuales:** si el jugador toca un aldeano y le da una tarea, ese aldeano
+  queda **fuera de la Jefatura** (sirve para emergencias: tocar varios rápido y mandarlos
+  a algo). Al final del panel de la Jefatura aparece la lista **"Con tarea manual"**, con
+  un botón para **devolver** a cada uno (o a todos) a la línea de trabajo de la Jefatura.
 - **Cambio de oficio:** cuando un aldeano cambia de oficio pasa por un período de
   **aprendizaje** con productividad reducida. **R01 Imprenta** lo acorta mucho (hay
   manuales para todo), así que desde ahí redistribuir a la tribu entre oficios es
-  rápido y barato.
+  rápido y barato. *(Todavía no implementado en el prototipo.)*
 
 ### Genios (incidental)
 
@@ -465,7 +483,7 @@ Las 12 tecnologías originales se fusionaron en **6**.
 | N03 | Alfarería | P04, P06 | 🏗️ Horno de barro, Casa de adobe · 👤 Alfarero · 📦 Arcilla, Cerámica · ✋ Vasija | *(Alfarería + Adobe)*. **Vasijas: almacenamiento ↑.** Materiales junta **arcilla** en la orilla. **Alfarero** (especialista del horno). Casa de adobe: +6 de capacidad. **Nv2 = Torno** |
 | N09 | Conteo y tradición oral | P01, N01 | ✋ Palitos de conteo · 📖 | *(Conteo + Tradición oral)*. **Números exactos en la interfaz** (antes: "pocos / muchos") y se pierde menos maestría al morir un maestro. Raíz de la matemática y de la Escritura. *"Contar el grano antes de que alguien se lo coma."* |
 | N10 | Exploración | P02, P04 | ✋ Antorcha · 🏗️ Muelle · 👤 Pescador | *(Antorcha + Balsa y pesca)*. **Abre la Cueva y la Costa.** Muelle: la gente de Comida pesca. *"Ahora podemos ver a los murciélagos. No sé si eso es mejor."* |
-| N11 | Aldea organizada | P11, N01 + pob. 15 | 🏛️ · ⚙️ · 🏗️ Huerto medicinal · 👤 Curandero | *(Jefatura + Herbolaria)*. **Cuotas automáticas**: la tribu repone sola sus categorías y especialistas cuando muere alguien. **Curandero** (especialista del huerto): enfermedad ↓ |
+| N11 | Aldea organizada | P11, N01 + pob. 15 | 🏛️ · ⚙️ · 🏗️ Huerto medicinal · 👤 Curandero | *(Jefatura + Herbolaria)*. **Jefatura**: eliges especialidades y prioridades, y la tribu se reparte sola (Zipf). **Curandero** (especialista del huerto): enfermedad ↓ |
 
 ### Era 3 — Bronce
 *Recursos nuevos: Carbón vegetal, Mineral de cobre, Estaño, Cobre, Bronce, Arena, Vidrio, Ladrillo*
@@ -957,6 +975,12 @@ sociedad y al final se construye el PC.
 ---
 
 ## 9. Historial de cambios
+
+### v2.1 (borrador) — Playtest 3: la Jefatura
+- **Jefatura** (N11): especialidades elegidas por el jugador (ocupación total o cantidad) → reparto Zipf por prioridades → nadie donde no hay trabajo. Sin emergencia automática de comida.
+- **Sin herencia de categoría**: los niños llegan a adultos libres.
+- **Tareas manuales**: un aldeano con tarea manual queda fuera de la Jefatura hasta que se lo devuelve.
+- Demoler edificios (50% de los materiales) y cancelar obras (100%).
 
 ### v2.0 (borrador) — Playtest 2: menos tecnologías, oficios por categoría
 - **Eras 1 y 2 consolidadas** de 12 a 6 tecnologías cada una (total: 124). Fusiones: P02 ← P03, P07, P08 · P05 ← P09, P10 · P11 ← P12 · N01 ← N07 · N02 ← N05 · N03 ← N06 · N09 ← N04 · N10 ← N12 · N11 ← N08. Las referencias de las demás eras se actualizaron.

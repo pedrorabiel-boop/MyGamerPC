@@ -33,6 +33,7 @@ export const config = {
   BONO_HERRAMIENTAS: 1.5, // P02 Piedra tallada
   BONO_CESTA: 2, // P02 Herramientas de piedra (cesta)
   FACTOR_AYUDA_CONSTRUCCION: 0.5, // aldeano sin oficio que ayuda a construir
+  JEFATURA_INTERVALO: 1, // segundos entre cada reasignación de la Jefatura
   DEVOLUCION_DEMOLER: 0.5, // fracción de los materiales que se recupera al demoler (una obra sin terminar devuelve todo)
 
   // Almacenamiento

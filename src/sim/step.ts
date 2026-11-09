@@ -1,12 +1,13 @@
 import { config } from "../config";
 import {
-  BUILDING_BY_ID, FOOD_GATHER, MATERIALS, NODE_DEFS, RES_BY_ID, RESOLUTIONS, ROLE_BY_ID,
-  type NodeType, type ResId, type Role,
+  BUILDING_BY_ID, FOOD_GATHER, MATERIALS, NODE_DEFS, RES_BY_ID, RESOLUTIONS,
+  type NodeType, type ResId,
 } from "../content";
 import { ERAS } from "../data/tree";
 import {
-  add, canAfford, countBuilt, has, housing, isFree, isResolutionMet, pay, staffCount, stageOf, storageCap, unlimited,
+  add, canAfford, countBuilt, has, housing, isResolutionMet, pay, roleUnlocked, stageOf, storageCap, unlimited,
 } from "./economy";
+import { hasJefatura, runJefatura } from "./jefatura";
 import { log, newVillager, rand, type Building, type GameState, type ResNode, type Villager } from "./state";
 
 /** Avanza la simulación `dt` segundos de juego. Usar pasos pequeños (≤ 0,5 s). */
@@ -19,7 +20,7 @@ export function step(s: GameState, dt: number) {
   eat(s, dt);
   ageAndDie(s, dt);
   births(s, dt);
-  if (has(s, "N11")) applyQuotas(s);
+  if (hasJefatura(s)) runJefatura(s, dt);
   const occ = occupancy(s);
   for (const v of s.villagers) updateVillager(s, v, dt, occ);
   elderComprension(s, dt);
@@ -79,10 +80,7 @@ function ageAndDie(s: GameState, dt: number) {
   const dead: Villager[] = [];
   for (const v of s.villagers) {
     v.age += years;
-    if (!v.wasAdult && v.age >= config.EDAD_ADULTO) {
-      v.wasAdult = true;
-      if (has(s, "P01") && v.parentRole && roleUnlocked(s, v.parentRole)) v.role = v.parentRole;
-    }
+    if (!v.wasAdult && v.age >= config.EDAD_ADULTO) v.wasAdult = true; // llega a adulto libre (sin herencia)
     // Al volverse anciano deja su puesto de especialista (el edificio queda con un puesto vacío).
     if (v.workplace != null && stageOf(v) === "elder") { v.workplace = null; v.task = { kind: "idle", t: 0 }; }
     let p = illness * years;
@@ -109,7 +107,7 @@ function births(s: GameState, dt: number) {
     s.birthAcc -= 1;
     const parent = adults[Math.floor(rand(s) * adults.length)];
     const pila = s.buildings.find((b) => b.type === "pila")!;
-    const baby = newVillager(s, 0, pila.x + 0.5 + (rand(s) - 0.5), pila.y + 0.5 + (rand(s) - 0.5), parent.role);
+    const baby = newVillager(s, 0, pila.x + 0.5 + (rand(s) - 0.5), pila.y + 0.5 + (rand(s) - 0.5));
     add(s, "comida", -2);
     s.stats.births++;
     log(s, `Nació ${baby.name}, de la familia de ${parent.name}.`);
@@ -131,34 +129,6 @@ function checkEras(s: GameState) {
   s.erasOpen = next.id;
   log(s, `¡Hito «${ms.name}»! Se abre el capítulo: ${next.name}.`);
   if (next.id >= 3) s.prototypeEnded = true;
-}
-
-// ---------- categorías, especialistas y cuotas ----------
-
-export const roleUnlocked = (s: GameState, role: Role) => has(s, ROLE_BY_ID[role].unlockedBy);
-
-/** Con N11 Aldea organizada, la tribu repone sola categorías y especialistas. */
-export function applyQuotas(s: GameState) {
-  for (const [role, quota] of Object.entries(s.quotas) as [Role, number][]) {
-    if (!roleUnlocked(s, role)) continue;
-    const holders = s.villagers.filter((v) => v.role === role && stageOf(v) === "adult");
-    if (holders.length < quota) {
-      for (const v of s.villagers.filter(isFree).slice(0, quota - holders.length)) { v.role = role; v.task = { kind: "idle", t: 0 }; }
-    } else if (holders.length > quota) {
-      for (const v of holders.slice(quota)) { v.role = null; v.task = { kind: "idle", t: 0 }; }
-    }
-  }
-  for (const b of s.buildings) {
-    if (!b.built || !b.wanted || BUILDING_BY_ID[b.type]?.staff?.by !== "especialista") continue;
-    let missing = b.wanted - staffCount(s, b);
-    for (const v of s.villagers) {
-      if (missing <= 0) break;
-      if (!isFree(v)) continue;
-      v.workplace = b.id;
-      v.task = { kind: "idle", t: 0 };
-      missing--;
-    }
-  }
 }
 
 function occupancy(s: GameState): Map<number, number> {

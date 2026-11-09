@@ -1,9 +1,10 @@
 import { BUILDING_BY_ID, FOOD_GATHER, MATERIALS, RES_BY_ID, ROLES, type Role } from "../content";
 import { engine, useEngine } from "../engine";
 import { changeRoleCount } from "../sim/actions";
-import { has, isFree, staffCount, stageOf } from "../sim/economy";
+import { has, isFree, roleUnlocked, staffCount, stageOf } from "../sim/economy";
+import { hasJefatura } from "../sim/jefatura";
 import type { GameState } from "../sim/state";
-import { roleUnlocked } from "../sim/step";
+import { JefaturaPanel } from "./JefaturaPanel";
 
 /** Texto con lo que hace hoy cada categoría, según las tecnologías conocidas. */
 function roleMethod(s: GameState, role: Role): string {
@@ -34,9 +35,11 @@ export function VillagersPanel() {
       <p className="hint">
         {adults.length} {adults.length === 1 ? "adulto" : "adultos"} ({free} {free === 1 ? "libre" : "libres"}) · {children}{" "}
         {children === 1 ? "niño" : "niños"} · {elders} {elders === 1 ? "anciano" : "ancianos"}
-        {has(s, "N11") ? " · 🏛️ La tribu repone sola estas cantidades." : ""}
+
       </p>
-      {!has(s, "P01") ? (
+      {hasJefatura(s) ? (
+        <JefaturaPanel />
+      ) : !has(s, "P01") ? (
         <p className="hint">
           Sin <b>Lenguaje</b> no hay oficios: solo puedes <b>señalar</b>. Toca un aldeano en el mapa y luego un recurso
           (arbusto, árbol, rocas…) para que haga un viaje.
@@ -62,7 +65,7 @@ export function VillagersPanel() {
         </div>
       )}
 
-      {specialistBuildings.length > 0 && (
+      {!hasJefatura(s) && specialistBuildings.length > 0 && (
         <>
           <h4>Especialistas</h4>
           <p className="hint">Se asignan tocando el edificio en el mapa.</p>

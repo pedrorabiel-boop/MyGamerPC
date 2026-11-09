@@ -3,8 +3,9 @@ import { config } from "../config";
 import { BUILDINGS, MATERIALS, ROLES, TECH_INTRO } from "../content";
 import { TECHS, TECH_BY_ID, techCost } from "../data/tree";
 import {
-  changeRoleCount, changeSpecialists, debugAddVillagers, demolish, debugToggleInfinite, place, study, tapBook, techStatus,
+  changeRoleCount, changeSpecialists, debugAddVillagers, demolish, debugToggleInfinite, place, setRole, study, tapBook, techStatus,
 } from "./actions";
+import { returnToJefatura, setSpecialtyFull, zipfTargets } from "./jefatura";
 import { isTribeLost, pay, staffCount, stageOf } from "./economy";
 import { simulateOffline } from "./save";
 import { createState, type Building, type GameState } from "./state";
@@ -12,7 +13,7 @@ import { step } from "./step";
 
 const run = (s: GameState, seconds: number) => { for (let t = 0; t < seconds; t += 0.1) step(s, 0.1); };
 const addBuilding = (s: GameState, type: string, x: number, y: number): Building => {
-  const b = { id: s.nextId++, type, x, y, progress: 0, built: true, wanted: 0 };
+  const b = { id: s.nextId++, type, x, y, progress: 0, built: true };
   s.buildings.push(b);
   return b;
 };
@@ -136,6 +137,65 @@ describe("categorías", () => {
     debugToggleInfinite(s, "piedra");
     expect(pay(s, { piedra: 999 })).toBe(true);
     expect(s.inv.piedra).toBe(0);
+  });
+});
+
+describe("Jefatura", () => {
+  const withJefatura = (seed: number, adults: number) => {
+    const s = createState(seed);
+    s.techs.P01 = s.techs.P06 = s.techs.N11 = true;
+    s.debug.infinite.comida = true;
+    debugAddVillagers(s, adults);
+    return s;
+  };
+
+  it("Zipf: reparte por prioridad y no manda gente a donde no hay trabajo", () => {
+    const s = withJefatura(20, 0);
+    const t = zipfTargets(s, 6); // sin planos: Construcción no tiene trabajo
+    expect(t.get("construccion")).toBe(0);
+    expect((t.get("comida") ?? 0) + (t.get("materiales") ?? 0)).toBe(6);
+    expect(t.get("comida")!).toBeGreaterThan(t.get("materiales")!);
+  });
+
+  it("asigna sola a los libres", () => {
+    const s = withJefatura(21, 6);
+    run(s, 20);
+    const adults = s.villagers.filter((v) => stageOf(v) === "adult");
+    expect(adults.every((v) => v.role !== null || v.workplace !== null)).toBe(true);
+  });
+
+  it("llena las especialidades que elige el jugador, no todas", () => {
+    const s = withJefatura(22, 6);
+    s.techs.P11 = true;
+    const c = addBuilding(s, "circulo", 3, 3);
+    run(s, 5);
+    expect(staffCount(s, c)).toBe(0); // no se llena por defecto
+    setSpecialtyFull(s, "circulo", true);
+    run(s, 5);
+    expect(staffCount(s, c)).toBe(1);
+  });
+
+  it("un aldeano con tarea manual queda fuera hasta que se lo devuelve", () => {
+    const s = withJefatura(23, 6);
+    const v = s.villagers.find((x) => stageOf(x) === "adult")!;
+    setRole(s, v.id, "construccion");
+    expect(v.manual).toBe(true);
+    run(s, 10);
+    expect(v.role).toBe("construccion"); // la Jefatura no lo toca, aunque no haya planos
+    returnToJefatura(s, v.id);
+    run(s, 15);
+    expect(v.role).not.toBe("construccion");
+  });
+
+  it("sin herencia: los niños llegan a adultos libres", () => {
+    const s = createState(24);
+    s.techs.P01 = true;
+    s.debug.infinite.comida = true;
+    for (const v of s.villagers) if (stageOf(v) === "adult") v.role = "comida";
+    const child = s.villagers.find((v) => stageOf(v) === "child")!;
+    run(s, (config.EDAD_ADULTO - child.age + 1) * config.TIEMPO_POR_AÑO);
+    expect(stageOf(child)).toBe("adult");
+    expect(child.role).toBeNull();
   });
 });
 

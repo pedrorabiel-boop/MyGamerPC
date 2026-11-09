@@ -4,6 +4,7 @@ import { BUILDING_BY_ID, RES_BY_ID, type ResId } from "../content";
 import { engine, useEngine } from "../engine";
 import { changeSpecialists, demolish } from "../sim/actions";
 import { staffCount } from "../sim/economy";
+import { hasJefatura, specialtyTarget } from "../sim/jefatura";
 
 const fmtCost = (c: Partial<Record<ResId, number>>) =>
   Object.entries(c).map(([r, n]) => `${RES_BY_ID[r as ResId].icon}${n}`).join(" ");
@@ -47,6 +48,9 @@ export function BuildingCard() {
               </>
             )}
           </div>
+          {staff.by === "especialista" && hasJefatura(s) && b.built && (
+            <div className="muted">🏛️ Meta de la Jefatura para esta especialidad: {specialtyTarget(s, b.type)}. Con − / + la cambias.</div>
+          )}
           {staff.by === "comida" && <div className="muted">Lo ocupa sola la gente de 🍖 Comida (más gente en Comida = más puestos llenos).</div>}
           {(staff.inputs || staff.outputs) && (
             <div className="muted">

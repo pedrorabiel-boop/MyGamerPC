@@ -174,3 +174,11 @@ h4 { margin: 16px 0 6px; font-size: 13px; color: var(--muted); text-transform: u
 .demolish { display: flex; align-items: center; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
 .demolish button { background: var(--panel-2); border: 1px solid var(--line); border-radius: 8px; padding: 4px 10px; font-size: 12px; }
 .demolish button.danger { border-color: var(--danger); color: #ffb0a8; }
+
+/* Jefatura */
+.chip { background: var(--panel); border: 1px solid var(--line); border-radius: 999px; padding: 4px 10px; font-size: 12px; color: var(--text); }
+.chip.sel { border-color: var(--ok); background: #1f3319; color: #b8f0a0; }
+.chip.wide { width: 100%; margin-top: 8px; padding: 7px; }
+.rank { width: 20px; text-align: center; font-weight: 800; color: var(--muted); }
+.manual { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: 12px; margin-top: 4px; color: #ffd28a; }
+.manual button { background: var(--panel-2); border: 1px solid var(--line); border-radius: 8px; padding: 3px 8px; font-size: 12px; }

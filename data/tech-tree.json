@@ -649,7 +649,7 @@
           "name": "Curandero"
         }
       ],
-      "effect": "*(Jefatura + Herbolaria)*. **Cuotas automáticas**: la tribu repone sola sus categorías y especialistas cuando muere alguien. **Curandero** (especialista del huerto): enfermedad ↓"
+      "effect": "*(Jefatura + Herbolaria)*. **Jefatura**: eliges especialidades y prioridades, y la tribu se reparte sola (Zipf). **Curandero** (especialista del huerto): enfermedad ↓"
     },
     {
       "id": "B01",

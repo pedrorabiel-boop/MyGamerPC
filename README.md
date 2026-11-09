@@ -54,15 +54,19 @@ En desarrollo, el motor también queda en la consola del navegador como `window.
 - Tocar el Libro (📖) para generar Comprensión; estudiar páginas del árbol real.
 - Antes de **Lenguaje** solo se puede **señalar** (tocar un aldeano y luego un recurso:
   un viaje). Después los aldeanos se asignan a **categorías** (🍖 Comida, 🧱 Materiales,
-  🔨 Construcción) que mejoran solas con cada tecnología, y los hijos heredan la categoría.
+  🔨 Construcción) que mejoran solas con cada tecnología.
 - **Especialistas** (chamán, alfarero, tejedor, pastor, curandero) se asignan tocando su
   edificio; el mapa muestra los puestos ocupados (verde) y vacíos (rojo, con "!").
+- **Jefatura** (Aldea organizada): eliges qué especialidades llenar (total o una cantidad)
+  y el orden de prioridad de las categorías; el resto se reparte solo con la regla de
+  Zipf (1, ½, ⅓…), sin mandar gente a donde no hay trabajo. Un aldeano con tarea manual
+  queda fuera de la Jefatura hasta que lo devuelves. Los niños llegan a adultos libres.
 - Construcción con planos: los aldeanos libres ayudan; los constructores van más rápido.
   Tocando un edificio se puede **demoler** (recuperas 50% de los materiales) o cancelar
   una obra (se devuelve todo).
 - 12 tecnologías (6 por era, consolidadas tras el playtest 2) con **tarjeta de novedad**
   al estudiarlas, costos exponenciales, 14 edificios, almacenamiento con límite, Ánimo,
-  cuotas automáticas (Aldea organizada), la interfaz "pocos/muchos" antes del Conteo y
+  la interfaz "pocos/muchos" antes del Conteo y
   la comida **resuelta** con 4 parcelas llenas + granero.
 - Guardado automático y progreso offline al 50% (la Comprensión offline, al 10%).
 - Al abrir la Era 3 aparece "Fin del prototipo".

@@ -49,6 +49,7 @@ conocimiento necesario para fabricar un PC gamer desde cero.
 | Progreso offline | Rinde al **50%**, y al **100%** con el Almacenamiento magnético |
 | Silueta del PC | Cada pieza **se ilumina por partes** durante toda la partida. El contorno aparece en la Era 1 (pintura rupestre) |
 | Piezas del PC | Cada pieza se **fabrica** como un proyecto grande, una sola vez. **Completar una pieza es definitivo**: sin calidades ni rehacerlas |
+| Jefatura | Especialidades elegidas (total o cantidad) → reparto **Zipf** por prioridades → nadie donde no hay trabajo. Tareas manuales quedan fuera hasta devolverlas. Sin herencia de categoría |
 | Oficios | **Por categoría** (🍖 Comida, 🧱 Materiales, 🔨 Construcción): las tecnologías mejoran el método de cada una. Los **especialistas** se asignan desde su edificio, que muestra en el mapa sus puestos ocupados o vacíos |
 | Tecnologías | **Pocas y grandes** (5–7 por era): cada una debe producir un cambio visible. Al estudiarla aparece una tarjeta que explica qué cambió |
 | Recursos resueltos | Con **X edificios + Y aldeanos fijos**, un recurso básico queda "✅ resuelto": sin cantidad, nunca falta, sin importar la población. Es su nivel máximo. La Comprensión nunca se resuelve |

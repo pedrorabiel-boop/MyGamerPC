@@ -143,7 +143,7 @@ export const TECH_INTRO: Record<string, string[]> = {
     "Aparecen las categorías 🍖 Comida y 🧱 Materiales: ve a 👥 Aldeanos y asigna gente con +.",
     "Cada aldeano repite su trabajo solo, ya no hace falta señalar.",
     "Los ancianos empiezan a generar 💡 Comprensión.",
-    "Los hijos heredan la categoría de su familia.",
+    "Los niños llegan a adultos libres: asígnalos tú (hasta que exista la Jefatura).",
   ],
   P02: [
     "Todos recolectan más rápido y cargan el doble por viaje.",
@@ -191,7 +191,8 @@ export const TECH_INTRO: Record<string, string[]> = {
     "La Cueva y la Costa ya se pueden explorar… en una versión futura del prototipo.",
   ],
   N11: [
-    "Cuotas automáticas: si muere alguien, la tribu repone sola sus categorías y especialistas.",
+    "¡Jefatura! Ahora la tribu se reparte sola: en 👥 Aldeanos eliges qué especialidades llenar y el orden de prioridad de las categorías.",
+    "Si le das una tarea a mano a un aldeano, queda fuera de la Jefatura hasta que lo devuelvas.",
     "Puedes construir el 🌱 Huerto medicinal: con un curandero, mueren menos por enfermedad.",
   ],
 };

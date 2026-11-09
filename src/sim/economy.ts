@@ -1,8 +1,10 @@
 import { config } from "../config";
-import { BUILDING_BY_ID, type Cost, type ResId, type ResolutionDef } from "../content";
+import { BUILDING_BY_ID, ROLE_BY_ID, type Cost, type ResId, type ResolutionDef, type Role } from "../content";
 import type { Building, GameState, Villager } from "./state";
 
 export const has = (s: GameState, techId: string) => !!s.techs[techId];
+
+export const roleUnlocked = (s: GameState, role: Role) => has(s, ROLE_BY_ID[role].unlockedBy);
 
 // Durante la simulación offline la Comprensión rinde menos (ver config.COMPRENSION_OFFLINE).
 let comprensionScale = 1;
