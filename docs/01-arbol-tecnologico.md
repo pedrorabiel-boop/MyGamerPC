@@ -369,11 +369,13 @@ lejanas. Y así sucesivamente.
   *Población y rendimiento*).
 - **Aldeanos:** cada aldeano pertenece a **una zona a la vez**. Moverlo a otra zona
   toma un tiempo de viaje.
-- **Traslado (implementado en el prototipo):** al tocar la entrada de la cueva (o la
-  salida, desde adentro) se abre una ventana con *"N aldeanos adentro"*, **Entrar a
-  mirar**, y **− / +** para traer o enviar adultos de a uno. Los enviados **se quedan**
-  en la zona hasta que el jugador los traiga. Se mandan primero los libres y después
-  gente de la categoría con más personas; los especialistas no se mueven de su puesto.
+- **Traslado con meta (implementado en el prototipo):** al tocar la entrada de una zona
+  (o la salida, desde adentro) se abre una ventana con *"N adultos adentro"*, **Entrar a
+  mirar**, y una **meta de adultos** con **− / +**. El juego **mantiene la meta solo**:
+  si alguien envejece (vuelve al Valle) o muere, manda a otro desde el Valle; si la meta
+  baja, trae gente de vuelta. Se mandan primero los libres y después gente de la
+  categoría con más personas; los especialistas y los que tienen tarea manual no se mueven
+  solos.
   Los **niños y ancianos viven en el Valle** (un anciano chamán va a su Círculo).
 - **Jefatura por zona:** **cada zona tiene su propio orden de prioridades** (por defecto,
   Comida primero en el Valle y Materiales primero en la Cueva y las Montañas), y reparte
@@ -991,6 +993,11 @@ sociedad y al final se construye el PC.
 ---
 
 ## 9. Historial de cambios
+
+### v2.5 (borrador) — Metas de población por zona
+- La ventana de traslado fija una **meta de adultos por zona** que se mantiene sola (reemplaza a quien envejece o muere).
+- Aldeanos y Construir muestran solo lo de la zona que se está mirando.
+- *Arte y ritos* (chamán) con costo fijo de 200.
 
 ### v2.4 (borrador) — Era 3 en el prototipo y Jefatura por zona
 - Era 3 implementada: minas sobre vetas, cadena del cobre, bronce, ladrillo y vidrio, Archivo, Piedras alineadas, canales y comida resuelta con Arado e irrigación. Zona Montañas (Rueda) al 60%.

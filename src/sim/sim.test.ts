@@ -4,11 +4,12 @@ import { BUILDINGS, MATERIALS, ROLES, TECH_INTRO } from "../content";
 import { TECHS, TECH_BY_ID, techCost } from "../data/tree";
 import {
   changeRoleCount, changeSpecialists, debugAddVillagers, demolish, debugToggleInfinite, place, setRole, study, tapBook, techStatus,
-  transferVillager,
+  transferVillager, adultsIn,
 } from "./actions";
 import { movePriority, returnToJefatura, setSpecialtyFull, specialtyShortZones, zipfTargets } from "./jefatura";
 import { isTribeLost, pay, staffCount, stageOf } from "./economy";
 import { parseSave, simulateOffline } from "./save";
+import { changeZoneQuota, zoneCount } from "./zones";
 import { createState, type Building, type GameState } from "./state";
 import { step } from "./step";
 
@@ -331,12 +332,48 @@ describe("zonas", () => {
     expect(inCave.some((v) => v.role === "comida")).toBe(false);
   });
 
+  it("la meta de adultos de una zona se cumple y se mantiene sola", () => {
+    const s = withCave(37, 6);
+    changeZoneQuota(s, "cueva", 2);
+    run(s, 20);
+    expect(zoneCount(s, "cueva")).toBe(2);
+    expect(adultsIn(s, "cueva").length).toBe(2);
+
+    // Uno se vuelve anciano: regresa al Valle y se manda a otro en su lugar.
+    const old = adultsIn(s, "cueva")[0];
+    old.age = old.lifespan * 0.85;
+    run(s, 25);
+    expect(old.zone).toBe("valle");
+    expect(adultsIn(s, "cueva").length).toBe(2);
+
+    // Bajar la meta trae gente de vuelta.
+    changeZoneQuota(s, "cueva", -2);
+    run(s, 25);
+    expect(adultsIn(s, "cueva").length).toBe(0);
+  });
+
   it("los niños y ancianos vuelven solos al Valle", () => {
     const s = withCave(35, 0);
     const kid = s.villagers.find((v) => stageOf(v) === "child")!;
     kid.zone = "cueva"; kid.x = 3.5; kid.y = 8.5;
     run(s, 15);
     expect(kid.zone).toBe("valle");
+  });
+
+  it("si la casilla del sendero estaba ocupada en una partida vieja, el sendero va a otra casilla libre", () => {
+    const s = createState(38);
+    const old = JSON.parse(JSON.stringify(s));
+    old.zones.valle.tiles[11][1] = "pasto"; // partida de antes de las Montañas…
+    delete old.zones.valle.exits.montanas;
+    delete old.zones.montanas;
+    old.buildings = old.buildings.filter((b: { zone: string }) => b.zone !== "montanas");
+    old.nodes = old.nodes.filter((n: { zone: string }) => n.zone !== "montanas");
+    old.buildings.push({ id: 9999, type: "choza", zone: "valle", x: 1, y: 11, progress: 0, built: true }); // …con una choza ahí
+    const loaded = parseSave(JSON.stringify(old))!;
+    const exit = loaded.zones.valle.exits.montanas!;
+    expect(loaded.zones.valle.tiles[exit.y][exit.x]).toBe("sendero");
+    expect(loaded.buildings.some((b) => b.id === 9999)).toBe(true); // la choza no se toca
+    expect(loaded.zones.montanas).toBeTruthy();
   });
 
   it("una partida guardada antes de las zonas se migra al Valle y gana la Cueva", () => {

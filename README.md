@@ -18,7 +18,13 @@ npm run dev
 
 Abre <http://localhost:5173>.
 
-**En el celular (playtests):** con el computador y el celular en la misma red wifi,
+**Instalar en el celular (PWA, pantalla completa):** abre el link en Safari (iPhone) →
+botón Compartir → **"Agregar a pantalla de inicio"**. En Android (Chrome): menú ⋮ →
+**"Instalar app"**. Se abre sin la barra del navegador y con el modo debug activo.
+En iPhone, la app instalada guarda su partida aparte de Safari: para llevar una partida
+de un lado al otro, usa 🐞 Debug → Exportar / Importar.
+
+**En el celular, desde la red local (desarrollo):** con el computador y el celular en la misma red wifi,
 abre en el celular la dirección **Network** que muestra `npm run dev` (por ejemplo
 `http://192.168.1.20:5173`).
 
@@ -31,7 +37,7 @@ abre en el celular la dirección **Network** que muestra `npm run dev` (por ejem
 
 ## Modo debug (🐞)
 
-Aparece como pestaña en desarrollo, o en cualquier build agregando `?debug` a la URL.
+Aparece como pestaña en desarrollo, o en cualquier build agregando `?debug` a la URL (queda recordado en ese navegador; `?nodebug` lo apaga). La app instalada abre siempre con debug.
 
 - **Velocidad:** pausa, ×1, ×10, ×100.
 - **Tecnologías:** desbloquear tocando una página del Libro (ignora costos, requisitos y
@@ -64,8 +70,9 @@ En desarrollo, el motor también queda en la consola del navegador como `window.
   Cada zona tiene sus propias prioridades, y la Jefatura nunca mueve gente entre zonas.
 - **Zonas:** con Exploración se abre la **Cueva** (ocre, rocas y vetas de cobre) y con la
   Rueda las **Montañas** (vetas de estaño, piedra, madera; lo de ahí llega al 60%).
-  Tocando la entrada o el sendero se abre una ventana para **enviar o traer aldeanos**
-  (− / +) y entrar a mirar; arriba del mapa hay pestañas por zona.
+  Tocando la entrada o el sendero se abre una ventana con la **meta de adultos** de esa
+  zona (− / +), que se mantiene sola; arriba del mapa hay pestañas por zona. Construir y
+  Aldeanos muestran solo lo de la zona que estás mirando.
 - **Edad de Bronce (Era 3, 7 tecnologías):** **minas sobre las vetas** (minero), carbonera,
   horno de fundición, herrería (cobre + estaño → bronce), ladrillos y vidrio (arena de la
   orilla), Archivo con escribas, Piedras alineadas y **canales** desde el río (parcelas

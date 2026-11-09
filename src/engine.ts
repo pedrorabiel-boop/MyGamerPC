@@ -9,8 +9,21 @@ const MAX_SUBSTEP = 0.1; // segundos de juego por sub-paso
 const UI_INTERVAL_MS = 200;
 const AUTOSAVE_MS = 10_000;
 
-export const DEBUG_ENABLED =
-  import.meta.env.DEV || new URLSearchParams(location.search).has("debug");
+/**
+ * Modo debug: en desarrollo siempre. En la versión publicada se activa con ?debug y queda
+ * recordado (así funciona también en la app instalada en el celular); ?nodebug lo apaga.
+ */
+export const DEBUG_ENABLED = (() => {
+  if (import.meta.env.DEV) return true;
+  const params = new URLSearchParams(location.search);
+  try {
+    if (params.has("debug")) localStorage.setItem("mygamerpc-debug", "1");
+    if (params.has("nodebug")) localStorage.removeItem("mygamerpc-debug");
+    return localStorage.getItem("mygamerpc-debug") === "1";
+  } catch {
+    return params.has("debug");
+  }
+})();
 
 class Engine {
   s: GameState;

@@ -191,9 +191,10 @@ export const travelingTo = (s: GameState, zone: ZoneId) => s.villagers.filter((v
  * Manda un adulto de una zona a otra. Prefiere a los libres, después a quien esté en la categoría
  * con más gente. Los especialistas no se mueven (su puesto está en su edificio).
  */
-export function transferVillager(s: GameState, from: ZoneId, to: ZoneId): string | null {
+export function transferVillager(s: GameState, from: ZoneId, to: ZoneId, auto = false): string | null {
   if (!zoneUnlocked(s, to) || !zoneUnlocked(s, from)) return "Esa zona todavía no se puede explorar.";
-  const pool = adultsIn(s, from).filter((v) => v.workplace == null && !v.order);
+  // Los traslados automáticos (metas por zona) no mueven a quien tiene una tarea manual.
+  const pool = adultsIn(s, from).filter((v) => v.workplace == null && !v.order && !(auto && v.manual));
   if (!pool.length) return `No hay adultos disponibles en ${ZONE_BY_ID[from].label}.`;
   const counts = new Map<string, number>();
   for (const v of pool) counts.set(v.role ?? "", (counts.get(v.role ?? "") ?? 0) + 1);

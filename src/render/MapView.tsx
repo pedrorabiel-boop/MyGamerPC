@@ -37,11 +37,13 @@ export function MapView() {
       const buildingsG = new Graphics();
       const labels = new Container();
       const villagersG = new Graphics();
-      world.addChild(tilesG, nodesG, buildingsG, labels, overlayG, villagersG);
+      const entranceLabels = new Container();
+      world.addChild(tilesG, entranceLabels, nodesG, buildingsG, labels, overlayG, villagersG);
       app.stage.addChild(world);
 
       let ts = 32; // tamaño de casilla en píxeles
       let lastLayout = "";
+      let lastEntranceState = "";
       const labelById = new Map<number, Text>();
 
       const layout = () => {
@@ -52,9 +54,13 @@ export function MapView() {
         const key = `${sw}x${sh}:${zone}`;
         if (key === lastLayout) return;
         lastLayout = key;
-        ts = Math.floor(Math.min(sw / z.w, sh / z.h));
+        // Márgenes para que el mapa nunca quede debajo de lo que flota encima:
+        // arriba las pestañas de zona; abajo el botón del Libro y los avisos.
+        const TOP = 40, BOTTOM = 88;
+        const usableH = Math.max(100, sh - TOP - BOTTOM);
+        ts = Math.floor(Math.min(sw / z.w, usableH / z.h));
         world.x = Math.floor((sw - ts * z.w) / 2);
-        world.y = Math.floor((sh - ts * z.h) / 2);
+        world.y = TOP + Math.floor((usableH - ts * z.h) / 2);
         tilesG.clear();
         for (let y = 0; y < z.h; y++) {
           for (let x = 0; x < z.w; x++) {
@@ -84,11 +90,34 @@ export function MapView() {
           }
         }
         for (const lbl of labelById.values()) lbl.style.fontSize = ts * 0.55;
+        // Íconos de las entradas a otras zonas.
+        entranceLabels.removeChildren().forEach((c) => c.destroy());
+        for (let y = 0; y < z.h; y++) for (let x = 0; x < z.w; x++) {
+          const t = z.tiles[y][x];
+          const icon = t === "sendero" ? "⛰️" : t === "cueva" ? "🕳️" : t === "salida" ? "🏞️" : null;
+          if (!icon) continue;
+          const lbl = new Text({ text: icon, style: { fontSize: ts * 0.62 } });
+          lbl.anchor.set(0.5);
+          lbl.x = (x + 0.5) * ts;
+          lbl.y = (y + 0.45) * ts;
+          lbl.label = t;
+          entranceLabels.addChild(lbl);
+        }
+        lastEntranceState = "";
       };
 
       const draw = () => {
         const s = engine.s;
         layout();
+        // Entradas en gris mientras la zona a la que llevan está cerrada.
+        const entranceState = `${zoneUnlocked(s, "cueva")}${zoneUnlocked(s, "montanas")}`;
+        if (entranceState !== lastEntranceState) {
+          lastEntranceState = entranceState;
+          for (const c of entranceLabels.children) {
+            const open = c.label === "sendero" ? zoneUnlocked(s, "montanas") : c.label === "cueva" ? zoneUnlocked(s, "cueva") : true;
+            c.alpha = open ? 1 : 0.35;
+          }
+        }
 
         const zone = engine.ui.zone;
         const z = s.zones[zone];

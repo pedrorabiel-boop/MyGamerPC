@@ -8,6 +8,7 @@ import {
   add, canAfford, countBuilt, has, housing, isResolutionMet, pay, roleUnlocked, stageOf, storageCap, unlimited,
 } from "./economy";
 import { hasJefatura, runJefatura } from "./jefatura";
+import { maintainZoneQuotas } from "./zones";
 import { log, newVillager, rand, type Building, type GameState, type ResNode, type Villager, type ZoneId } from "./state";
 
 /** Avanza la simulación `dt` segundos de juego. Usar pasos pequeños (≤ 0,5 s). */
@@ -20,6 +21,7 @@ export function step(s: GameState, dt: number) {
   eat(s, dt);
   ageAndDie(s, dt);
   births(s, dt);
+  maintainZoneQuotas(s, dt);
   if (hasJefatura(s)) runJefatura(s, dt);
   const occ = occupancy(s);
   for (const v of s.villagers) updateVillager(s, v, dt, occ);

@@ -13,7 +13,8 @@ export function JefaturaPanel() {
   const { s, ui } = useEngine();
   const zone = ui.zone;
   const multiZone = ZONES.filter((z) => zoneUnlocked(s, z.id)).length > 1;
-  const types = specialtyTypes(s);
+  // Solo las especialidades con edificios en la zona que se está mirando.
+  const types = specialtyTypes(s).filter((type) => s.buildings.some((b) => b.built && b.type === type && b.zone === zone));
   const managedPool = zonePool(s, zone);
   const targets = zipfTargets(s, managedPool.length, zone);
   const visible = s.jefatura.priorities[zone].filter((r) => roleUnlocked(s, r));
@@ -33,7 +34,7 @@ export function JefaturaPanel() {
 
       <h4>1 · Especialidades</h4>
       {types.length === 0 ? (
-        <p className="hint">Todavía no hay edificios de especialistas (Círculo, Horno, Telar, Corral, Huerto).</p>
+        <p className="hint">{multiZone ? `No hay edificios de especialistas en ${ZONE_BY_ID[zone].label}.` : "Todavía no hay edificios de especialistas (Círculo, Horno, Telar, Corral, Huerto)."}</p>
       ) : (
         <div className="list">
           {types.map((type) => {

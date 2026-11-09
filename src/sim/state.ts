@@ -106,6 +106,8 @@ export interface GameState {
   techs: Record<string, true>;
   erasOpen: number;
   jefatura: JefaturaState;
+  zoneQuota: Partial<Record<ZoneId, number>>; // meta de adultos por zona (fuera del Valle)
+  zoneTimer: number;
   animo: number;
   stats: { births: number; deaths: number };
   log: LogEntry[];
@@ -274,6 +276,8 @@ export function createState(seed = Date.now() % 100000): GameState {
     techs: {},
     erasOpen: 1,
     jefatura: defaultJefatura(),
+    zoneQuota: {},
+    zoneTimer: 0,
     animo: 1,
     stats: { births: 0, deaths: 0 },
     log: [],
@@ -314,8 +318,18 @@ export function migrateToZones(s: GameState & { w?: number; h?: number; tiles?: 
   valle.exits.cueva = { x: 0, y: 0 };
   valle.tiles[0][0] = "cueva";
   const free = (x: number, y: number) => !s.nodes.some((n) => n.zone === "valle" && n.x === x && n.y === y) && !s.buildings.some((b) => b.zone === "valle" && b.x === x && b.y === y);
-  if (free(SENDERO.x, SENDERO.y)) valle.tiles[SENDERO.y][SENDERO.x] = "sendero";
-  valle.exits.montanas = SENDERO;
+  if (!valle.tiles.some((row) => row.includes("sendero"))) {
+    // Casilla del sendero: la de siempre o, si está ocupada, otra libre del borde.
+    const candidates = [SENDERO, { x: 0, y: 11 }, { x: 2, y: 11 }, { x: 4, y: 11 }, { x: 0, y: 8 }, { x: 0, y: 5 }, { x: 0, y: 4 }, { x: 1, y: 0 }];
+    const spot = candidates.find((c) => valle.tiles[c.y]?.[c.x] === "pasto" && free(c.x, c.y)) ?? SENDERO;
+    // Si ninguna está libre, se libera la de siempre (se quita lo que haya).
+    s.buildings = s.buildings.filter((b) => !(b.zone === "valle" && b.x === spot.x && b.y === spot.y && b.type !== "pila"));
+    s.nodes = s.nodes.filter((n) => !(n.zone === "valle" && n.x === spot.x && n.y === spot.y));
+    valle.tiles[spot.y][spot.x] = "sendero";
+  }
+  for (let y = 0; y < valle.h; y++) for (let x = 0; x < valle.w; x++) {
+    if (valle.tiles[y][x] === "sendero") valle.exits.montanas = { x, y };
+  }
   if (!s.zones.cueva) addCave(s);
   s.zones.cueva.exits = { valle: { x: 3, y: 9 } };
   if (!s.zones.montanas) addMontanas(s);

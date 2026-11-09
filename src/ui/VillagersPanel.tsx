@@ -32,7 +32,7 @@ export function VillagersPanel() {
   const children = s.villagers.filter((v) => stageOf(v) === "child").length;
   const elders = s.villagers.filter((v) => stageOf(v) === "elder").length;
   const free = adultsHere.filter(isFree).length;
-  const specialistBuildings = s.buildings.filter((b) => b.built && BUILDING_BY_ID[b.type].staff?.by === "especialista");
+  const specialistBuildings = s.buildings.filter((b) => b.built && b.zone === zone && BUILDING_BY_ID[b.type].staff?.by === "especialista");
 
   return (
     <div>

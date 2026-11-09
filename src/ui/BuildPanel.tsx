@@ -8,11 +8,18 @@ import type { GameState } from "../sim/state";
 
 export function BuildPanel({ onPick }: { onPick: () => void }) {
   const { s, ui } = useEngine();
-  const available = BUILDINGS.filter((b) => b.unlockedBy && has(s, b.unlockedBy));
   const here = (id: string) => placeableIn(s, id, ui.zone);
+  // Solo lo que se puede construir en la zona que se está mirando.
+  const available = BUILDINGS.filter((b) => b.unlockedBy && has(s, b.unlockedBy) && here(b.id));
   return (
     <div>
-      {!available.length && <p className="hint">Todavía no sabes construir nada. Estudia el Libro (Fuego, Refugio…).</p>}
+      {!available.length && (
+        <p className="hint">
+          {ui.zone === "valle"
+            ? "Todavía no sabes construir nada. Estudia el Libro (Fuego, Refugio…)."
+            : `Todavía no hay nada que se pueda construir en ${ZONE_BY_ID[ui.zone].label}.`}
+        </p>
+      )}
       <div className="list">
         {available.map((b) => {
           const ok = canAfford(s, b.cost) && here(b.id);
@@ -43,7 +50,7 @@ export function BuildPanel({ onPick }: { onPick: () => void }) {
           );
         })}
       </div>
-      <Autosuficiencia s={s} />
+      {ui.zone === "valle" && <Autosuficiencia s={s} />}
     </div>
   );
 }
