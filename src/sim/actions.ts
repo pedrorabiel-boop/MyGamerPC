@@ -2,7 +2,7 @@
 import { config } from "../config";
 import { BUILDING_BY_ID, NODE_DEFS, NODE_UPGRADE_TECH, NODE_UPGRADES, TECH_INTRO, UPGRADES, type Cost, type ResId, type Role } from "../content";
 import { TECHS, TECH_BY_ID, techCost } from "../data/tree";
-import { add, canAfford, has, isFree, pay, roleUnlocked, staffCount, stageOf, youngestFirst } from "./economy";
+import { add, canAfford, has, isFree, nodeNextUpgrade, pay, roleUnlocked, staffCount, stageOf, youngestFirst } from "./economy";
 import { changeSpecialtyTarget, hasJefatura } from "./jefatura";
 import { log, newVillager, ZONE_BY_ID, type GameState, type ResNode, type Villager, type ZoneId } from "./state";
 
@@ -56,7 +56,7 @@ export function canPlace(s: GameState, type: string, x: number, y: number, zone:
   if (def.nearWater) {
     const water = (tx: number, ty: number) => {
       const tile = z.tiles[ty]?.[tx];
-      return tile === "rio" || tile === "orilla" || s.buildings.some((b) => b.zone === zone && b.type === "canal" && b.x === tx && b.y === ty);
+      return tile === "rio" || tile === "orilla" || s.buildings.some((b) => b.zone === zone && (b.type === "canal" || b.type === "acueducto") && b.x === tx && b.y === ty);
     };
     if (![[1, 0], [-1, 0], [0, 1], [0, -1]].some(([dx, dy]) => water(x + dx, y + dy))) return false;
   }
@@ -71,8 +71,8 @@ export function place(s: GameState, type: string, x: number, y: number, zone: Zo
   const def = BUILDING_BY_ID[type];
   if (!def.unlockedBy || !has(s, def.unlockedBy)) return "Todavía no sabes construir eso.";
   if (!canPlace(s, type, x, y, zone)) {
-    if (def.onNode) return `Tiene que ir encima de: ${def.onNode === "veta" ? "una veta verde (Cueva)" : "una veta de estaño (Montañas)"}.`;
-    if (def.nearWater) return "El canal tiene que tocar el río, la orilla u otro canal.";
+    if (def.onNode) return `Tiene que ir encima de: ${def.onNode === "veta" ? "una veta verde (Cueva)" : def.onNode === "hierro" ? "unas rocas rojas (Montañas)" : "una veta de estaño (Montañas)"}.`;
+    if (def.nearWater) return "Tiene que tocar el río, la orilla, un canal o un acueducto.";
     return def.place.includes("orilla") ? "Tiene que ir en la orilla del río, en una casilla libre." : "Esa casilla no está libre.";
   }
   if (!canAfford(s, def.cost)) return "No alcanzan los materiales.";
@@ -132,10 +132,13 @@ export function startUpgrade(s: GameState, buildingId: number): string | null {
 
 // ---------- Mejoras de recursos naturales (N12) ----------
 
+export { nodeNextUpgrade };
+
 /** Por qué este recurso natural no se puede mejorar todavía (o null si se puede). */
 export function nodeUpgradeBlock(s: GameState, n: ResNode): string | null {
   const up = NODE_UPGRADES[n.type];
   if (!up) return "Esto no se puede mejorar.";
+  if (n.improved && up.next && !has(s, up.next.tech)) return `hace falta ${TECH_BY_ID[up.next.tech].name}.`;
   if (!has(s, NODE_UPGRADE_TECH)) return `hace falta 🌱 ${TECH_BY_ID[NODE_UPGRADE_TECH].name}.`;
   if (up.needs && !has(s, up.needs)) return `hace falta ${TECH_BY_ID[up.needs].name}.`;
   return null;
@@ -144,21 +147,21 @@ export function nodeUpgradeBlock(s: GameState, n: ResNode): string | null {
 export function startImproveNode(s: GameState, nodeId: number): string | null {
   const n = s.nodes.find((x) => x.id === nodeId);
   if (!n) return "No existe.";
-  const up = NODE_UPGRADES[n.type];
+  const next = nodeNextUpgrade(n);
   const block = nodeUpgradeBlock(s, n);
-  if (block || !up) return block ?? "Esto no se puede mejorar.";
-  if (n.improved || n.improving != null) return "Ya está mejorado.";
-  if (!pay(s, up.cost)) return "No alcanzan los materiales.";
+  if (block) return block;
+  if (!next || n.improving != null) return "Ya está mejorado.";
+  if (!pay(s, next.cost)) return "No alcanzan los materiales.";
   n.improving = 0;
-  log(s, `Mejora encargada: ${NODE_DEFS[n.type].name} → ${up.name}. Los constructores van para allá.`);
+  log(s, `Mejora encargada: ${NODE_DEFS[n.type].name} → ${next.name}. Los constructores van para allá.`);
   return null;
 }
 
 export function cancelImproveNode(s: GameState, nodeId: number) {
   const n = s.nodes.find((x) => x.id === nodeId);
-  const up = n ? NODE_UPGRADES[n.type] : undefined;
-  if (!n || !up || n.improving == null) return;
-  for (const [r, a] of Object.entries(up.cost)) add(s, r as ResId, a ?? 0);
+  const next = n ? nodeNextUpgrade(n) : null;
+  if (!n || !next || n.improving == null) return;
+  for (const [r, a] of Object.entries(next.cost)) add(s, r as ResId, a ?? 0);
   delete n.improving;
 }
 

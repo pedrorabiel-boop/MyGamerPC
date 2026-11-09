@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { config } from "../config";
 import { RES_BY_ID, TECH_INTRO, type ResId } from "../content";
-import { TECH_BY_ID } from "../data/tree";
+import { ERAS, TECH_BY_ID } from "../data/tree";
 import { DEBUG_ENABLED, engine, useEngine, type Tab } from "../engine";
 import { MapView } from "../render/MapView";
 import { dismissIntro, tapBook } from "../sim/actions";
@@ -85,7 +85,7 @@ export function App() {
           <div className="modal">
             <div className="modal-box">
               <h2>🏁 ¡Fin del prototipo!</h2>
-              <p>Tu tribu llegó a la <b>Edad de Bronce</b>. Hasta aquí llega esta versión.</p>
+              <p>Tu tribu llegó a la <b>{ERAS.find((e) => e.id === s.erasOpen)?.name}</b>. Hasta aquí llega esta versión.</p>
               <p className="muted">Años: {Math.floor(s.time / config.TIEMPO_POR_AÑO)} · Nacimientos: {s.stats.births} · Muertes: {s.stats.deaths}</p>
               <button className="primary" onClick={() => { s.prototypeEnded = false; engine.notify(); }}>Seguir jugando</button>
             </div>

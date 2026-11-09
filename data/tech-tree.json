@@ -1,6 +1,6 @@
 {
   "generatedFrom": "docs/01-arbol-tecnologico.md",
-  "version": "2.8 (borrador: Eras 1–3 consolidadas)",
+  "version": "2.9 (borrador: Eras 1–4 consolidadas)",
   "manifestationTypes": {
     "knowledge": "📖",
     "building": "🏗",
@@ -209,7 +209,7 @@
     {
       "name": "Fuente de poder",
       "partials": [
-        "H09",
+        "H05",
         "I08",
         "E02",
         "E04"
@@ -271,7 +271,7 @@
     {
       "name": "Sistema operativo",
       "partials": [
-        "H06",
+        "H05",
         "R12",
         "X10"
       ],
@@ -888,10 +888,44 @@
       "effect": "*(Irrigación + Arado)*. **Canales** desde el río: parcelas junto a un canal ×1,5. Arado: parcelas ×1,25. **Resuelve la comida**"
     },
     {
+      "id": "H05",
+      "name": "Filosofía y lógica",
+      "era": 4,
+      "order": 0,
+      "optional": false,
+      "requires": [
+        "B06"
+      ],
+      "requiresPopulation": null,
+      "manifestations": [
+        {
+          "type": "building",
+          "name": "Academia"
+        },
+        {
+          "type": "job",
+          "name": "Filósofo"
+        },
+        {
+          "type": "tool",
+          "name": "Piedra imán"
+        },
+        {
+          "type": "knowledge",
+          "name": null
+        }
+      ],
+      "effect": "*(Filosofía + Lógica + Magnetita)*. **Academia** con filósofos: mucha Comprensión (los ancianos también sirven). **Raíz del software** (lógica) y del magnetismo: la piedra imán de Tales. Filósofos que caminan en círculos: *\"Si p entonces GPU.\"*",
+      "advancesPcPieces": [
+        "Fuente de poder",
+        "Sistema operativo"
+      ]
+    },
+    {
       "id": "H01",
       "name": "Hierro",
       "era": 4,
-      "order": 0,
+      "order": 1,
       "optional": false,
       "requires": [
         "B03",
@@ -901,7 +935,15 @@
       "manifestations": [
         {
           "type": "building",
-          "name": "Forja"
+          "name": "Mina de hierro, Forja"
+        },
+        {
+          "type": "job",
+          "name": "Herrero de hierro"
+        },
+        {
+          "type": "resource",
+          "name": "Mineral de hierro"
         },
         {
           "type": "resource",
@@ -912,120 +954,38 @@
           "name": "Herram. de hierro"
         }
       ],
-      "effect": "Metal barato y fuerte. Consume mucho carbón vegetal",
+      "effect": "*(Hierro + Silvicultura)*. Mina sobre las rocas rojas de las Montañas y Forja (mineral + carbón → hierro). **Herramientas de hierro: todos trabajan más rápido.** Con N12, la Arboleda sube a **Plantación**. *\"Plantar árboles para quemarlos. El ciclo de la vida.\"*",
       "advancesPcPieces": [
         "Gabinete"
       ]
     },
     {
       "id": "H02",
-      "name": "Geometría",
+      "name": "Geometría y arquitectura",
       "era": 4,
-      "order": 1,
+      "order": 2,
       "optional": false,
       "requires": [
         "B06"
       ],
       "requiresPopulation": null,
       "manifestations": [
+        {
+          "type": "building",
+          "name": "Grúa"
+        },
         {
           "type": "tool",
           "name": "Escuadra y compás"
-        },
-        {
-          "type": "knowledge",
-          "name": null
         }
       ],
-      "effect": "**Los constructores van más rápido.** Base de la matemática"
-    },
-    {
-      "id": "H03",
-      "name": "Arco y arquitectura",
-      "era": 4,
-      "order": 2,
-      "optional": true,
-      "requires": [
-        "H02",
-        "B07"
-      ],
-      "requiresPopulation": null,
-      "manifestations": [
-        {
-          "type": "building",
-          "name": "Templo, edificios grandes"
-        }
-      ],
-      "effect": "**Amplía la grilla del Valle** (por ejemplo, de 8×12 a 10×16) y permite edificios de varias casillas"
-    },
-    {
-      "id": "H04",
-      "name": "Acueducto",
-      "era": 4,
-      "order": 3,
-      "optional": true,
-      "requires": [
-        "H03",
-        "B09"
-      ],
-      "requiresPopulation": null,
-      "manifestations": [
-        {
-          "type": "building",
-          "name": "Acueducto (casilla por casilla)"
-        }
-      ],
-      "effect": "**Lleva agua lejos del río**: canales y parcelas en cualquier parte"
-    },
-    {
-      "id": "H05",
-      "name": "Filosofía",
-      "era": 4,
-      "order": 4,
-      "optional": false,
-      "requires": [
-        "B06"
-      ],
-      "requiresPopulation": null,
-      "manifestations": [
-        {
-          "type": "job",
-          "name": "Filósofo"
-        },
-        {
-          "type": "building",
-          "name": "Academia"
-        }
-      ],
-      "effect": "Comprensión ↑↑. Filósofos que caminan en círculos discutiendo: *\"Si un árbol cae en el bosque y nadie lo convierte en carbón…\"*"
-    },
-    {
-      "id": "H06",
-      "name": "Lógica",
-      "era": 4,
-      "order": 5,
-      "optional": false,
-      "requires": [
-        "H05",
-        "H02"
-      ],
-      "requiresPopulation": null,
-      "manifestations": [
-        {
-          "type": "knowledge",
-          "name": null
-        }
-      ],
-      "effect": "**Raíz del software.** Aumenta la Comprensión de la Academia. Globos de diálogo con silogismos absurdos: *\"Si p entonces GPU.\"*",
-      "advancesPcPieces": [
-        "Sistema operativo"
-      ]
+      "effect": "*(Geometría + Arco y arquitectura + Palanca y polea)*. **Los constructores van más rápido**, la **Grúa** acelera las obras vecinas y **el Valle crece** (8×12 → 8×16). Base de la matemática"
     },
     {
       "id": "H07",
-      "name": "Moneda",
+      "name": "Mercado",
       "era": 4,
-      "order": 6,
+      "order": 3,
       "optional": false,
       "requires": [
         "B04",
@@ -1034,21 +994,21 @@
       "requiresPopulation": null,
       "manifestations": [
         {
-          "type": "resource",
-          "name": "Monedas"
+          "type": "building",
+          "name": "Mercado"
         },
         {
-          "type": "institution",
-          "name": null
+          "type": "job",
+          "name": "Mercader"
         }
       ],
-      "effect": "La Tienda del diablo pasa a funcionar con **Monedas**. Se pueden **comprar pactos**"
+      "effect": "*(antes Moneda)*. El mercader **cambia 3 de lo que más sobra por 1 de lo que más falta** (o del recurso en 🎯). Raíz de los Gremios y la Banca"
     },
     {
       "id": "H08",
       "name": "Vidrio soplado",
       "era": 4,
-      "order": 7,
+      "order": 4,
       "optional": false,
       "requires": [
         "B07",
@@ -1057,114 +1017,27 @@
       "requiresPopulation": null,
       "manifestations": [
         {
-          "type": "building",
-          "name": "Vidriería"
-        },
-        {
-          "type": "job",
-          "name": "Vidriero"
-        },
-        {
           "type": "resource",
           "name": "Vidrio claro"
+        },
+        {
+          "type": "tool",
+          "name": "Caña de soplar"
         }
       ],
-      "effect": "Lentes, tubos, matraces y (mucho después) pantallas",
+      "effect": "La vidriería hace **vidrio claro** (vidrio + carbón). Lentes, tubos, matraces y (mucho después) pantallas",
       "advancesPcPieces": [
         "Monitor"
       ]
     },
     {
-      "id": "H09",
-      "name": "Magnetita",
-      "era": 4,
-      "order": 8,
-      "optional": false,
-      "requires": [
-        "B01",
-        "H05"
-      ],
-      "requiresPopulation": null,
-      "manifestations": [
-        {
-          "type": "tool",
-          "name": "Piedra imán"
-        },
-        {
-          "type": "resource",
-          "name": "Magnetita"
-        }
-      ],
-      "effect": "Los aldeanos juegan con ella y eso da un poco de Comprensión. Raíz del magnetismo y la electricidad",
-      "advancesPcPieces": [
-        "Fuente de poder"
-      ]
-    },
-    {
-      "id": "H10",
-      "name": "Medicina clásica",
-      "era": 4,
-      "order": 9,
-      "optional": true,
-      "requires": [
-        "N11",
-        "H05"
-      ],
-      "requiresPopulation": null,
-      "manifestations": [
-        {
-          "type": "building",
-          "name": "Casa de salud"
-        }
-      ],
-      "effect": "**+10 años de vida** (50 → 60)"
-    },
-    {
-      "id": "H11",
-      "name": "Palanca y polea",
-      "era": 4,
-      "order": 10,
-      "optional": false,
-      "requires": [
-        "H02",
-        "P02"
-      ],
-      "requiresPopulation": null,
-      "manifestations": [
-        {
-          "type": "building",
-          "name": "Grúa"
-        }
-      ],
-      "effect": "**Acelera las construcciones** a su alrededor (adyacencia)"
-    },
-    {
-      "id": "H12",
-      "name": "Silvicultura",
-      "era": 4,
-      "order": 11,
-      "optional": true,
-      "requires": [
-        "H01",
-        "N12"
-      ],
-      "requiresPopulation": null,
-      "manifestations": [
-        {
-          "type": "building",
-          "name": "Bosque plantado"
-        }
-      ],
-      "effect": "**Rompe el techo natural de la madera:** la Arboleda (N12) pasa a **Plantación**, segundo nivel. *\"Plantar árboles para quemarlos. El ciclo de la vida.\"*"
-    },
-    {
       "id": "H13",
       "name": "Engranajes",
       "era": 4,
-      "order": 12,
+      "order": 5,
       "optional": false,
       "requires": [
-        "H11",
+        "H02",
         "B03"
       ],
       "requiresPopulation": null,
@@ -1178,7 +1051,27 @@
           "name": "Engranajes"
         }
       ],
-      "effect": "**Noria**: bono de adyacencia fuerte a parcelas y canales. Primera máquina con engranajes; adelanta al Molino"
+      "effect": "**Noria** junto al río o a un canal: las parcelas vecinas rinden mucho más. Primera máquina con engranajes; adelanta al Molino"
+    },
+    {
+      "id": "H04",
+      "name": "Acueducto y medicina",
+      "era": 4,
+      "order": 6,
+      "optional": true,
+      "requires": [
+        "H02",
+        "B09",
+        "N11"
+      ],
+      "requiresPopulation": null,
+      "manifestations": [
+        {
+          "type": "building",
+          "name": "Acueducto, Casa de salud"
+        }
+      ],
+      "effect": "*(Acueducto + Medicina clásica)*. **Canales lejos del río** y **Casa de salud: +10 años de vida** (50 → 60). La salud pública romana"
     },
     {
       "id": "M01",
@@ -1374,7 +1267,7 @@
       "order": 8,
       "optional": false,
       "requires": [
-        "H09"
+        "H05"
       ],
       "requiresPopulation": null,
       "manifestations": [
@@ -1416,7 +1309,7 @@
       "order": 10,
       "optional": true,
       "requires": [
-        "H03",
+        "H02",
         "H08"
       ],
       "requiresPopulation": null,
@@ -1543,7 +1436,7 @@
       "optional": false,
       "requires": [
         "R04",
-        "H11"
+        "H13"
       ],
       "requiresPopulation": null,
       "manifestations": [
@@ -1601,7 +1494,7 @@
       "requires": [
         "R02",
         "H08",
-        "H09"
+        "H05"
       ],
       "requiresPopulation": null,
       "manifestations": [
@@ -1680,7 +1573,7 @@
       "order": 11,
       "optional": false,
       "requires": [
-        "H06",
+        "H05",
         "R04"
       ],
       "requiresPopulation": null,
@@ -1907,7 +1800,7 @@
       "optional": false,
       "requires": [
         "I08",
-        "H09",
+        "H05",
         "R05"
       ],
       "requiresPopulation": null,
@@ -2261,7 +2154,7 @@
       "optional": false,
       "requires": [
         "R12",
-        "H06"
+        "H05"
       ],
       "requiresPopulation": null,
       "manifestations": [
@@ -2612,7 +2505,7 @@
       "order": 12,
       "optional": false,
       "requires": [
-        "H09",
+        "H05",
         "X01",
         "E05"
       ],

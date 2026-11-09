@@ -1,4 +1,4 @@
-import type { ResId } from "../content";
+import { RES_BY_ID, type ResId } from "../content";
 import { amount, has } from "../sim/economy";
 import type { GameState } from "../sim/state";
 
@@ -28,4 +28,13 @@ export function mdToHtml(text: string): string {
     .replace(/[&<>]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" }[c]!))
     .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
     .replace(/\*(.+?)\*/g, "<em>$1</em>");
+}
+
+/** Lo que falta para pagar un costo, como "🪵2 🪨1" (vacío si alcanza). */
+export function missingText(s: GameState, cost: Partial<Record<ResId, number>>): string {
+  return Object.entries(cost)
+    .map(([r, n]) => [r as ResId, Math.ceil((n ?? 0) - amount(s, r as ResId))] as const)
+    .filter(([, m]) => m > 0)
+    .map(([r, m]) => `${RES_BY_ID[r].icon}${m}`)
+    .join(" ");
 }

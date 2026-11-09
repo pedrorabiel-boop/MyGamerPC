@@ -28,6 +28,7 @@ export function parseSave(text: string): GameState | null {
     s.resolved ??= {};
     s.introQueue ??= [];
     s.focus ??= null;
+    s.applied ??= {};
     s.jefatura ??= defaultJefatura();
     migratePriorities(s.jefatura);
     migrateToZones(s);

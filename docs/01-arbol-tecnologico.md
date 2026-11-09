@@ -10,7 +10,7 @@ Este documento es la **columna vertebral** del juego. Cada tecnología es un nod
 oficio, recurso, etc. Primero fijamos el árbol completo; después diseñamos cada nodo
 en detalle.
 
-**Versión:** 2.8 (borrador: Eras 1–3 consolidadas) · 11 eras · 119 tecnologías · 13 piezas de PC
+**Versión:** 2.9 (borrador: Eras 1–4 consolidadas) · 11 eras · 113 tecnologías · 13 piezas de PC
 (ver el [historial de cambios](#9-historial-de-cambios) al final)
 
 ---
@@ -59,7 +59,7 @@ porque ahora toda la tribu lee a la vez.
   | Tecnología | Esperanza de vida | Tiempo real |
   |---|---|---|
   | *(inicio)* | 50 años | 5 min |
-  | H10 Medicina clásica | 60 años | 6 min |
+  | H04 Acueducto y medicina | 60 años | 6 min |
   | R11 Higiene y vacunas | 70 años | 7 min |
   | I13 Alcantarillado | 80 años | 8 min |
 
@@ -237,8 +237,8 @@ tecnologías nuevas. Por eso cada recurso básico tiene un **nivel máximo**: qu
 | Comida | B09 Arado e irrigación | 4 parcelas **junto a un canal** + 1 granero | 8 agricultores | 3 |
 | Ramas, piedra, fibras | B04 Rueda | 1 granero + 1 depósito *(edificio por definir)* | 2 recolectores de cada uno | 3 |
 | Arcilla, cerámica | Alfarería Nv2 (torno) | 2 hornos | 2 alfareros + 2 arcilleros | 3–4 |
-| Madera | H12 Silvicultura | 3 bosques plantados | 3 leñadores | 4 |
-| Carbón vegetal | H12 Silvicultura | 2 carboneras | 2 carboneros | 4–5 |
+| Madera | H01 Hierro (Plantación) | 3 plantaciones | 3 leñadores | 4 |
+| Carbón vegetal | H01 Hierro (Plantación) | 2 carboneras | 2 carboneros | 4–5 |
 | Lana, pieles, tela | I03 Fábrica | Fábrica textil | por definir | 7 |
 | Cobre, estaño, bronce, hierro | I03 Fábrica + I05 Ferrocarril | Fábricas + estación | por definir | 7 |
 
@@ -264,7 +264,7 @@ cambia cómo se distribuye la ciudad:
   que un aldeano cualquiera. Mientras no haya constructores, cualquier aldeano libre
   ayuda.
 - **H02 Geometría** les da ✋ escuadra y compás: los constructores van todavía más rápido.
-- **H11 Palanca y polea** permite la 🏗️ **Grúa**, que acelera las construcciones a su
+- **H02 Geometría y arquitectura** permite la 🏗️ **Grúa**, que acelera las construcciones a su
   alrededor (bono por adyacencia).
 
 ### Mejoras de edificios
@@ -301,8 +301,8 @@ de ≈9 a ≈36 por minuto con los 3 barreros, y un ladrillero consume 24.
 
 Los multiplicadores son perillas (`MEJORA_REGEN_MINERAL`, `MEJORA_REGEN_PLANTA`,
 `MEJORA_REGEN_BAYAS`, `MEJORA_RESERVA`). **Más adelante (sin implementar):** un segundo
-nivel por línea — la Arboleda pasa a **Plantación** con H12 Silvicultura, y la Cantera
-podría mejorar con el Hierro.
+nivel por línea — la Arboleda pasa a **Plantación** con H01 Hierro, y la Cantera
+podría mejorar más adelante.
 
 Si un recurso silvestre se está agotando, el menú del 🎯 lo avisa: más gente no ayuda,
 hay que mejorar los depósitos.
@@ -319,7 +319,8 @@ adelante, I12 Escuela pública sigue esta misma línea.
 
 > ⚠️ **Pospuesto (playtest 3):** la Tienda del diablo no se implementa por ahora y
 > puede que no se implemente nunca. Si se descarta, las Monedas, la Banca y los pactos
-> necesitan otro diseño.
+> necesitan otro diseño. **Desde la consolidación de la Era 4, H07 es el Mercado**
+> (trueque entre recursos, sin Monedas); lo de abajo queda como diseño de referencia.
 
 - **B04 Comercio** abre la 🏗️ **Tienda del diablo**, un kiosco infernal abierto 24/7
   en el Valle. Al principio funciona por **trueque**: vendes lo que te sobra y compras
@@ -590,37 +591,37 @@ Las 13 tecnologías originales se fusionaron en **7** (playtest 3).
 | B09 | Arado e irrigación | N01, N02, B03 | 🏗️ Canal · ✋ Arado | *(Irrigación + Arado)*. **Canales** desde el río: parcelas junto a un canal ×1,5. Arado: parcelas ×1,25. **Resuelve la comida** |
 
 ### Era 4 — Hierro / Clásica
-*Recursos nuevos: Mineral de hierro, Hierro, Monedas, Vidrio claro, Magnetita, Engranajes*
+*Recursos nuevos: Mineral de hierro, Hierro, Vidrio claro, Engranajes*
 > *"Su aldea ha sido reclasificada como 'ciudad-estado'. Esto no cambia nada, pero
 > suena mejor en los informes."*
 
-La aldea pasa a ser **ciudad**: hierro, filosofía, dinero y edificios grandes.
+La aldea pasa a ser **ciudad**: hierro, filosofía, comercio y obras grandes.
 
 #### Mecánicas que introduce esta era
 
-- **Cadena del hierro:** Mineral de hierro (las rocas rojas de las Montañas) + Carbón
-  vegetal → **Forja** → Hierro. Esto **duplica la demanda de carbón vegetal** y presiona
-  el techo natural de la madera, que se resuelve con **H12 Silvicultura**.
-- **Monedas:** la Tienda del diablo pasa del trueque a las Monedas, y con ellas se
-  compran pactos (ver *Monedas y la Tienda del diablo*).
-- **Urbanismo:** la grilla del Valle crece (H03).
-- **Agua lejos del río:** el Acueducto extiende el puzzle de los canales a todo el mapa.
+- **Cadena del hierro:** las **rocas rojas** de las Montañas se explotan con una **Mina
+  de hierro**; la **Forja** convierte mineral de hierro + carbón vegetal en hierro. Esto
+  **duplica la demanda de carbón vegetal** y presiona la madera: con N12, las Arboledas
+  pueden subir a **Plantación** (segundo nivel).
+- **Mercado (en lugar de las Monedas):** un mercader cambia lo que sobra por lo que
+  falta. La Tienda del diablo sigue pospuesta.
+- **Urbanismo:** el Valle **crece hacia abajo** (de 8×12 a 8×16): el río y la orilla
+  siguen donde están. Todos los mapas ocupan el ancho de la pantalla y se recorren con
+  **scroll vertical**, con margen arriba y abajo para que el HUD no tape nada.
+- **Agua lejos del río (opcional):** el Acueducto extiende el puzzle de los canales a
+  todo el mapa.
+
+Las 13 tecnologías originales se fusionaron en **7** (playtest 7).
 
 | ID | Tecnología | Requiere | Se manifiesta como | Qué aporta |
 |---|---|---|---|---|
-| H01 | Hierro | B03, B07 | 🏗️ Forja · 📦 Hierro · ✋ Herram. de hierro | Metal barato y fuerte. Consume mucho carbón vegetal |
-| H02 | Geometría | B06 | ✋ Escuadra y compás · 📖 | **Los constructores van más rápido.** Base de la matemática |
-| H03 | Arco y arquitectura 🌿 | H02, B07 | 🏗️ Templo, edificios grandes | **Amplía la grilla del Valle** (por ejemplo, de 8×12 a 10×16) y permite edificios de varias casillas |
-| H04 | Acueducto 🌿 | H03, B09 | 🏗️ Acueducto (casilla por casilla) | **Lleva agua lejos del río**: canales y parcelas en cualquier parte |
-| H05 | Filosofía | B06 | 👤 Filósofo · 🏗️ Academia | Comprensión ↑↑. Filósofos que caminan en círculos discutiendo: *"Si un árbol cae en el bosque y nadie lo convierte en carbón…"* |
-| H06 | Lógica | H05, H02 | 📖 | **Raíz del software.** Aumenta la Comprensión de la Academia. Globos de diálogo con silogismos absurdos: *"Si p entonces GPU."* |
-| H07 | Moneda | B04, B03 | 📦 Monedas · 🏛️ | La Tienda del diablo pasa a funcionar con **Monedas**. Se pueden **comprar pactos** |
-| H08 | Vidrio soplado | B07, H01 | 🏗️ Vidriería · 👤 Vidriero · 📦 Vidrio claro | Lentes, tubos, matraces y (mucho después) pantallas |
-| H09 | Magnetita | B01, H05 | ✋ Piedra imán · 📦 Magnetita | Los aldeanos juegan con ella y eso da un poco de Comprensión. Raíz del magnetismo y la electricidad |
-| H10 | Medicina clásica 🌿 | N11, H05 | 🏗️ Casa de salud | **+10 años de vida** (50 → 60) |
-| H11 | Palanca y polea | H02, P02 | 🏗️ Grúa | **Acelera las construcciones** a su alrededor (adyacencia) |
-| H12 | Silvicultura 🌿 | H01, N12 | 🏗️ Bosque plantado | **Rompe el techo natural de la madera:** la Arboleda (N12) pasa a **Plantación**, segundo nivel. *"Plantar árboles para quemarlos. El ciclo de la vida."* |
-| H13 | Engranajes | H11, B03 | 🏗️ Noria · 📦 Engranajes | **Noria**: bono de adyacencia fuerte a parcelas y canales. Primera máquina con engranajes; adelanta al Molino |
+| H05 | Filosofía y lógica | B06 | 🏗️ Academia · 👤 Filósofo · ✋ Piedra imán · 📖 | *(Filosofía + Lógica + Magnetita)*. **Academia** con filósofos: mucha Comprensión (los ancianos también sirven). **Raíz del software** (lógica) y del magnetismo: la piedra imán de Tales. Filósofos que caminan en círculos: *"Si p entonces GPU."* |
+| H01 | Hierro | B03, B07 | 🏗️ Mina de hierro, Forja · 👤 Herrero de hierro · 📦 Mineral de hierro, Hierro · ✋ Herram. de hierro | *(Hierro + Silvicultura)*. Mina sobre las rocas rojas de las Montañas y Forja (mineral + carbón → hierro). **Herramientas de hierro: todos trabajan más rápido.** Con N12, la Arboleda sube a **Plantación**. *"Plantar árboles para quemarlos. El ciclo de la vida."* |
+| H02 | Geometría y arquitectura | B06 | 🏗️ Grúa · ✋ Escuadra y compás | *(Geometría + Arco y arquitectura + Palanca y polea)*. **Los constructores van más rápido**, la **Grúa** acelera las obras vecinas y **el Valle crece** (8×12 → 8×16). Base de la matemática |
+| H07 | Mercado | B04, B03 | 🏗️ Mercado · 👤 Mercader | *(antes Moneda)*. El mercader **cambia 3 de lo que más sobra por 1 de lo que más falta** (o del recurso en 🎯). Raíz de los Gremios y la Banca |
+| H08 | Vidrio soplado | B07, H01 | 📦 Vidrio claro · ✋ Caña de soplar | La vidriería hace **vidrio claro** (vidrio + carbón). Lentes, tubos, matraces y (mucho después) pantallas |
+| H13 | Engranajes | H02, B03 | 🏗️ Noria · 📦 Engranajes | **Noria** junto al río o a un canal: las parcelas vecinas rinden mucho más. Primera máquina con engranajes; adelanta al Molino |
+| H04 | Acueducto y medicina 🌿 | H02, B09, N11 | 🏗️ Acueducto, Casa de salud | *(Acueducto + Medicina clásica)*. **Canales lejos del río** y **Casa de salud: +10 años de vida** (50 → 60). La salud pública romana |
 
 ### Era 5 — Medieval
 *Recursos nuevos: Papel, Acero (caro), Lentes*
@@ -649,9 +650,9 @@ saber (universidad, gremios).
 | M06 | Reloj mecánico | H13, H01 | 🏗️ Torre del reloj · 👤 Relojero | **Bono de productividad en un radio**: los edificios cercanos "trabajan con horario". *"Primer reloj de CPU: 1 Hz."* |
 | M07 | Lentes | H08, H02 | ✋ Anteojos · 📦 Lentes | **Los ancianos siguen trabajando en oficios de precisión.** Raíz de la óptica y la fotolitografía |
 | M08 | Alquimia | H08, B02, H05 | 👤 Alquimista · 🏗️ Laboratorio | Intentan hacer oro: **de vez en cuando generan Monedas**. Explosiones cómicas que dañan el laboratorio. Comprensión. Precursora de la química. Diablo: *"Por fin alguien con iniciativa."* |
-| M09 | Brújula | H09 | ✋ Brújula | **Abre la zona Tierras lejanas** |
+| M09 | Brújula | H05 | ✋ Brújula | **Abre la zona Tierras lejanas** |
 | M10 | Acero de crisol | H01, M08 | 📦 Acero · ✋ Herram. de acero | Acero artesanal y caro. Herramientas de acero: productividad ↑ |
-| M11 | Catedral 🌿 | H03, H08 | 🏗️ Catedral (muy grande) | **Proyecto de varias generaciones** (unos 30 min reales) con vitrales. Bono permanente y fuerte al Ánimo. La Crónica registra quién puso la primera piedra y quién la última. *"La terminarán tus tataranietos. Literalmente."* |
+| M11 | Catedral 🌿 | H02, H08 | 🏗️ Catedral (muy grande) | **Proyecto de varias generaciones** (unos 30 min reales) con vitrales. Bono permanente y fuerte al Ánimo. La Crónica registra quién puso la primera piedra y quién la última. *"La terminarán tus tataranietos. Literalmente."* |
 
 ### Era 6 — Renacimiento / Científica
 *Recursos nuevos: Libros, Ácidos, Sales, Químicos*
@@ -674,14 +675,14 @@ saber (universidad, gremios).
 | R02 | Método científico | R01, M04, M08 | 👤 Científico · 📖 | **Hito.** Los alquimistas se reconvierten en químicos y se acaba su producción de Monedas: *"La ciencia ha demostrado que el oro no se fabrica. El Departamento está decepcionado."* |
 | R03 | Química | R02, M08 | 🏗️ Laboratorio · 👤 Químico · 📦 Ácidos, Sales | Base de los materiales modernos |
 | R04 | Cálculo | R02, H02 | 📖 | Física, ingeniería y gráficos 3D (mucho después) |
-| R05 | Física clásica | R04, H11 | 📖 | **Molinos ×1,5.** Le cae una manzana a Isaac Manzana (si está vivo, aparece como genio) |
+| R05 | Física clásica | R04, H13 | 📖 | **Molinos ×1,5.** Le cae una manzana a Isaac Manzana (si está vivo, aparece como genio) |
 | R06 | Telescopio y microscopio | M07, R02 | 🏗️ Observatorio | Comprensión ↑ y descubrimiento de los gérmenes (se ven sobre los aldeanos, como chiste) |
 | R07 | Calculadora mecánica | M06, R04 | 🏗️ Calculadora de engranajes | **Abre el panel de estadísticas.** *"El primer computador. Solo suma. Mal. Pero suma."* |
-| R08 | Electricidad estática | R02, H08, H09 | ✋ Botella de Leyden | Aldeanos con el pelo de punta. Raíz de la electricidad |
+| R08 | Electricidad estática | R02, H08, H05 | ✋ Botella de Leyden | Aldeanos con el pelo de punta. Raíz de la electricidad |
 | R09 | Pararrayos 🌿 | R08, H01 | 🏗️ Pararrayos | Protege del evento "rayo" |
 | R10 | Banca 🌿 | H07, R01 | 🏗️ Banco del Departamento · 🏛️ | **Interés pasivo sobre las Monedas guardadas**: ahorrar o gastar en pactos. *"Tasa de interés competitiva. Tasa de condenación: también."* |
 | R11 | Higiene y vacunas | R06, R03 | 🏗️ Hospital | **+10 años de vida** (60 → 70). Mortalidad ↓↓↓. Explosión demográfica. **Necesaria para la Sala limpia** |
-| R12 | Sistema binario | H06, R04 | 📖 | *"Solo dos números. Revolucionario."* |
+| R12 | Sistema binario | H05, R04 | 📖 | *"Solo dos números. Revolucionario."* |
 
 ### Era 7 — Industrial
 *Recursos nuevos: Carbón, Acero industrial, Petróleo, Energía (vapor), Tela de lujo, Tarjetas perforadas*
@@ -714,7 +715,7 @@ Cambia la **escala**: miles de habitantes, energía de vapor y fábricas.
 | I06 | Telar de tarjetas | N02, I03, R07 | 🏗️ Telar programable · 📦 Tarjetas perforadas, Tela de lujo | **Tela de lujo** que se vende cara en la Tienda del diablo. *"Primer programa de la historia: un estampado de flores."* |
 | I07 | Máquina analítica | I06, R07, R12 | 🏗️ Máquina analítica · ⚙️ | **Cuotas automáticas óptimas**: el juego calcula las cuotas de cada oficio según la demanda. *"En la realidad nunca se terminó. Aquí sí. Tarda 3 días. Se equivoca."* |
 | I08 | Pila voltaica | R08, R03 | ✋ Pila · 📦 Baterías | Primera electricidad continua (prerrequisito) |
-| I09 | Electromagnetismo | I08, H09, R05 | 📖 | La electricidad mueve cosas (prerrequisito) |
+| I09 | Electromagnetismo | I08, H05, R05 | 📖 | La electricidad mueve cosas (prerrequisito) |
 | I10 | Máquinas herramienta | I02, I04 | 🏗️ Taller mecánico · 👤 Maquinista | Piezas de precisión |
 | I11 | Petróleo | I01, R03 (+ yacimiento) | 🏗️ Pozo petrolero (Tierras lejanas) · 📦 Petróleo | Se acumula en esta era **como pista**: se usa recién con la Refinería (Era 8). Raíz del plástico |
 | I12 | Escuela pública 🌿 | R01 + pob. | 🏗️ Escuela | Los niños estudian (dan Comprensión) y entran a su primer oficio **sin período de aprendizaje** |
@@ -753,7 +754,7 @@ materiales del PC**.
 | E09 | Plásticos | E08 | 🏗️ Planta de plásticos · 📦 Plástico | Gabinete, periféricos y placas |
 | E10 | Tubo de vacío | E03, I10 | 📦 Válvulas | Primera electrónica |
 | E11 | Radio 🌿 | E10, I09 | 🏗️ Antena | Música: Ánimo ↑ |
-| E12 | Álgebra de Boole | R12, H06 | 📖 | La lógica se vuelve circuito |
+| E12 | Álgebra de Boole | R12, H05 | 📖 | La lógica se vuelve circuito |
 | E13 | Aluminio | E01, R03 | 📦 Aluminio | Disipadores |
 | E14 | Rayos catódicos 🌿 | E10, H08 | 🖥️ (avance del Monitor) | **Primer avance visible del Monitor**: una pantallita CRT verde que se enciende en la silueta |
 
@@ -799,7 +800,7 @@ del juego.
 | X10 | Lenguajes de programación | X01, E12 | 👤 Programador · 🏗️ Oficina · 📦 Código | Los programadores producen **Código** (y algo de Comprensión: último escalón de la escalera de pensadores). *"Escribió 10.000 líneas. 9.000 son comentarios pidiendo perdón."* |
 | X11 | Televisión 🌿 | E14, E11 | 🏗️ Antena de TV | Ánimo ↑↑ (y productividad un poco ↓, chiste) |
 | X12 | Refrigeración activa | R05, E05 | 📦 Ventiladores | Cooler del PC. **Reduce las fallas de la computadora** mientras haya válvulas |
-| X13 | Almacenamiento magnético | H09, X01, E05 | 📦 Cinta, disco | **Progreso offline al 100%** (antes 50%): *"respaldo automático"* |
+| X13 | Almacenamiento magnético | H05, X01, E05 | 📦 Cinta, disco | **Progreso offline al 100%** (antes 50%): *"respaldo automático"* |
 | X14 | Redes de computadoras | X01, E07 | 🏗️ Nodo de red | **Mapa general**: construir y gestionar cualquier zona sin entrar. Raíz de Internet |
 
 ### Era 10 — Digital
@@ -915,13 +916,13 @@ silueta existe en pantalla, aunque esté vacía.
 | Pieza | Avances parciales (en orden) | Se completa con |
 |---|---|---|
 | **Gabinete** | H01 Hierro (armazón) → I04 Acero industrial (chapa) → E09 Plásticos (frente) | G01 Gabinete con vidrio templado |
-| **Fuente de poder** | H09 Magnetita (imán) → I08 Pila voltaica → E02 Cable de cobre → E04 Corriente alterna | D10 Fuente conmutada |
+| **Fuente de poder** | H05 Filosofía (piedra imán) → I08 Pila voltaica → E02 Cable de cobre → E04 Corriente alterna | D10 Fuente conmutada |
 | **Placa madre** | B02 Fundición de cobre → E02 Cable de cobre → X06 Circuito impreso | D11 Placa madre multicapa |
 | **CPU** | B07 Ladrillo y vidrio (arena) → X03 Silicio metalúrgico → X05 Transistor → X09 Circuito integrado | D01 Microprocesador |
 | **GPU** | R04 Cálculo (la matemática de los gráficos) → X09 Circuito integrado → D05 Gráficos 3D | D06 GPU |
 | **RAM** | N09 Conteo (recordar números) → B06 Escritura (memoria externa) → X09 Circuito integrado | D02 Memoria DRAM |
 | **Almacenamiento** | B06 Escritura → M03 Papel → X13 Almacenamiento magnético | D03 Memoria flash |
-| **Sistema operativo** | H06 Lógica → R12 Sistema binario → X10 Lenguajes de programación | D04 Sistema operativo |
+| **Sistema operativo** | H05 Filosofía y lógica → R12 Sistema binario → X10 Lenguajes de programación | D04 Sistema operativo |
 | **Teclado y mouse** | B06 Escritura (letras) → R01 Imprenta (tipos móviles = teclas) → E09 Plásticos → D08 LED | D13 Periféricos |
 | **Monitor** | B07 Ladrillo y vidrio → H08 Vidrio soplado → E14 Rayos catódicos 🌿 (CRT verde) → D07 Pantalla LCD | G02 Monitor gamer |
 | **Refrigeración** | M01 Molino de agua (aspas = ventilador) → E13 Aluminio (disipador) → X12 Refrigeración activa → G03 Pasta térmica | G04 Disipador y cooler |
@@ -973,7 +974,7 @@ flowchart LR
   B04[Rueda] --> B03
   B02 --> B03[Bronce] --> H01[Hierro] --> M10[Acero de crisol]
   B02 --> B07[Vidrio] --> H08[Vidrio soplado] --> M07[Lentes]
-  B06 --> H05[Filosofía] --> H06[Lógica] --> R12[Binario] --> E12[Boole]
+  B06 --> H05[Filosofía y lógica] --> R12[Binario] --> E12[Boole]
   H05 --> M04[Universidad] --> R02[Método científico]
   R02 --> R03[Química]
   R02 --> R04[Cálculo] --> R05[Física]
@@ -1042,6 +1043,12 @@ sociedad y al final se construye el PC.
 ---
 
 ## 9. Historial de cambios
+
+### v2.9 (borrador) — Era 4 consolidada
+- **13 → 7 tecnologías:** Filosofía y lógica (+ Magnetita), Hierro (+ Silvicultura: Plantación), Geometría y arquitectura (+ Arco, + Palanca y polea), Mercado, Vidrio soplado, Engranajes y Acueducto y medicina (🌿).
+- **H07 Moneda → Mercado**: trueque de lo que sobra por lo que falta, sin Monedas (la Tienda sigue pospuesta).
+- **El Valle crece hacia abajo** (8×16) con H02, y todos los mapas pasan a ocupar el ancho de la pantalla con scroll vertical.
+- Requisitos de eras siguientes reapuntados: H06/H09 → H05, H03/H11 → H02 (Física clásica → H13), H10 → H04, H12 → H01.
 
 ### v2.8 (borrador) — Playtest 7: mejorar los recursos naturales
 - La arcilla quedaba siempre en 0: con 3 depósitos que se regeneran ≈9 por minuto en total, más gente no ayudaba.

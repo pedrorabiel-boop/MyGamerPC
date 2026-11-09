@@ -52,6 +52,15 @@ export const config = {
   MEJORA_REGEN_BAYAS: 2, // huerto de bayas (la comida grande viene de la Agricultura)
   MEJORA_RESERVA: 2, // reserva máxima del recurso mejorado
 
+  // Era 4 (Hierro / Clásica)
+  BONO_HIERRO: 1.25, // H01 herramientas de hierro: velocidad de trabajo y de recolección
+  BONO_GEOMETRIA: 1.3, // H02: los constructores van más rápido
+  BONO_GRUA: 1.5, // obras a 2 casillas o menos de una Grúa
+  MERCADO_TASA: 3, // el mercader cambia 3 de lo que sobra por 1 de lo que falta
+  BONO_NORIA: 1.5, // parcelas junto a una Noria
+  VIDA_MEDICINA: 10, // H04: años de vida extra
+  MEJORA_PLANTACION: 2, // H01: la Arboleda sube a Plantación (multiplica otra vez la regeneración)
+
   // Almacenamiento
   ALMACEN_BASE: 60,
   ALMACEN_VASIJAS: 40, // N03 Alfarería

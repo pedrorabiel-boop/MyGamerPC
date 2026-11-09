@@ -1,10 +1,10 @@
 // Mapa de la zona con PixiJS. Solo dibuja: el estado vive en la simulación.
 import { Application, Container, Graphics, Text } from "pixi.js";
 import { useEffect, useRef } from "react";
-import { BUILDING_BY_ID, NODE_DEFS, NODE_UPGRADES, ROLE_BY_ID, SPECIALIST_COLOR, type ResId } from "../content";
+import { BUILDING_BY_ID, NODE_DEFS, ROLE_BY_ID, SPECIALIST_COLOR, type ResId } from "../content";
 import { engine } from "../engine";
 import { canPlace, orderGather, place, zoneUnlocked } from "../sim/actions";
-import { has, nodeMax, staffCount, stageOf } from "../sim/economy";
+import { has, nodeMax, nodeNextUpgrade, staffCount, stageOf } from "../sim/economy";
 import type { Villager, ZoneId } from "../sim/state";
 import { config } from "../config";
 
@@ -47,6 +47,12 @@ export function MapView() {
 
       let ts = 32; // tamaño de casilla en píxeles
       let lastLayout = "";
+      // Scroll vertical: el mapa ocupa todo el ancho; si es más alto que la pantalla, se
+      // arrastra (o se usa la rueda) para recorrerlo. Con margen arriba y abajo para que el HUD
+      // (pestañas de zona arriba; Libro y avisos abajo) nunca tape casillas.
+      const TOP = 52, BOTTOM = 112;
+      let scrollY = 0, minY = 0, maxY = 0, lastZone = "";
+      const clampScroll = () => { scrollY = Math.min(maxY, Math.max(minY, scrollY)); world.y = scrollY; };
       let lastEntranceState = "";
       const labelById = new Map<number, Text>();
 
@@ -55,16 +61,22 @@ export function MapView() {
         const zone = engine.ui.zone;
         const z = s.zones[zone];
         const sw = app.screen.width, sh = app.screen.height;
-        const key = `${sw}x${sh}:${zone}`;
+        const key = `${sw}x${sh}:${zone}:${z.h}`;
         if (key === lastLayout) return;
         lastLayout = key;
-        // Márgenes para que el mapa nunca quede debajo de lo que flota encima:
-        // arriba las pestañas de zona; abajo el botón del Libro y los avisos.
-        const TOP = 40, BOTTOM = 88;
-        const usableH = Math.max(100, sh - TOP - BOTTOM);
-        ts = Math.floor(Math.min(sw / z.w, usableH / z.h));
+        ts = Math.floor(sw / z.w);
         world.x = Math.floor((sw - ts * z.w) / 2);
-        world.y = TOP + Math.floor((usableH - ts * z.h) / 2);
+        const mapH = ts * z.h;
+        const usableH = sh - TOP - BOTTOM;
+        if (mapH <= usableH) {
+          // Cabe entero: centrado, sin scroll.
+          minY = maxY = TOP + Math.floor((usableH - mapH) / 2);
+        } else {
+          maxY = TOP; // tope arriba
+          minY = sh - BOTTOM - mapH; // tope abajo
+        }
+        if (zone !== lastZone) { lastZone = zone; scrollY = maxY; } // al cambiar de zona, desde arriba
+        clampScroll();
         tilesG.clear();
         for (let y = 0; y < z.h; y++) {
           for (let x = 0; x < z.w; x++) {
@@ -136,10 +148,11 @@ export function MapView() {
           const cx = (n.x + 0.5) * ts, cy = (n.y + 0.5) * ts;
           // Mejorado (N12): suelo trabajado y cerco; en obra: barra de progreso.
           if (n.improved) {
-            nodesG.roundRect(n.x * ts + 2, n.y * ts + 2, ts - 4, ts - 4, ts * 0.12).fill({ color: 0x6b4a2a, alpha: 0.35 }).stroke({ width: 2, color: 0xc8a060, alpha: 0.9 });
+            nodesG.roundRect(n.x * ts + 2, n.y * ts + 2, ts - 4, ts - 4, ts * 0.12).fill({ color: 0x6b4a2a, alpha: 0.35 }).stroke({ width: 2, color: n.improved2 ? 0x8fd16a : 0xc8a060, alpha: 0.9 });
           }
-          if (n.improving != null && NODE_UPGRADES[n.type]) {
-            const p = Math.min(1, n.improving / NODE_UPGRADES[n.type]!.buildTime);
+          const nextUp = n.improving != null ? nodeNextUpgrade(n) : null;
+          if (nextUp) {
+            const p = Math.min(1, n.improving! / nextUp.buildTime);
             nodesG.rect(n.x * ts + 4, n.y * ts + 3, ts - 8, 4).fill({ color: 0x000000, alpha: 0.5 });
             nodesG.rect(n.x * ts + 4, n.y * ts + 3, (ts - 8) * p, 4).fill(0x8fd16a);
           }
@@ -274,7 +287,21 @@ export function MapView() {
 
       app.stage.eventMode = "static";
       app.stage.hitArea = app.screen;
+      let drag: { y: number; start: number; moved: boolean } | null = null;
+      let suppressTap = false;
+      app.stage.on("pointerdown", (e) => { drag = { y: e.global.y, start: scrollY, moved: false }; suppressTap = false; });
+      app.stage.on("pointermove", (e) => {
+        if (!drag || minY === maxY) return;
+        const dy = e.global.y - drag.y;
+        if (Math.abs(dy) > 8) drag.moved = true;
+        if (drag.moved) { scrollY = drag.start + dy; clampScroll(); }
+      });
+      const endDrag = () => { if (drag?.moved) suppressTap = true; drag = null; };
+      app.stage.on("pointerup", endDrag);
+      app.stage.on("pointerupoutside", endDrag);
+      app.canvas.addEventListener("wheel", (ev) => { scrollY -= ev.deltaY; clampScroll(); ev.preventDefault(); }, { passive: false });
       app.stage.on("pointertap", (e) => {
+        if (suppressTap) { suppressTap = false; return; }
         const p = world.toLocal(e.global);
         const fx = p.x / ts, fy = p.y / ts;
         const tx = Math.floor(fx), ty = Math.floor(fy);
@@ -306,7 +333,7 @@ export function MapView() {
           engine.toast(has(s, "B01") ? `${name}: construye encima una ⛏️ Mina (🔨 Construir).` : `${name}: brillan, pero todavía no sabemos sacarlas. Hace falta Minería.`);
           return;
         }
-        if (node?.type === "hierro") { engine.toast("Rocas rojas: algo hay ahí adentro… (Edad de Hierro)."); return; }
+        if (node?.type === "hierro") { engine.toast(has(s, "H01") ? "Rocas rojas: construye encima una ⛏️ Mina de hierro (🔨 Construir)." : "Rocas rojas: algo hay ahí adentro… Hace falta el Hierro."); return; }
         if (engine.ui.selected != null && node) {
           const err = orderGather(s, engine.ui.selected, node.id);
           if (err) engine.toast(err);

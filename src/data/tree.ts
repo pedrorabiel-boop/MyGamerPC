@@ -39,7 +39,7 @@ export const TECHS = tree.techs;
 export const TECH_BY_ID: Record<string, Tech> = Object.fromEntries(TECHS.map((t) => [t.id, t]));
 
 /** Eras que el prototipo implementa de verdad. Las demás se ven en el Libro, pero sus efectos no existen todavía. */
-export const IMPLEMENTED_ERAS = 3;
+export const IMPLEMENTED_ERAS = 4;
 
 /** Tecnologías con costo fijo (perilla propia en config), fuera de la fórmula. */
 const COST_OVERRIDES: Record<string, keyof typeof config> = { P11: "COSTO_ARTE_Y_RITOS", N12: "COSTO_TECNICAS_RECOLECCION" };

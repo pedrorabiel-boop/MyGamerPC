@@ -92,12 +92,20 @@ En desarrollo, el motor también queda en la consola del navegador como `window.
 - **Técnicas de recolección** (Era 2, 🌿): tocando un recurso natural se abre su ficha, y se
   puede **mejorar en su lugar** (Barrero, Cantera, Arboleda, Pastizal, Huerto de bayas…): se
   regenera más rápido y guarda el doble. Lo hacen los constructores.
-- 20 tecnologías (6 + 7 + 7, consolidadas tras los playtests) con **tarjeta de novedad**
+- **Edad de Hierro (Era 4, 7 tecnologías):** Academia con filósofos, **mina de hierro** sobre
+  las rocas rojas y Forja (herramientas de hierro: todos trabajan más rápido; las Arboledas
+  suben a Plantación), **Geometría y arquitectura** (constructores más rápidos, Grúa y **el
+  Valle crece a 8×16**), **Mercado** (cambia 3 de lo que sobra por 1 de lo que falta),
+  vidrio soplado, engranajes y Noria, y Acueducto y medicina (🌿: canales en cualquier
+  parte, +10 años de vida).
+- Todos los mapas ocupan el ancho de la pantalla; si no caben, se recorren **arrastrando
+  hacia arriba o abajo** (o con la rueda del mouse).
+- 27 tecnologías (6 + 7 + 7 + 7, consolidadas tras los playtests) con **tarjeta de novedad**
   al estudiarlas, costos exponenciales, almacenamiento con límite, Ánimo, la interfaz
   "pocos/muchos" antes del Conteo y la comida **resuelta** (Arado e irrigación: 4 parcelas
   junto a un canal, llenas, + granero).
 - Guardado automático y progreso offline al 50% (la Comprensión offline, al 10%).
-- Al abrir la Era 4 (Hierro) aparece "Fin del prototipo".
+- Al abrir la Era 5 (Medieval) aparece "Fin del prototipo".
 
 ### Simplificaciones (a propósito, por ahora)
 

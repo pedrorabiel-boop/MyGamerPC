@@ -7,7 +7,8 @@ import type { Tile } from "./sim/state";
 export type ResId =
   | "comida" | "ramas" | "piedra" | "fibras" | "madera" | "pieles" | "pigmento"
   | "arcilla" | "ceramica" | "lana" | "tela" | "comprension"
-  | "mineral" | "carbon" | "cobre" | "estano" | "bronce" | "ladrillo" | "arena" | "vidrio";
+  | "mineral" | "carbon" | "cobre" | "estano" | "bronce" | "ladrillo" | "arena" | "vidrio"
+  | "mineral_hierro" | "hierro" | "vidrio_claro" | "engranajes";
 
 export type Cost = Partial<Record<ResId, number>>;
 
@@ -33,6 +34,11 @@ export const RESOURCES: { id: ResId; name: string; icon: string }[] = [
   { id: "ladrillo", name: "Ladrillo", icon: "🟥" },
   { id: "arena", name: "Arena", icon: "🟨" },
   { id: "vidrio", name: "Vidrio", icon: "🪟" },
+  // Era 4
+  { id: "mineral_hierro", name: "Mineral de hierro", icon: "🟤" },
+  { id: "hierro", name: "Hierro", icon: "🔩" },
+  { id: "vidrio_claro", name: "Vidrio claro", icon: "🔍" },
+  { id: "engranajes", name: "Engranajes", icon: "⚙️" },
 ];
 export const RES_BY_ID = Object.fromEntries(RESOURCES.map((r) => [r.id, r])) as Record<ResId, (typeof RESOURCES)[number]>;
 
@@ -53,7 +59,7 @@ export const NODE_DEFS: Record<NodeType, { name: string; color: number; stocks: 
   arena: { name: "Arena", color: 0xe0c878, stocks: { arena: { max: 15, regen: 0.06 } } },
   // Montañas
   estano: { name: "Vetas de estaño", color: 0xd8dde4, stocks: {} }, // se explotan con una Mina
-  hierro: { name: "Rocas rojas", color: 0x9a3a2a, stocks: {} }, // hierro: Era 4
+  hierro: { name: "Rocas rojas", color: 0x9a3a2a, stocks: {} }, // se explotan con una Mina de hierro (H01)
 };
 
 // ---------- Mejoras de recursos naturales (N12 Técnicas de recolección) ----------
@@ -61,6 +67,7 @@ export const NODE_DEFS: Record<NodeType, { name: string; color: number; stocks: 
 
 export interface NodeUpgradeDef {
   name: string;
+  next?: { name: string; tech: string; cost: Cost; buildTime: number }; // segundo nivel (×MEJORA_PLANTACION)
   regen: "MEJORA_REGEN_MINERAL" | "MEJORA_REGEN_PLANTA" | "MEJORA_REGEN_BAYAS"; // perilla del multiplicador
   cost: Cost;
   buildTime: number; // segundos de trabajo de un constructor
@@ -72,7 +79,8 @@ export const NODE_UPGRADE_TECH = "N12";
 export const NODE_UPGRADES: Partial<Record<NodeType, NodeUpgradeDef>> = {
   arcilla: { name: "Barrero", regen: "MEJORA_REGEN_MINERAL", cost: { madera: 4, piedra: 2 }, buildTime: 8, needs: null },
   roca: { name: "Cantera", regen: "MEJORA_REGEN_MINERAL", cost: { madera: 6 }, buildTime: 10, needs: null },
-  arbol: { name: "Arboleda", regen: "MEJORA_REGEN_PLANTA", cost: { piedra: 3, fibras: 3 }, buildTime: 8, needs: null },
+  arbol: { name: "Arboleda", regen: "MEJORA_REGEN_PLANTA", cost: { piedra: 3, fibras: 3 }, buildTime: 8, needs: null,
+    next: { name: "Plantación", tech: "H01", cost: { madera: 6, hierro: 1 }, buildTime: 10 } },
   pasto: { name: "Pastizal", regen: "MEJORA_REGEN_PLANTA", cost: { madera: 2 }, buildTime: 6, needs: null },
   arbusto: { name: "Huerto de bayas", regen: "MEJORA_REGEN_BAYAS", cost: { madera: 3 }, buildTime: 6, needs: null },
   ocre: { name: "Cantera de ocre", regen: "MEJORA_REGEN_MINERAL", cost: { madera: 4 }, buildTime: 8, needs: "P11" },
@@ -189,6 +197,24 @@ export const BUILDINGS: BuildingDef[] = [
   { id: "canal", name: "Canal", icon: "💧", color: 0x2f6fb5, unlockedBy: "B09", cost: { piedra: 2 }, buildTime: 2, place: ["pasto"], nearWater: true, desc: "Tiene que tocar el río u otro canal. Las parcelas junto a un canal rinden ×1,5." },
   { id: "huerto", name: "Huerto medicinal", icon: "🌱", color: 0x3a7a4a, unlockedBy: "N11", cost: { madera: 4, fibras: 4 }, buildTime: 6, place: ["pasto"], desc: "Con un curandero trabajando, las enfermedades matan menos.",
     staff: { slots: 1, by: "especialista", title: "Curandero", icon: "🌱", cycle: 5 } },
+  // ---------- Era 4 ----------
+  { id: "academia", name: "Academia", icon: "🏛️", color: 0xb0a080, unlockedBy: "H05", cost: { ladrillo: 12, piedra: 10 }, buildTime: 16, place: ["pasto"], desc: "Los filósofos caminan en círculos discutiendo y generan mucha Comprensión. Los ancianos también sirven.",
+    staff: { slots: 2, by: "especialista", title: "Filósofo", icon: "🤔", cycle: 3, outputs: { comprension: 10 }, elders: true, elderBonus: 1.3 } },
+  { id: "mina_hierro", name: "Mina de hierro", icon: "⛏️", color: 0x7a3a2a, unlockedBy: "H01", cost: { madera: 8, bronce: 2 }, buildTime: 12, place: ["monte"], onNode: "hierro", desc: "Se construye sobre las rocas rojas de las Montañas. El minero saca mineral de hierro.",
+    staff: { slots: 1, by: "especialista", title: "Minero", icon: "⛏️", cycle: 4, outputs: { mineral_hierro: 1 } } },
+  { id: "forja", name: "Forja", icon: "🔥", color: 0x4a2a2a, unlockedBy: "H01", cost: { ladrillo: 10, piedra: 8 }, buildTime: 14, place: ["pasto", "monte"], desc: "Mineral de hierro + mucho carbón → hierro.",
+    staff: { slots: 1, by: "especialista", title: "Forjador", icon: "🔨", cycle: 6, inputs: { mineral_hierro: 1, carbon: 2 }, outputs: { hierro: 1 } } },
+  { id: "grua", name: "Grúa", icon: "🏗️", color: 0x9a7a3a, unlockedBy: "H02", cost: { madera: 10, fibras: 6, piedra: 4 }, buildTime: 10, place: ["pasto"], desc: "Palanca y polea: las obras a 2 casillas o menos avanzan ×1,5." },
+  { id: "mercado", name: "Mercado", icon: "⚖️", color: 0xc08a3a, unlockedBy: "H07", cost: { madera: 10, ladrillo: 6 }, buildTime: 12, place: ["pasto"], desc: "El mercader cambia 3 de lo que más sobra por 1 de lo que más falta (o del recurso en 🎯).",
+    staff: { slots: 1, by: "especialista", title: "Mercader", icon: "🧑‍💼", cycle: 5 } },
+  { id: "soplador", name: "Taller de vidrio soplado", icon: "🔍", color: 0x5a8a9a, unlockedBy: "H08", cost: { ladrillo: 8, hierro: 2 }, buildTime: 12, place: ["pasto"], desc: "Vidrio + carbón → vidrio claro: lentes, tubos y, mucho después, pantallas.",
+    staff: { slots: 1, by: "especialista", title: "Soplador", icon: "🌬️", cycle: 6, inputs: { vidrio: 1, carbon: 1 }, outputs: { vidrio_claro: 1 } } },
+  { id: "taller_engranajes", name: "Taller de engranajes", icon: "⚙️", color: 0x6a6a5a, unlockedBy: "H13", cost: { madera: 8, hierro: 4 }, buildTime: 12, place: ["pasto"], desc: "Hierro + madera → engranajes, la pieza de todas las máquinas.",
+    staff: { slots: 1, by: "especialista", title: "Mecánico", icon: "🔧", cycle: 6, inputs: { hierro: 1, madera: 1 }, outputs: { engranajes: 1 } } },
+  { id: "noria", name: "Noria", icon: "🎡", color: 0x6a8aaa, unlockedBy: "H13", cost: { madera: 10, engranajes: 4 }, buildTime: 14, place: ["pasto"], nearWater: true, desc: "Tiene que tocar el río, un canal o un acueducto. Las parcelas vecinas rinden ×1,5." },
+  { id: "acueducto", name: "Acueducto", icon: "🌉", color: 0x8a8a9a, unlockedBy: "H04", cost: { piedra: 6, ladrillo: 2 }, buildTime: 6, place: ["pasto"], desc: "Trae el agua: va en cualquier parte, cuenta como canal y desde él se pueden tender más canales." },
+  { id: "casa_salud", name: "Casa de salud", icon: "⚕️", color: 0xd0d0c0, unlockedBy: "H04", cost: { ladrillo: 10, tela: 4 }, buildTime: 12, place: ["pasto"], desc: "Con un médico trabajando, las enfermedades matan la mitad.",
+    staff: { slots: 1, by: "especialista", title: "Médico", icon: "🩺", cycle: 5 } },
 ];
 export const BUILDING_BY_ID = Object.fromEntries(BUILDINGS.map((b) => [b.id, b])) as Record<string, BuildingDef>;
 
@@ -221,6 +247,37 @@ export const RESOLUTIONS: ResolutionDef[] = [
 // ---------- Tarjetas de novedad (al estudiar una tecnología) ----------
 
 export const TECH_INTRO: Record<string, string[]> = {
+  // Era 4
+  H05: [
+    "Puedes construir la 🏛️ **Academia**: dos filósofos generan mucha 💡 Comprensión (los ancianos también sirven).",
+    "La lógica es la raíz del software, y la piedra imán, la del magnetismo. Por ahora solo discuten.",
+  ],
+  H01: [
+    "En las ⛰️ Montañas, las rocas rojas se explotan con una ⛏️ **Mina de hierro**.",
+    "La 🔥 **Forja** convierte mineral de hierro + carbón en 🔩 hierro. Consume mucho carbón: atento a la madera.",
+    "Herramientas de hierro: todos trabajan y recolectan más rápido.",
+    "Con 🌱 Técnicas de recolección, las Arboledas pueden subir a **Plantación**.",
+  ],
+  H02: [
+    "Los constructores van más rápido.",
+    "**El Valle crece hacia abajo**: más espacio y más orilla. Arrastra el mapa para recorrerlo.",
+    "La 🏗️ **Grúa** acelera las obras que tiene cerca.",
+  ],
+  H07: [
+    "Puedes construir el ⚖️ **Mercado**: el mercader cambia 3 de lo que más sobra por 1 de lo que más falta.",
+    "Si tienes un recurso en 🎯, el mercader compra ese.",
+  ],
+  H08: [
+    "El 🔍 **Taller de vidrio soplado** hace vidrio claro (vidrio + carbón): lentes y, mucho después, pantallas.",
+  ],
+  H13: [
+    "El ⚙️ **Taller de engranajes** hace engranajes con hierro y madera.",
+    "La 🎡 **Noria** (junto al agua) hace rendir ×1,5 a las parcelas vecinas.",
+  ],
+  H04: [
+    "El 🌉 **Acueducto** trae el agua a cualquier parte: cuenta como canal y desde él se tienden más canales.",
+    "**+10 años de vida** para todos. La ⚕️ Casa de salud, con un médico, reduce las enfermedades a la mitad.",
+  ],
   P01: [
     "Aparecen las categorías 🍖 Comida y 🧱 Materiales: ve a 👥 Aldeanos y asigna gente con +.",
     "Cada aldeano repite su trabajo solo, ya no hace falta señalar.",

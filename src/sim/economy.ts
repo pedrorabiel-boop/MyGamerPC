@@ -10,7 +10,16 @@ export function nodeMax(n: ResNode, res: ResId): number {
 }
 export function nodeRegen(n: ResNode, res: ResId): number {
   const up = n.improved ? NODE_UPGRADES[n.type] : undefined;
-  return (NODE_DEFS[n.type].stocks[res]?.regen ?? 0) * (up ? config[up.regen] : 1);
+  return (NODE_DEFS[n.type].stocks[res]?.regen ?? 0) * (up ? config[up.regen] : 1) * (n.improved2 ? config.MEJORA_PLANTACION : 1);
+}
+
+/** La próxima mejora de este recurso natural: el primer nivel, o el segundo si ya está mejorado. */
+export function nodeNextUpgrade(n: ResNode): { name: string; cost: Cost; buildTime: number; tech: string | null; second: boolean } | null {
+  const up = NODE_UPGRADES[n.type];
+  if (!up) return null;
+  if (!n.improved) return { name: up.name, cost: up.cost, buildTime: up.buildTime, tech: up.needs, second: false };
+  if (!n.improved2 && up.next) return { name: up.next.name, cost: up.next.cost, buildTime: up.next.buildTime, tech: up.next.tech, second: true };
+  return null;
 }
 
 /** ¿Hay obras en esta zona? (edificios, mejoras de edificios o de recursos naturales) */

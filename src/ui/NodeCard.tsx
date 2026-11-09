@@ -3,8 +3,9 @@
 import { config } from "../config";
 import { NODE_DEFS, NODE_UPGRADES, RES_BY_ID, type ResId } from "../content";
 import { engine, useEngine } from "../engine";
-import { cancelImproveNode, nodeUpgradeBlock, startImproveNode } from "../sim/actions";
+import { cancelImproveNode, nodeNextUpgrade, nodeUpgradeBlock, startImproveNode } from "../sim/actions";
 import { canAfford, nodeMax, nodeRegen } from "../sim/economy";
+import { missingText } from "./format";
 
 const fmtCost = (c: Partial<Record<ResId, number>>) =>
   Object.entries(c).map(([r, n]) => `${RES_BY_ID[r as ResId].icon}${n}`).join(" ");
@@ -17,13 +18,15 @@ export function NodeCard() {
   const up = NODE_UPGRADES[n.type];
   const close = () => { engine.ui.selectedNode = null; engine.notify(); };
   const block = nodeUpgradeBlock(s, n);
+  const next = nodeNextUpgrade(n);
+  const title = n.improved2 && up?.next ? `🌳 ${up.next.name}` : n.improved && up ? `🌱 ${up.name}` : def.name;
   const res = Object.keys(def.stocks) as ResId[];
 
   return (
     <div className="card">
       <div className="card-top">
-        <b>{n.improved && up ? `🌱 ${up.name}` : def.name}</b>
-        <span>{n.improved ? "mejorado" : n.improving != null && up ? `mejorando (${Math.floor((n.improving / up.buildTime) * 100)}%)` : "silvestre"}</span>
+        <b>{title}</b>
+        <span>{n.improving != null && next ? `mejorando (${Math.floor((n.improving / next.buildTime) * 100)}%)` : n.improved ? "mejorado" : "silvestre"}</span>
         <button className="x" onClick={close}>✕</button>
       </div>
       {res.map((r) => (
@@ -32,23 +35,33 @@ export function NodeCard() {
         </div>
       ))}
       <div className="muted">Para recolectar a mano: toca un aldeano y luego toca aquí.</div>
-      {up && !n.improved && n.improving == null && (
+      {up && next && n.improving == null && (
         block ? (
-          <div className="muted">🌱 Mejorable a {up.name} — {block}</div>
+          <div className="muted">🌱 Mejorable a {next.name} — {block}</div>
         ) : (
           <div className="inline">
+            {/* Nunca desactivado en silencio: si faltan materiales, avisa qué falta. */}
             <button
-              className="chip"
-              disabled={!canAfford(s, up.cost)}
-              onClick={() => { const err = startImproveNode(s, n.id); if (err) engine.toast(err); engine.notify(); }}
+              className={"chip" + (canAfford(s, next.cost) ? "" : " short")}
+              onClick={() => {
+                const missing = missingText(s, next.cost);
+                if (missing) { engine.toast(`Faltan materiales para ${next.name}: ${missing}`); return; }
+                const err = startImproveNode(s, n.id); if (err) engine.toast(err); engine.notify();
+              }}
             >
-              🌱 Mejorar a {up.name} ({fmtCost(up.cost)})
+              🌱 Mejorar a {next.name} ({fmtCost(next.cost)})
             </button>
+            {!canAfford(s, next.cost) && <span className="warn">Faltan {missingText(s, next.cost)}</span>}
           </div>
         )
       )}
-      {up && !n.improved && n.improving == null && !block && (
-        <div className="muted">Se regenera ×{config[up.regen]} y guarda ×{config.MEJORA_RESERVA}. Lo hacen los 🔨 constructores; mientras tanto se sigue recolectando.</div>
+      {up && next && n.improving == null && !block && (
+        <div className="muted">
+          {next.second
+            ? `Se regenera ×${config.MEJORA_PLANTACION} más. `
+            : `Se regenera ×${config[up.regen]} y guarda ×${config.MEJORA_RESERVA}. `}
+          Lo hacen los 🔨 constructores; mientras tanto se sigue recolectando.
+        </div>
       )}
       {n.improving != null && (
         <div className="inline">

@@ -150,3 +150,5 @@ abajo y se vuelve a probar.
 
 ### Playtest 7 (2026-11-12)
 - **La arcilla siempre en 0 aunque 10 personas la junten:** medido, el Valle da ≈9 de arcilla por minuto (3 depósitos × 0,05/s) una vez gastada la reserva inicial, igual con 1 que con 10 personas. La piedra, ≈5 por minuto. Un ladrillero consume 24 por minuto. → **N12 Técnicas de recolección** (costo fijo `COSTO_TECNICAS_RECOLECCION` = 600): los recursos naturales se mejoran en su lugar (×4 minerales, ×3 plantas, ×2 bayas; reserva ×2).
+- **Era 4 consolidada e implementada** (7 tecnologías). A vigilar en el próximo playtest: (1) el hito que abre la Era 4 pide **80 habitantes**; (2) la Era 4 cuesta de ~3.200 a ~54.000 de Comprensión por página (Filosofía va primero, por la Academia); (3) el Mercado a 3 por 1 (`MERCADO_TASA`); (4) el carbón, que ahora piden la Forja y el vidrio soplado.
+- **Mapa:** todos los mapas ocupan el ancho de la pantalla, con scroll vertical si no caben (el Valle crece a 8×16 con Geometría).

@@ -13,7 +13,7 @@ export type Source =
   | { kind: "special"; icon: string; text: string; tech: string | null };
 
 const TILE_ZONE: Partial<Record<Tile, ZoneId>> = { pasto: "valle", orilla: "valle", suelo: "cueva", monte: "montanas" };
-const NODE_ZONE: Partial<Record<NodeType, ZoneId>> = { veta: "cueva", estano: "montanas" };
+const NODE_ZONE: Partial<Record<NodeType, ZoneId>> = { veta: "cueva", estano: "montanas", hierro: "montanas" };
 
 /** En qué zonas se puede construir un edificio. */
 export function buildingZones(def: BuildingDef): ZoneId[] {

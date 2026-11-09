@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { config } from "../config";
-import { BUILDINGS, MATERIALS, ROLES, TECH_INTRO } from "../content";
-import { TECHS, TECH_BY_ID, techCost } from "../data/tree";
+import { BUILDINGS, MATERIALS, RESOURCES, ROLES, TECH_INTRO } from "../content";
+import { IMPLEMENTED_ERAS, TECHS, TECH_BY_ID, techCost } from "../data/tree";
 import {
   changeRoleCount, changeSpecialists, debugAddVillagers, demolish, debugToggleInfinite, place, setRole, study, tapBook, techStatus,
   transferVillager, adultsIn, startUpgrade, startImproveNode, cancelImproveNode,
@@ -12,7 +12,7 @@ import { parseSave, simulateOffline } from "./save";
 import { changeZoneQuota, zoneCount } from "./zones";
 import { focusPlan, isFocusable, sourcesOf, usesOf, WILD_LOW, wildState } from "./guide";
 import { createState, type Building, type GameState } from "./state";
-import { step } from "./step";
+import { step, trade } from "./step";
 
 const run = (s: GameState, seconds: number) => { for (let t = 0; t < seconds; t += 0.1) step(s, 0.1); };
 const addBuilding = (s: GameState, type: string, x: number, y: number): Building => {
@@ -22,14 +22,14 @@ const addBuilding = (s: GameState, type: string, x: number, y: number): Building
 };
 
 describe("contenido", () => {
-  it("todo lo jugable apunta a tecnologías reales de las Eras 1–2", () => {
-    for (const r of ROLES) expect(TECH_BY_ID[r.unlockedBy]?.era, r.id).toBeLessThanOrEqual(3);
-    for (const m of MATERIALS) expect(TECH_BY_ID[m.tech]?.era, m.res).toBeLessThanOrEqual(3);
-    for (const b of BUILDINGS) if (b.unlockedBy) expect(TECH_BY_ID[b.unlockedBy]?.era, b.id).toBeLessThanOrEqual(3);
+  it("todo lo jugable apunta a tecnologías de las eras implementadas", () => {
+    for (const r of ROLES) expect(TECH_BY_ID[r.unlockedBy]?.era, r.id).toBeLessThanOrEqual(IMPLEMENTED_ERAS);
+    for (const m of MATERIALS) expect(TECH_BY_ID[m.tech]?.era, m.res).toBeLessThanOrEqual(IMPLEMENTED_ERAS);
+    for (const b of BUILDINGS) if (b.unlockedBy) expect(TECH_BY_ID[b.unlockedBy]?.era, b.id).toBeLessThanOrEqual(IMPLEMENTED_ERAS);
   });
 
-  it("cada tecnología de las Eras 1–2 tiene tarjeta de novedad", () => {
-    for (const t of TECHS.filter((x) => x.era <= 3)) expect(TECH_INTRO[t.id], t.id).toBeTruthy();
+  it("cada tecnología de las eras implementadas tiene tarjeta de novedad", () => {
+    for (const t of TECHS.filter((x) => x.era <= IMPLEMENTED_ERAS)) expect(TECH_INTRO[t.id], t.id).toBeTruthy();
   });
 
   it("los costos crecen de forma exponencial dentro de la era", () => {
@@ -676,6 +676,117 @@ describe("playtest 7: mejorar recursos naturales", () => {
     expect(w.fill).toBeLessThan(WILD_LOW);
     expect(w.unimproved).toBe(3);
     expect(w.upgrade).toBe("Barrero");
+  });
+});
+
+describe("Era 4: Hierro / Clásica", () => {
+  const era4 = (seed: number, extra: string[] = []) => {
+    const s = createState(seed);
+    for (const t of ["P01", "P02", "P04", "P05", "P06", "P11", "N01", "N02", "N03", "N09", "N10", "N11", "N12",
+      "B01", "B02", "B03", "B04", "B06", "B07", "B09", ...extra]) s.techs[t] = true;
+    s.debug.infinite.comida = true;
+    return s;
+  };
+
+  it("con Geometría el Valle crece hacia abajo y el sendero baja al borde", () => {
+    const s = era4(80);
+    const nodes = s.nodes.length;
+    s.techs.H02 = true;
+    step(s, 0.1);
+    const z = s.zones.valle;
+    expect(z.h).toBe(16);
+    expect(z.tiles).toHaveLength(16);
+    expect(z.exits.montanas).toEqual({ x: 1, y: 15 });
+    expect(z.tiles[15][1]).toBe("sendero");
+    expect(z.tiles[11][1]).toBe("pasto");
+    expect(z.tiles[14][6]).toBe("orilla");
+    expect(s.nodes.length).toBeGreaterThan(nodes);
+    step(s, 0.1); // no vuelve a crecer
+    expect(z.h).toBe(16);
+    // Se sigue llegando a las Montañas por el sendero nuevo.
+    expect(transferVillager(s, "valle", "montanas")).toBeNull();
+    run(s, 30);
+    expect(s.villagers.some((v) => v.zone === "montanas")).toBe(true);
+  });
+
+  it("cadena del hierro: mina sobre rocas rojas → mineral; forja → hierro", () => {
+    const s = era4(81, ["H01"]);
+    s.inv.madera = 20; s.inv.bronce = 4;
+    const roja = s.nodes.find((n) => n.zone === "montanas" && n.type === "hierro")!;
+    expect(place(s, "mina_hierro", 0, 0, "montanas")).not.toBeNull(); // no es una roca roja
+    expect(place(s, "mina_hierro", roja.x, roja.y, "montanas")).toBeNull();
+    const mina = s.buildings[s.buildings.length - 1];
+    mina.built = true;
+    const forja = addBuilding(s, "forja", 2, 3);
+    debugAddVillagers(s, 2);
+    expect(transferVillager(s, "valle", "montanas")).toBeNull();
+    run(s, 40);
+    s.inv.carbon = 20;
+    for (const b of [mina, forja]) expect(changeSpecialists(s, b.id, 1)).toBeNull();
+    run(s, 120);
+    expect(s.inv.hierro).toBeGreaterThan(0);
+  });
+
+  it("el mercado cambia 3 de lo que sobra por 1 de lo que falta, o del recurso en foco", () => {
+    const s = era4(82, ["H07"]);
+    for (const r of RESOURCES) s.inv[r.id] = 0;
+    s.inv.madera = 90; s.inv.piedra = 10; // almacén: 100
+    expect(trade(s)).toEqual({ from: "madera", to: expect.any(String) });
+    expect(s.inv.madera).toBe(87);
+    s.focus = "arcilla";
+    expect(trade(s)).toEqual({ from: "madera", to: "arcilla" });
+    expect(s.inv.arcilla).toBe(1);
+    s.inv.madera = 2; s.inv.piedra = 2;
+    expect(trade(s)).toBeNull(); // nada sobra
+  });
+
+  it("la grúa y la geometría aceleran las obras", () => {
+    const time = (withGrua: boolean) => {
+      const s = era4(83, ["H02"]);
+      for (const v of s.villagers) { v.age = 20; v.lifespan = 999; v.role = null; }
+      const b = s.villagers[0];
+      b.role = "construccion";
+      for (const v of s.villagers.slice(1)) v.role = "comida";
+      if (withGrua) addBuilding(s, "grua", 3, 5);
+      s.buildings.push({ id: s.nextId++, type: "adobe", zone: "valle", x: 3, y: 6, progress: 0, built: false });
+      const site = s.buildings[s.buildings.length - 1];
+      let t = 0;
+      while (!site.built && t < 120) { step(s, 0.1); t += 0.1; }
+      return t;
+    };
+    expect(time(true)).toBeLessThan(time(false));
+  });
+
+  it("acueducto: canales lejos del río", () => {
+    const s = era4(84, ["H02", "H04"]);
+    s.inv.piedra = 50; s.inv.ladrillo = 10;
+    expect(place(s, "canal", 2, 3)).not.toBeNull();
+    expect(place(s, "acueducto", 2, 4)).toBeNull();
+    expect(place(s, "canal", 2, 3)).toBeNull(); // toca el acueducto
+  });
+
+  it("Acueducto y medicina: +10 años de vida, una sola vez", () => {
+    const s = era4(85);
+    const before = s.villagers.map((v) => v.lifespan);
+    s.techs.H04 = true;
+    step(s, 0.1);
+    step(s, 0.1);
+    s.villagers.forEach((v, i) => expect(v.lifespan).toBeCloseTo(before[i] + config.VIDA_MEDICINA));
+  });
+
+  it("la Arboleda sube a Plantación con el Hierro", () => {
+    const s = era4(86);
+    const tree = s.nodes.find((n) => n.type === "arbol")!;
+    tree.improved = true;
+    expect(startImproveNode(s, tree.id)).toMatch(/hace falta/);
+    s.techs.H01 = true;
+    s.inv.madera = 10; s.inv.hierro = 2;
+    const base = nodeRegen(tree, "madera");
+    expect(startImproveNode(s, tree.id)).toBeNull();
+    for (const v of s.villagers) if (stageOf(v) === "adult") v.role = "construccion";
+    run(s, 40);
+    expect(tree.improved2).toBe(true);
+    expect(nodeRegen(tree, "madera")).toBeCloseTo(base * config.MEJORA_PLANTACION);
   });
 });
 

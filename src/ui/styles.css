@@ -129,6 +129,9 @@ h4 { margin: 16px 0 6px; font-size: 13px; color: var(--muted); text-transform: u
 .req .missing { color: #a03020; font-weight: 700; }
 .primary { background: var(--accent); color: #fff; border: 0; border-radius: 8px; padding: 7px 12px; font-weight: 700; }
 .primary:disabled { opacity: .45; }
+.chip:disabled { opacity: .45; }
+/* Falta material: se ve atenuado pero se puede tocar (avisa qué falta). */
+.primary.short, .chip.short { opacity: .55; }
 
 /* Navegación inferior */
 .tabs { display: flex; background: var(--panel); border-top: 1px solid var(--line); padding-bottom: env(safe-area-inset-bottom); }

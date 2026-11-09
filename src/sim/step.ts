@@ -1,20 +1,21 @@
 import { config } from "../config";
 import {
-  BUILDING_BY_ID, FOOD_GATHER, MATERIALS, NODE_DEFS, NODE_UPGRADES, RES_BY_ID, RESOLUTIONS,
+  BUILDING_BY_ID, FOOD_GATHER, MATERIALS, NODE_DEFS, RES_BY_ID, RESOURCES, RESOLUTIONS,
   type NodeType, type ResId,
 } from "../content";
-import { ERAS } from "../data/tree";
+import { ERAS, IMPLEMENTED_ERAS } from "../data/tree";
 import {
-  add, adultAge, canAfford, countBuilt, has, housing, isResolutionMet, nodeMax, nodeRegen, pay, roleUnlocked, stageOf, storageCap, unlimited,
+  add, adultAge, canAfford, countBuilt, has, housing, isResolutionMet, nodeMax, nodeNextUpgrade, nodeRegen, pay, roleUnlocked, stageOf, storageCap, unlimited,
 } from "./economy";
 import { hasJefatura, runJefatura } from "./jefatura";
 import { maintainZoneQuotas } from "./zones";
 import { focusTargets } from "./guide";
-import { log, newVillager, rand, type Building, type GameState, type ResNode, type Villager, type ZoneId } from "./state";
+import { growValle, log, newVillager, rand, type Building, type GameState, type ResNode, type Villager, type ZoneId } from "./state";
 
 /** Avanza la simulación `dt` segundos de juego. Usar pasos pequeños (≤ 0,5 s). */
 export function step(s: GameState, dt: number) {
   s.time += dt;
+  applyTechEffects(s);
   updateResolutions(s);
   regenNodes(s, dt);
   passiveBuildings(s, dt);
@@ -42,6 +43,19 @@ function updateResolutions(s: GameState) {
     log(s, met
       ? `✅ ¡${name} resuelta! Mientras mantengas esta infraestructura, nunca va a faltar.`
       : `⚠️ ${name} dejó de estar resuelta: falta infraestructura o gente en sus puestos.`);
+  }
+}
+
+/** Efectos de una sola vez al comprender ciertas tecnologías (también en partidas cargadas). */
+function applyTechEffects(s: GameState) {
+  if (has(s, "H02") && !s.applied.H02) {
+    s.applied.H02 = true;
+    growValle(s);
+    log(s, "📐 El Valle creció hacia abajo: más espacio y más orilla.");
+  }
+  if (has(s, "H04") && !s.applied.H04) {
+    s.applied.H04 = true;
+    for (const v of s.villagers) v.lifespan += config.VIDA_MEDICINA;
   }
 }
 
@@ -80,10 +94,12 @@ function eat(s: GameState, dt: number) {
 function ageAndDie(s: GameState, dt: number) {
   const years = dt / config.TIEMPO_POR_AÑO;
   const hungry = s.inv.comida <= 0 && !unlimited(s, "comida");
-  const healer = s.villagers.some((v) => v.workplace != null && s.buildings.find((b) => b.id === v.workplace)?.type === "huerto" && v.task.kind === "work");
+  const workingAt = (type: string) => s.villagers.some((v) => v.workplace != null && v.task.kind === "work" && s.buildings.find((b) => b.id === v.workplace)?.type === type);
+  const healer = workingAt("huerto");
+  const doctor = workingAt("casa_salud");
   // Sin enfermedades al principio: recién aparecen cuando la tribu ya tiene cierto tamaño.
   const illness = s.villagers.length < config.POBLACION_ENFERMEDAD ? 0
-    : config.MORTALIDAD_ENFERMEDAD * (healer ? 0.5 : 1) * (has(s, "P05") ? 0.8 : 1);
+    : config.MORTALIDAD_ENFERMEDAD * (healer ? 0.5 : 1) * (doctor ? 0.5 : 1) * (has(s, "P05") ? 0.8 : 1);
   const dead: Villager[] = [];
   for (const v of s.villagers) {
     v.age += years;
@@ -137,7 +153,7 @@ function checkEras(s: GameState) {
   if (ms.population && s.villagers.length < ms.population) return;
   s.erasOpen = next.id;
   log(s, `¡Hito «${ms.name}»! Se abre el capítulo: ${next.name}.`);
-  if (next.id >= 4) s.prototypeEnded = true;
+  if (next.id > IMPLEMENTED_ERAS) s.prototypeEnded = true;
 }
 
 function occupancy(s: GameState): Map<number, number> {
@@ -203,7 +219,16 @@ function travel(s: GameState, v: Villager, dt: number) {
 /** Lo que se produce en una zona lejana llega con pérdida. */
 export const zoneEfficiency = (zone: ZoneId) => (zone === "montanas" ? config.EFICIENCIA_MONTANAS : 1);
 
-const workSpeed = (s: GameState) => (has(s, "B03") ? config.BONO_BRONCE : 1);
+const workSpeed = (s: GameState) => (has(s, "B03") ? config.BONO_BRONCE : 1) * (has(s, "H01") ? config.BONO_HIERRO : 1);
+
+/** ¿Hay un edificio terminado de tipo `type` a `r` casillas o menos de (x, y)? */
+function builtWithin(s: GameState, zone: ZoneId, x: number, y: number, type: string, r: number): boolean {
+  return s.buildings.some((o) => o.built && o.type === type && o.zone === zone && Math.abs(o.x - x) <= r && Math.abs(o.y - y) <= r);
+}
+
+/** Velocidad de obra: geometría y grúas cercanas. */
+const buildBonus = (s: GameState, zone: ZoneId, x: number, y: number) =>
+  (has(s, "H02") ? config.BONO_GEOMETRIA : 1) * (builtWithin(s, zone, x, y, "grua", 2) ? config.BONO_GRUA : 1);
 
 /** ¿Hay un edificio de tipo `type` en alguna de las 8 casillas vecinas? */
 export function hasNeighbor(s: GameState, b: Building, type: string): boolean {
@@ -394,17 +419,18 @@ function improveWork(s: GameState, v: Villager, dt: number, rate: number): boole
   if (v.task.kind !== "toImprove" && v.task.kind !== "improve") return false;
   const id = v.task.nId;
   const n = s.nodes.find((x) => x.id === id && x.improving != null);
-  const up = n ? NODE_UPGRADES[n.type] : undefined;
+  const up = n ? nodeNextUpgrade(n) : null;
   if (!n || !up) { v.task = { kind: "idle", t: 0 }; return false; }
   if (v.task.kind === "toImprove") {
     if (moveTo(v, n.x + 0.5, n.y + 0.5, dt)) v.task = { kind: "improve", nId: n.id };
     return true;
   }
-  n.improving! += dt * rate * s.animo;
+  n.improving! += dt * rate * s.animo * buildBonus(s, n.zone, n.x, n.y);
   if (n.improving! >= up.buildTime) {
     delete n.improving;
-    n.improved = true;
-    log(s, `🌱 Mejorado: ${NODE_DEFS[n.type].name} → ${up.name}. Se regenera más rápido y guarda más.`);
+    if (up.second) n.improved2 = true;
+    else n.improved = true;
+    log(s, `🌱 Mejorado: ${NODE_DEFS[n.type].name} → ${up.name}. Se regenera más rápido.`);
     v.task = { kind: "idle", t: 0 };
   }
   return true;
@@ -443,7 +469,7 @@ function buildWork(s: GameState, v: Villager, dt: number, rate: number): boolean
   }
   if (site.built && site.upgradeTo) {
     // Mejora: el edificio sigue funcionando hasta que se termina.
-    site.upgradeProgress = (site.upgradeProgress ?? 0) + dt * rate * s.animo;
+    site.upgradeProgress = (site.upgradeProgress ?? 0) + dt * rate * s.animo * buildBonus(s, site.zone, site.x, site.y);
     const to = BUILDING_BY_ID[site.upgradeTo];
     if (site.upgradeProgress >= to.buildTime * (1 - config.DESCUENTO_MEJORA)) {
       const from = BUILDING_BY_ID[site.type].name;
@@ -455,7 +481,7 @@ function buildWork(s: GameState, v: Villager, dt: number, rate: number): boolean
     }
     return true;
   }
-  site.progress += dt * rate * s.animo;
+  site.progress += dt * rate * s.animo * buildBonus(s, site.zone, site.x, site.y);
   const def = BUILDING_BY_ID[site.type];
   if (site.progress >= def.buildTime) {
     site.built = true;
@@ -481,12 +507,40 @@ function workAt(s: GameState, v: Villager, dt: number, b: Building) {
   v.task.t += dt * s.animo * workSpeed(s);
   if (v.task.t >= staff.cycle) {
     v.task.t = 0;
+    if (b.type === "mercado") { trade(s); return; }
     if (staff.inputs) pay(s, staff.inputs);
     let bonus = stageOf(v) === "elder" ? staff.elderBonus ?? 1 : 1; // los ancianos chamanes rinden más
-    if (b.type === "parcela" && has(s, "B09")) bonus *= config.BONO_ARADO * (hasNeighbor(s, b, "canal") ? config.BONO_CANAL : 1);
+    if (b.type === "parcela" && has(s, "B09")) bonus *= config.BONO_ARADO * (hasNeighbor(s, b, "canal") || hasNeighbor(s, b, "acueducto") ? config.BONO_CANAL : 1);
+    if (b.type === "parcela" && hasNeighbor(s, b, "noria")) bonus *= config.BONO_NORIA;
     bonus *= zoneEfficiency(b.zone);
     for (const [r, amt] of Object.entries(staff.outputs ?? {})) add(s, r as ResId, (amt ?? 0) * bonus);
   }
+}
+
+/**
+ * Mercado: cambia MERCADO_TASA de lo que más sobra (proporcionalmente al almacén) por 1 de lo
+ * que más falta. Si hay un recurso en 🎯, compra ese.
+ */
+export function trade(s: GameState): { from: ResId; to: ResId } | null {
+  const known = RESOURCES.map((r) => r.id).filter((r) => r !== "comprension" && !unlimited(s, r) && s.inv[r] > 0);
+  const fill = (r: ResId) => s.inv[r] / storageCap(s, r);
+  const sellable = known.filter((r) => s.inv[r] >= config.MERCADO_TASA && fill(r) >= 0.5);
+  if (sellable.length === 0) return null;
+  const from = sellable.reduce((a, b) => (fill(b) > fill(a) ? b : a));
+  let to: ResId | null | undefined = s.focus && s.focus !== from && !unlimited(s, s.focus) && fill(s.focus) < 1 ? s.focus : null;
+  if (!to) {
+    // Lo que más falta entre lo que la tribu usa (recolecta o tiene).
+    const wanted = RESOURCES.map((r) => r.id).filter((r) => r !== "comprension" && r !== from && !unlimited(s, r)
+      && (s.inv[r] > 0 || MATERIALS.some((m) => m.res === r && has(s, m.tech))));
+    if (wanted.length === 0) return null;
+    to = wanted.reduce((a, b) => (fill(b) < fill(a) ? b : a));
+    if (fill(to) >= fill(from)) return null;
+  }
+  if (!to) return null;
+  s.inv[from] -= config.MERCADO_TASA;
+  add(s, to, 1);
+  s.lastTrade = { from, to };
+  return { from, to };
 }
 
 /**
