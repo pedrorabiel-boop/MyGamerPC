@@ -65,7 +65,7 @@ function updateAnimo(s: GameState) {
   const paredes = s.buildings.filter((b) => b.built && b.type === "pared").reduce((acc, b) => acc + (b.zone === "cueva" ? 2 : 1), 0);
   a += Math.min(paredes, 3) * (BUILDING_BY_ID.pared.animo ?? 0);
   if (has(s, "P05")) a += 0.05; // abrigo de pieles
-  if (s.villagers.length > housing(s)) a -= 0.2;
+  if (s.villagers.length > housing(s)) a -= has(s, "B06") ? 0.05 : 0.2; // Leyes (B06): la sobrepoblación pesa menos
   if (s.inv.comida <= 0 && !unlimited(s, "comida")) a -= 0.3;
   s.animo = Math.max(0.4, Math.min(1.6, a));
 }
@@ -132,7 +132,7 @@ function checkEras(s: GameState) {
   if (ms.population && s.villagers.length < ms.population) return;
   s.erasOpen = next.id;
   log(s, `¡Hito «${ms.name}»! Se abre el capítulo: ${next.name}.`);
-  if (next.id >= 3) s.prototypeEnded = true;
+  if (next.id >= 4) s.prototypeEnded = true;
 }
 
 function occupancy(s: GameState): Map<number, number> {
@@ -179,17 +179,30 @@ function anchor(s: GameState, zone: ZoneId): Building {
   return s.buildings.find((b) => b.built && b.zone === zone && b.type === "fogata") ?? s.buildings.find((b) => b.zone === zone && b.type === "pila")!;
 }
 
-/** Camina hasta la entrada de su zona y aparece en la otra. */
+/** Camina hasta la salida hacia la otra zona y aparece en la entrada de esa zona. */
 function travel(s: GameState, v: Villager, dt: number) {
-  const from = s.zones[v.zone];
-  if (moveTo(v, from.entrance.x + 0.5, from.entrance.y + 0.5, dt)) {
-    const to = s.zones[v.transit!];
-    v.zone = v.transit!;
-    v.transit = null;
-    v.x = to.entrance.x + 0.5;
-    v.y = to.entrance.y + 0.5;
+  const fromId = v.zone, toId = v.transit!;
+  // Las zonas se conectan a través del Valle: si no hay salida directa, primero va al Valle.
+  const hop: ZoneId = s.zones[fromId].exits[toId] ? toId : "valle";
+  const exit = s.zones[fromId].exits[hop]!;
+  if (moveTo(v, exit.x + 0.5, exit.y + 0.5, dt)) {
+    const arrive = s.zones[hop].exits[fromId]!;
+    v.zone = hop;
+    if (hop === toId) v.transit = null;
+    v.x = arrive.x + 0.5;
+    v.y = arrive.y + 0.5;
     v.task = { kind: "idle", t: 0 };
   }
+}
+
+/** Lo que se produce en una zona lejana llega con pérdida. */
+export const zoneEfficiency = (zone: ZoneId) => (zone === "montanas" ? config.EFICIENCIA_MONTANAS : 1);
+
+const workSpeed = (s: GameState) => (has(s, "B03") ? config.BONO_BRONCE : 1);
+
+/** ¿Hay un edificio de tipo `type` en alguna de las 8 casillas vecinas? */
+export function hasNeighbor(s: GameState, b: Building, type: string): boolean {
+  return s.buildings.some((o) => o.built && o.type === type && o.zone === b.zone && o !== b && Math.abs(o.x - b.x) <= 1 && Math.abs(o.y - b.y) <= 1);
 }
 
 function nearestStore(s: GameState, v: Villager): Building {
@@ -231,6 +244,9 @@ function updateVillager(s: GameState, v: Villager, dt: number, occ: Map<number, 
     if (v.workplace != null) v.workplace = null;
     return wander(s, v, dt, a.x + 0.5, a.y + 0.5, 0.8);
   }
+
+  // Si va cargando algo, primero lo entrega (aunque le hayan cambiado la categoría o la zona).
+  if (v.carry) return gather(s, v, dt, null, null);
 
   // "Señalar": un solo viaje, tiene prioridad.
   if (v.order) {
@@ -314,7 +330,7 @@ function gather(s: GameState, v: Villager, dt: number, spec: GatherSpec | null, 
   if (v.carry) {
     const store = nearestStore(s, v);
     if (moveTo(v, store.x + 0.5, store.y + 0.5, dt)) {
-      add(s, v.carry.res, v.carry.amt);
+      add(s, v.carry.res, v.carry.amt * zoneEfficiency(v.zone));
       v.carry = null;
       v.task = { kind: "idle", t: 0 };
       if (v.order) v.order = null;
@@ -337,10 +353,10 @@ function gather(s: GameState, v: Villager, dt: number, spec: GatherSpec | null, 
     if (moveTo(v, node.x + 0.5, node.y + 0.5, dt)) v.task = { kind: "gather", nodeId: node.id, res: task.res, t: 0 };
     return;
   }
-  const speed = (has(s, "P02") ? config.BONO_HERRAMIENTAS : 1) * s.animo;
+  const speed = (has(s, "P02") ? config.BONO_HERRAMIENTAS : 1) * workSpeed(s) * s.animo;
   task.t += dt * speed;
   if (task.t >= config.TIEMPO_RECOLECTAR) {
-    const capacity = config.CARGA_BASE * (has(s, "P02") ? config.BONO_CESTA : 1) * spec.carryMult;
+    const capacity = config.CARGA_BASE * (has(s, "P02") ? config.BONO_CESTA : 1) * (has(s, "B04") ? config.BONO_RUEDA : 1) * spec.carryMult;
     const take = Math.min(node.stock[task.res] ?? 0, capacity);
     node.stock[task.res] = (node.stock[task.res] ?? 0) - take;
     v.carry = { res: task.res, amt: take };
@@ -396,11 +412,13 @@ function workAt(s: GameState, v: Villager, dt: number, b: Building) {
   }
   if (v.task.kind !== "work") return;
   if (staff.inputs && !canAfford(s, staff.inputs)) return; // espera materiales
-  v.task.t += dt * s.animo;
+  v.task.t += dt * s.animo * workSpeed(s);
   if (v.task.t >= staff.cycle) {
     v.task.t = 0;
     if (staff.inputs) pay(s, staff.inputs);
-    const bonus = stageOf(v) === "elder" ? staff.elderBonus ?? 1 : 1; // los ancianos chamanes rinden más
+    let bonus = stageOf(v) === "elder" ? staff.elderBonus ?? 1 : 1; // los ancianos chamanes rinden más
+    if (b.type === "parcela" && has(s, "B09")) bonus *= config.BONO_ARADO * (hasNeighbor(s, b, "canal") ? config.BONO_CANAL : 1);
+    bonus *= zoneEfficiency(b.zone);
     for (const [r, amt] of Object.entries(staff.outputs ?? {})) add(s, r as ResId, (amt ?? 0) * bonus);
   }
 }

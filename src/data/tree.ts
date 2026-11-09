@@ -39,7 +39,7 @@ export const TECHS = tree.techs;
 export const TECH_BY_ID: Record<string, Tech> = Object.fromEntries(TECHS.map((t) => [t.id, t]));
 
 /** Eras que el prototipo implementa de verdad. Las demás se ven en el Libro, pero sus efectos no existen todavía. */
-export const IMPLEMENTED_ERAS = 2;
+export const IMPLEMENTED_ERAS = 3;
 
 export function techCost(t: Tech): number {
   const eraFactor = t.era === 1 ? config.FACTOR_ERA_1 : 1;

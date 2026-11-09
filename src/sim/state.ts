@@ -1,31 +1,46 @@
 import { config } from "../config";
 import { NODE_DEFS, RESOURCES, VILLAGER_NAMES, type NodeType, type ResId, type Role } from "../content";
 
-export type Tile = "pasto" | "rio" | "orilla" | "cueva" | "suelo" | "pared" | "salida";
+export type Tile = "pasto" | "rio" | "orilla" | "cueva" | "suelo" | "pared" | "salida" | "sendero" | "monte" | "pico";
 
 /** Zonas del mundo: cada una es su propia grilla. Ver docs/01-arbol-tecnologico.md, "Zonas del mapa". */
-export type ZoneId = "valle" | "cueva";
+export type ZoneId = "valle" | "cueva" | "montanas";
 
 export interface ZoneMap {
   w: number;
   h: number;
   tiles: Tile[][]; // [y][x]
-  entrance: { x: number; y: number }; // casilla que conecta con la otra zona
+  exits: Partial<Record<ZoneId, { x: number; y: number }>>; // casilla que lleva a cada zona vecina
 }
 
 export const ZONES: { id: ZoneId; name: string; label: string; icon: string; unlockedBy: string | null }[] = [
   { id: "valle", name: "Valle", label: "el Valle", icon: "🏞️", unlockedBy: null },
   { id: "cueva", name: "Cueva", label: "la Cueva", icon: "🕳️", unlockedBy: "N10" },
+  { id: "montanas", name: "Montañas", label: "las Montañas", icon: "⛰️", unlockedBy: "B04" },
 ];
 export const ZONE_BY_ID = Object.fromEntries(ZONES.map((z) => [z.id, z])) as Record<ZoneId, (typeof ZONES)[number]>;
 
 /** La Jefatura (N11): especialidades elegidas y prioridades de las categorías. */
 export interface JefaturaState {
-  priorities: Role[]; // orden de prioridad (Zipf: 1, 1/2, 1/3…)
+  priorities: Record<ZoneId, Role[]>; // orden de prioridad por zona (Zipf: 1, 1/2, 1/3…)
   specialties: Record<string, { full: boolean; n: number }>; // tipo de edificio → puestos pedidos
   timer: number;
 }
-export const defaultJefatura = (): JefaturaState => ({ priorities: ["comida", "materiales", "construccion"], specialties: {}, timer: 0 });
+/** Prioridades iniciales de cada zona: en el Valle manda la comida; en la Cueva y las Montañas no hay comida. */
+export const defaultPriorities = (): Record<ZoneId, Role[]> => ({
+  valle: ["comida", "materiales", "construccion"],
+  cueva: ["materiales", "construccion", "comida"],
+  montanas: ["materiales", "construccion", "comida"],
+});
+export const defaultJefatura = (): JefaturaState => ({ priorities: defaultPriorities(), specialties: {}, timer: 0 });
+
+/** Partidas con prioridades globales (una sola lista): esa lista pasa al Valle; las demás zonas usan las de defecto. */
+export function migratePriorities(j: JefaturaState) {
+  const old = j.priorities as unknown;
+  const base = defaultPriorities();
+  if (Array.isArray(old)) j.priorities = { ...base, valle: old as Role[] };
+  for (const z of Object.keys(base) as ZoneId[]) j.priorities[z] ??= base[z];
+}
 
 export type Task =
   | { kind: "idle"; t: number }
@@ -159,6 +174,9 @@ const VALLE_NODES: [NodeType, number, number][] = [
   ["manada", 0, 6],
   ["arcilla", 6, 2], ["arcilla", 6, 5], ["arcilla", 6, 9],
 ];
+// Arena en la orilla (Era 3: Ladrillo y vidrio). Se agrega aparte para poder migrar partidas.
+const VALLE_ARENA: [number, number][] = [[6, 0], [6, 7], [6, 11]];
+const SENDERO = { x: 1, y: 11 }; // camino a las Montañas
 
 function valleMap(): ZoneMap {
   const w = 8, h = 12;
@@ -169,7 +187,8 @@ function valleMap(): ZoneMap {
     tiles.push(row);
   }
   tiles[0][0] = "cueva";
-  return { w, h, tiles, entrance: { x: 0, y: 0 } };
+  tiles[SENDERO.y][SENDERO.x] = "sendero";
+  return { w, h, tiles, exits: { cueva: { x: 0, y: 0 }, montanas: SENDERO } };
 }
 
 // ---------- La Cueva (8×10): se entra con N10 Exploración ----------
@@ -195,7 +214,40 @@ const CUEVA_NODES: [NodeType, number, number][] = [
 function cuevaMap(): ZoneMap {
   const code: Record<string, Tile> = { P: "pared", s: "suelo", S: "salida" };
   const tiles = CUEVA_ROWS.map((row) => [...row].map((c) => code[c]));
-  return { w: 8, h: tiles.length, tiles, entrance: { x: 3, y: 9 } };
+  return { w: 8, h: tiles.length, tiles, exits: { valle: { x: 3, y: 9 } } };
+}
+
+// ---------- Las Montañas (8×10): se llega con B04 Rueda ----------
+
+const MONTANAS_ROWS = [
+  "PPmmPPmP",
+  "PmmmmmmP",
+  "mmmPmmmm",
+  "mmmmmmPm",
+  "PmmmmmmP",
+  "mmmmPmmm",
+  "mmPmmmmm",
+  "PmmmmmmP",
+  "mmmmmmmP",
+  "PPPSPPPP",
+];
+const MONTANAS_NODES: [NodeType, number, number][] = [
+  ["estano", 2, 1], ["estano", 5, 3], ["estano", 1, 6], ["estano", 6, 8],
+  ["roca", 4, 1], ["roca", 2, 4], ["roca", 5, 6],
+  ["hierro", 6, 2], ["hierro", 1, 3], ["hierro", 3, 7],
+  ["arbol", 0, 2], ["arbol", 7, 5], ["arbol", 0, 8],
+];
+
+function montanasMap(): ZoneMap {
+  const code: Record<string, Tile> = { P: "pico", m: "monte", S: "salida" };
+  const tiles = MONTANAS_ROWS.map((row) => [...row].map((c) => code[c]));
+  return { w: 8, h: tiles.length, tiles, exits: { valle: { x: 3, y: 9 } } };
+}
+
+export function addMontanas(s: GameState) {
+  s.zones.montanas = montanasMap();
+  for (const [type, x, y] of MONTANAS_NODES) addNode(s, "montanas", type, x, y);
+  s.buildings.push({ id: s.nextId++, type: "pila", zone: "montanas", x: 3, y: 8, progress: 0, built: true });
 }
 
 /** Agrega la Cueva a una partida (nueva o de una versión anterior). */
@@ -213,7 +265,7 @@ export function createState(seed = Date.now() % 100000): GameState {
     version: 2,
     rng: seed | 0,
     time: 0,
-    zones: { valle: valleMap(), cueva: cuevaMap() },
+    zones: { valle: valleMap(), cueva: cuevaMap(), montanas: montanasMap() },
     nodes: [],
     buildings: [],
     villagers: [],
@@ -234,8 +286,10 @@ export function createState(seed = Date.now() % 100000): GameState {
   };
 
   for (const [type, x, y] of VALLE_NODES) addNode(s, "valle", type, x, y);
+  for (const [x, y] of VALLE_ARENA) addNode(s, "valle", "arena", x, y);
   s.buildings.push({ id: s.nextId++, type: "pila", zone: "valle", x: 3, y: 6, progress: 0, built: true });
   addCave(s);
+  addMontanas(s);
 
   for (const age of [19, 22, 31, 13, 6]) {
     newVillager(s, age, 3.5 + (rand(s) - 0.5) * 2, 6.5 + (rand(s) - 0.5) * 2);
@@ -244,13 +298,28 @@ export function createState(seed = Date.now() % 100000): GameState {
   return s;
 }
 
-/** Partidas guardadas antes de las zonas: todo pasa al Valle y se agrega la Cueva. */
+/** Pone al día partidas guardadas con versiones anteriores del mundo (zonas, Cueva, Montañas, arena). */
 export function migrateToZones(s: GameState & { w?: number; h?: number; tiles?: Tile[][] }) {
-  if (s.zones) return;
-  s.zones = { valle: { w: s.w ?? 8, h: s.h ?? 12, tiles: s.tiles ?? valleMap().tiles, entrance: { x: 0, y: 0 } } } as GameState["zones"];
-  delete s.w; delete s.h; delete s.tiles;
-  for (const v of s.villagers) { v.zone ??= "valle"; v.transit ??= null; }
-  for (const n of s.nodes) n.zone ??= "valle";
-  for (const b of s.buildings) b.zone ??= "valle";
-  addCave(s);
+  type OldZone = ZoneMap & { entrance?: { x: number; y: number } };
+  if (!s.zones) {
+    s.zones = { valle: { w: s.w ?? 8, h: s.h ?? 12, tiles: s.tiles ?? valleMap().tiles, exits: {} } } as unknown as GameState["zones"];
+    delete s.w; delete s.h; delete s.tiles;
+    for (const v of s.villagers) { v.zone ??= "valle"; v.transit ??= null; }
+    for (const n of s.nodes) n.zone ??= "valle";
+    for (const b of s.buildings) b.zone ??= "valle";
+  }
+  // Entradas: antes había una sola ("entrance"); ahora cada zona tiene salidas hacia sus vecinas.
+  for (const z of Object.values(s.zones) as OldZone[]) { z.exits ??= {}; delete z.entrance; }
+  const valle = s.zones.valle;
+  valle.exits.cueva = { x: 0, y: 0 };
+  valle.tiles[0][0] = "cueva";
+  const free = (x: number, y: number) => !s.nodes.some((n) => n.zone === "valle" && n.x === x && n.y === y) && !s.buildings.some((b) => b.zone === "valle" && b.x === x && b.y === y);
+  if (free(SENDERO.x, SENDERO.y)) valle.tiles[SENDERO.y][SENDERO.x] = "sendero";
+  valle.exits.montanas = SENDERO;
+  if (!s.zones.cueva) addCave(s);
+  s.zones.cueva.exits = { valle: { x: 3, y: 9 } };
+  if (!s.zones.montanas) addMontanas(s);
+  if (!s.nodes.some((n) => n.zone === "valle" && n.type === "arena")) {
+    for (const [x, y] of VALLE_ARENA) if (free(x, y)) addNode(s, "valle", "arena", x, y);
+  }
 }

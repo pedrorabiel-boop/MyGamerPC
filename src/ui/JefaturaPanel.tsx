@@ -4,7 +4,7 @@ import { engine, useEngine } from "../engine";
 import { roleUnlocked } from "../sim/economy";
 import {
   changeSpecialtyTarget, manualVillagers, movePriority, returnToJefatura, roleCap, setSpecialtyFull, specialtyConfig,
-  specialtySlots, specialtyStaffed, specialtyTarget, specialtyTypes, zipfTargets, zonePool,
+  specialtyShortZones, specialtySlots, specialtyStaffed, specialtyTarget, specialtyTypes, zipfTargets, zonePool,
 } from "../sim/jefatura";
 import { zoneUnlocked } from "../sim/actions";
 import { ZONES, ZONE_BY_ID } from "../sim/state";
@@ -16,7 +16,7 @@ export function JefaturaPanel() {
   const types = specialtyTypes(s);
   const managedPool = zonePool(s, zone);
   const targets = zipfTargets(s, managedPool.length, zone);
-  const visible = s.jefatura.priorities.filter((r) => roleUnlocked(s, r));
+  const visible = s.jefatura.priorities[zone].filter((r) => roleUnlocked(s, r));
   const weightOf = (i: number) => (i === 0 ? "1" : `1/${i + 1}`);
   const manual = manualVillagers(s);
   const n = (fn: () => void) => () => { fn(); engine.notify(); };
@@ -48,6 +48,9 @@ export function JefaturaPanel() {
                 <span className="grow">
                   <b>{def.staff!.title}</b>
                   <small>{def.name} · ocupados {have}/{slots}{have !== target ? ` → meta ${target}` : ""}</small>
+                  {specialtyShortZones(s, type).map((z) => (
+                    <small key={z} className="warn">Falta gente en {ZONE_BY_ID[z].label}: envía aldeanos</small>
+                  ))}
                 </span>
                 <button className={"chip" + (cfg.full ? " sel" : "")} onClick={n(() => setSpecialtyFull(s, type, !cfg.full))}>Total</button>
                 <button className="round" onClick={n(() => changeSpecialtyTarget(s, type, -1))} disabled={target === 0}>−</button>
@@ -59,10 +62,10 @@ export function JefaturaPanel() {
         </div>
       )}
 
-      <h4>2 · Prioridades</h4>
+      <h4>2 · Prioridades{multiZone ? ` en ${ZONE_BY_ID[zone].label}` : ""}</h4>
       <p className="hint">
         {multiZone ? `📍 En ${ZONE_BY_ID[zone].label}: ` : ""}{managedPool.length} personas para repartir entre las categorías.
-        {multiZone ? " Las prioridades valen para todas las zonas; cada zona reparte con su propio trabajo." : ""}
+        {multiZone ? " Cada zona tiene sus propias prioridades: cambia de zona con las pestañas del mapa." : ""}
       </p>
       <div className="list">
         {visible.map((r, i) => {
@@ -82,8 +85,8 @@ export function JefaturaPanel() {
                     : `sin trabajo en ${ZONE_BY_ID[zone].label}: no recibe gente`}
                 </small>
               </span>
-              <button className="round" onClick={n(() => movePriority(s, r, -1))} disabled={i === 0} aria-label="Subir">↑</button>
-              <button className="round" onClick={n(() => movePriority(s, r, 1))} disabled={i === visible.length - 1} aria-label="Bajar">↓</button>
+              <button className="round" onClick={n(() => movePriority(s, r, -1, zone))} disabled={i === 0} aria-label="Subir">↑</button>
+              <button className="round" onClick={n(() => movePriority(s, r, 1, zone))} disabled={i === visible.length - 1} aria-label="Bajar">↓</button>
             </div>
           );
         })}

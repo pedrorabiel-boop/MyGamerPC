@@ -71,6 +71,11 @@ function Autosuficiencia({ s }: { s: GameState }) {
                     {BUILDING_BY_ID[b.type].icon} {BUILDING_BY_ID[b.type].name}: {b.have}/{b.need}
                   </li>
                 ))}
+                {p.near && (
+                  <li className={p.near.have >= p.near.n ? "ok" : "no"}>
+                    {BUILDING_BY_ID[p.near.type].icon} {BUILDING_BY_ID[p.near.type].name}s junto a un {BUILDING_BY_ID[p.near.near].name.toLowerCase()}: {p.near.have}/{p.near.n}
+                  </li>
+                )}
                 {p.staffed.map((w) => (
                   <li key={w.type} className={w.have >= w.need ? "ok" : "no"}>
                     {BUILDING_BY_ID[w.type].staff?.icon} Puestos ocupados en {BUILDING_BY_ID[w.type].name.toLowerCase()}s: {w.have}/{w.need}

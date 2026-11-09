@@ -4,9 +4,10 @@ import { useEffect, useRef } from "react";
 import { BUILDING_BY_ID, NODE_DEFS, ROLE_BY_ID, SPECIALIST_COLOR, type ResId } from "../content";
 import { engine } from "../engine";
 import { canPlace, orderGather, place, zoneUnlocked } from "../sim/actions";
-import { staffCount, stageOf } from "../sim/economy";
+import { has, staffCount, stageOf } from "../sim/economy";
+import type { ZoneId } from "../sim/state";
 
-const TILE_COLORS = { pasto: 0x557a35, rio: 0x2f6fb5, orilla: 0x8a7a50, cueva: 0x1a1a1a, suelo: 0x4a4038, pared: 0x1f1b18, salida: 0x8a7a5a } as const;
+const TILE_COLORS = { pasto: 0x557a35, rio: 0x2f6fb5, orilla: 0x8a7a50, cueva: 0x1a1a1a, suelo: 0x4a4038, pared: 0x1f1b18, salida: 0x8a7a5a, sendero: 0x8a7a50, monte: 0x6f7a6a, pico: 0xd8dde4 } as const;
 
 export function MapView() {
   const host = useRef<HTMLDivElement>(null);
@@ -64,6 +65,13 @@ export function MapView() {
               // Entrada de la cueva con brillo verde.
               tilesG.circle((x + 0.5) * ts, (y + 0.62) * ts, ts * 0.3).fill(0x000000);
               tilesG.circle((x + 0.5) * ts, (y + 0.66) * ts, ts * 0.08).fill({ color: 0x3fe07a, alpha: 0.8 });
+            } else if (t === "sendero") {
+              // Sendero a las Montañas: camino de tierra con una montañita.
+              tilesG.rect((x + 0.38) * ts, y * ts, ts * 0.24, ts).fill({ color: 0xb8a070, alpha: 0.9 });
+              tilesG.moveTo((x + 0.15) * ts, (y + 0.55) * ts).lineTo((x + 0.35) * ts, (y + 0.2) * ts).lineTo((x + 0.55) * ts, (y + 0.55) * ts).fill({ color: 0x9aa4a8, alpha: 0.9 });
+            } else if (t === "pico") {
+              tilesG.moveTo(x * ts, (y + 1) * ts).lineTo((x + 0.5) * ts, (y + 0.1) * ts).lineTo((x + 1) * ts, (y + 1) * ts).fill(0x8a929a);
+              tilesG.moveTo((x + 0.36) * ts, (y + 0.36) * ts).lineTo((x + 0.5) * ts, (y + 0.1) * ts).lineTo((x + 0.64) * ts, (y + 0.36) * ts).fill(0xffffff);
             } else if (t === "salida") {
               // Salida al Valle: luz que entra.
               tilesG.circle((x + 0.5) * ts, (y + 0.7) * ts, ts * 0.38).fill({ color: 0xf6e3a0, alpha: 0.55 });
@@ -116,6 +124,15 @@ export function MapView() {
           } else if (n.type === "ocre") {
             nodesG.roundRect(cx - ts * 0.32, cy - ts * 0.22, ts * 0.64, ts * 0.46, ts * 0.12).fill({ color: def.color, alpha });
             nodesG.rect(cx - ts * 0.22, cy - ts * 0.06, ts * 0.44, ts * 0.05).fill({ color: 0xffb070, alpha: alpha * 0.8 });
+          } else if (n.type === "arena") {
+            nodesG.ellipse(cx, cy, ts * 0.32, ts * 0.18).fill({ color: def.color, alpha });
+            nodesG.circle(cx - ts * 0.1, cy, ts * 0.03).fill({ color: 0xffffff, alpha: 0.6 });
+          } else if (n.type === "estano") {
+            nodesG.roundRect(cx - ts * 0.34, cy - ts * 0.24, ts * 0.68, ts * 0.48, ts * 0.12).fill(0x4a4f55);
+            for (const [dx, dy] of [[-0.15, -0.08], [0.1, 0.05], [0.2, -0.12], [-0.05, 0.12]]) nodesG.circle(cx + dx * ts, cy + dy * ts, ts * 0.05).fill(def.color);
+          } else if (n.type === "hierro") {
+            nodesG.roundRect(cx - ts * 0.3, cy - ts * 0.22, ts * 0.6, ts * 0.44, ts * 0.14).fill(def.color);
+            nodesG.rect(cx - ts * 0.18, cy - ts * 0.04, ts * 0.36, ts * 0.05).fill({ color: 0xd06040, alpha: 0.8 });
           } else if (n.type === "veta") {
             nodesG.roundRect(cx - ts * 0.34, cy - ts * 0.24, ts * 0.68, ts * 0.48, ts * 0.12).fill(0x2e2a26);
             for (const [dx, dy] of [[-0.15, -0.08], [0.1, 0.05], [0.2, -0.12], [-0.05, 0.12]]) {
@@ -235,7 +252,12 @@ export function MapView() {
 
         // Con un aldeano seleccionado, tocar un recurso = señalar.
         const node = s.nodes.find((n) => n.zone === zone && n.x === tx && n.y === ty);
-        if (node?.type === "veta") { engine.toast("Vetas de cobre: brillan, pero todavía no sabemos sacarlas. Hace falta Minería (Edad de Bronce)."); return; }
+        if (node?.type === "veta" || node?.type === "estano") {
+          const name = node.type === "veta" ? "Vetas de cobre" : "Vetas de estaño";
+          engine.toast(has(s, "B01") ? `${name}: construye encima una ⛏️ Mina (🔨 Construir).` : `${name}: brillan, pero todavía no sabemos sacarlas. Hace falta Minería.`);
+          return;
+        }
+        if (node?.type === "hierro") { engine.toast("Rocas rojas: algo hay ahí adentro… (Edad de Hierro)."); return; }
         if (engine.ui.selected != null && node) {
           const err = orderGather(s, engine.ui.selected, node.id);
           if (err) engine.toast(err);
@@ -245,10 +267,16 @@ export function MapView() {
         if (node) { engine.toast(`${NODE_DEFS[node.type].name}. Selecciona un aldeano y toca aquí para que recolecte.`); return; }
         const b = s.buildings.find((x) => x.zone === zone && x.x === tx && x.y === ty);
         if (b) { engine.ui.selectedBuilding = b.id; engine.ui.selected = null; engine.notify(); return; }
-        // Entrada de la cueva (en el Valle) o salida (en la Cueva): ventana de traslado.
-        if (tile === "cueva" || tile === "salida") {
-          if (!zoneUnlocked(s, "cueva")) { engine.toast("Una cueva oscura. Algo brilla en verde adentro… Hace falta una antorcha (Exploración)."); return; }
-          engine.ui.zoneModal = "cueva";
+        // Entradas (en el Valle) o salida (en otra zona): ventana de traslado de esa zona.
+        const target: ZoneId | null = tile === "cueva" ? "cueva" : tile === "sendero" ? "montanas" : tile === "salida" ? zone : null;
+        if (target) {
+          if (!zoneUnlocked(s, target)) {
+            engine.toast(target === "cueva"
+              ? "Una cueva oscura. Algo brilla en verde adentro… Hace falta una antorcha (Exploración)."
+              : "Un sendero hacia las montañas. Es muy lejos para ir cargando cosas a mano: hace falta la Rueda.");
+            return;
+          }
+          engine.ui.zoneModal = target;
           engine.notify();
           return;
         }

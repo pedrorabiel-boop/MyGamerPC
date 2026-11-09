@@ -76,16 +76,25 @@ export function staffCount(s: GameState, b: Building): number {
 export const staffedTotal = (s: GameState, type: string) =>
   s.buildings.filter((b) => b.built && b.type === type).reduce((acc, b) => acc + staffCount(s, b), 0);
 
+/** Cuántos edificios `type` tienen al lado (8 vecinas) uno `near` construido. */
+export function countNear(s: GameState, type: string, near: string): number {
+  return s.buildings.filter((b) => b.built && b.type === type && s.buildings.some(
+    (o) => o.built && o.type === near && o.zone === b.zone && Math.abs(o.x - b.x) <= 1 && Math.abs(o.y - b.y) <= 1,
+  )).length;
+}
+
 /** Qué tanto se cumple cada condición de una resolución (para mostrar el progreso). */
 export function resolutionProgress(s: GameState, def: ResolutionDef) {
   return {
     tech: has(s, def.tech),
     buildings: Object.entries(def.buildings).map(([type, need]) => ({ type, need, have: countBuilt(s, type) })),
     staffed: Object.entries(def.staffed).map(([type, need]) => ({ type, need, have: staffedTotal(s, type) })),
+    near: def.near ? { ...def.near, have: countNear(s, def.near.type, def.near.near) } : null,
   };
 }
 
 export function isResolutionMet(s: GameState, def: ResolutionDef): boolean {
   const p = resolutionProgress(s, def);
-  return p.tech && p.buildings.every((b) => b.have >= b.need) && p.staffed.every((w) => w.have >= w.need);
+  return p.tech && p.buildings.every((b) => b.have >= b.need) && p.staffed.every((w) => w.have >= w.need)
+    && (!p.near || p.near.have >= p.near.n);
 }

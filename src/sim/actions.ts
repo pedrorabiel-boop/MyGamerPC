@@ -49,8 +49,17 @@ export function canPlace(s: GameState, type: string, x: number, y: number, zone:
   const z = s.zones[zone];
   if (x < 0 || y < 0 || x >= z.w || y >= z.h) return false;
   if (!def.place.includes(z.tiles[y][x])) return false;
-  if (s.nodes.some((n) => n.zone === zone && n.x === x && n.y === y)) return false;
   if (s.buildings.some((b) => b.zone === zone && b.x === x && b.y === y)) return false;
+  const node = s.nodes.find((n) => n.zone === zone && n.x === x && n.y === y);
+  // Las minas van encima de su veta; el resto, en casillas sin recursos.
+  if (def.onNode ? node?.type !== def.onNode : !!node) return false;
+  if (def.nearWater) {
+    const water = (tx: number, ty: number) => {
+      const tile = z.tiles[ty]?.[tx];
+      return tile === "rio" || tile === "orilla" || s.buildings.some((b) => b.zone === zone && b.type === "canal" && b.x === tx && b.y === ty);
+    };
+    if (![[1, 0], [-1, 0], [0, 1], [0, -1]].some(([dx, dy]) => water(x + dx, y + dy))) return false;
+  }
   return true;
 }
 
@@ -61,7 +70,11 @@ export const placeableIn = (s: GameState, type: string, zone: ZoneId) =>
 export function place(s: GameState, type: string, x: number, y: number, zone: ZoneId = "valle"): string | null {
   const def = BUILDING_BY_ID[type];
   if (!def.unlockedBy || !has(s, def.unlockedBy)) return "Todavía no sabes construir eso.";
-  if (!canPlace(s, type, x, y, zone)) return def.place.includes("orilla") ? "Tiene que ir en la orilla del río, en una casilla libre." : "Esa casilla no está libre.";
+  if (!canPlace(s, type, x, y, zone)) {
+    if (def.onNode) return `Tiene que ir encima de: ${def.onNode === "veta" ? "una veta verde (Cueva)" : "una veta de estaño (Montañas)"}.`;
+    if (def.nearWater) return "El canal tiene que tocar el río, la orilla u otro canal.";
+    return def.place.includes("orilla") ? "Tiene que ir en la orilla del río, en una casilla libre." : "Esa casilla no está libre.";
+  }
   if (!canAfford(s, def.cost)) return "No alcanzan los materiales.";
   pay(s, def.cost);
   s.buildings.push({ id: s.nextId++, type, zone, x, y, progress: 0, built: false });
@@ -142,9 +155,15 @@ export function changeSpecialists(s: GameState, buildingId: number, delta: 1 | -
   if (delta === 1) {
     if (staffCount(s, b) >= staff.slots) return "Ya no hay puestos libres.";
     // Para los puestos que lo admiten (chamán), primero un anciano libre: son los mejores.
-    const elder = staff.elders ? s.villagers.find((v) => stageOf(v) === "elder" && v.workplace == null) : undefined;
-    const free = elder ?? s.villagers.find(isFree);
-    if (!free) return "No hay aldeanos libres: quita a alguien de una categoría en 👥 Aldeanos.";
+    // Solo gente que ya está en la zona del edificio; para los puestos que lo admiten (chamán), primero un anciano.
+    const here = (v: Villager) => v.zone === b.zone && !v.transit;
+    const elder = staff.elders ? s.villagers.find((v) => stageOf(v) === "elder" && v.workplace == null && here(v)) : undefined;
+    const free = elder ?? s.villagers.find((v) => isFree(v) && here(v));
+    if (!free) {
+      return b.zone === "valle"
+        ? "No hay aldeanos libres: quita a alguien de una categoría en 👥 Aldeanos."
+        : `No hay aldeanos libres en ${ZONE_BY_ID[b.zone].label}: envía gente desde el Valle (toca su entrada).`;
+    }
     free.workplace = b.id;
     free.order = null;
     free.task = { kind: "idle", t: 0 };

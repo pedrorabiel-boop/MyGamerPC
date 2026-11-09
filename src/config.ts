@@ -32,6 +32,11 @@ export const config = {
   CARGA_BASE: 2,
   BONO_HERRAMIENTAS: 1.5, // P02 Piedra tallada
   BONO_CESTA: 2, // P02 Herramientas de piedra (cesta)
+  BONO_RUEDA: 1.5, // B04 carretilla: carga por viaje
+  BONO_BRONCE: 1.25, // B03 herramientas de bronce: velocidad de trabajo
+  BONO_CANAL: 1.5, // parcela junto a un canal
+  BONO_ARADO: 1.25, // B09: todas las parcelas
+  EFICIENCIA_MONTANAS: 0.6, // lo que se junta en las Montañas llega al 60%
   FACTOR_AYUDA_CONSTRUCCION: 0.5, // aldeano sin oficio que ayuda a construir
   JEFATURA_INTERVALO: 1, // segundos entre cada reasignación de la Jefatura
   DEVOLUCION_DEMOLER: 0.5, // fracción de los materiales que se recupera al demoler (una obra sin terminar devuelve todo)

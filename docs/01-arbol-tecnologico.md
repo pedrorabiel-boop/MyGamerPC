@@ -10,7 +10,7 @@ Este documento es la **columna vertebral** del juego. Cada tecnología es un nod
 oficio, recurso, etc. Primero fijamos el árbol completo; después diseñamos cada nodo
 en detalle.
 
-**Versión:** 2.0 (borrador: Eras 1–2 consolidadas) · 11 eras · 124 tecnologías · 13 piezas de PC
+**Versión:** 2.3 (borrador: Eras 1–3 consolidadas) · 11 eras · 118 tecnologías · 13 piezas de PC
 (ver el [historial de cambios](#9-historial-de-cambios) al final)
 
 ---
@@ -113,6 +113,10 @@ oficios a mano a ese ritmo sería un castigo. La solución es la **Jefatura**.
      especialidades (chamán, alfarero, tejedor, pastor, curandero…), cada una con
      **"ocupación total"** o una **cantidad** elegida. **No se llenan todas por defecto.**
      Las parcelas y el muelle no están en esta lista: los ocupa la gente de Comida.
+     **La Jefatura nunca mueve gente entre zonas:** cada puesto se llena solo con gente
+     que ya está en la zona del edificio. Si no hay nadie disponible ahí, el panel avisa
+     *"Falta gente en la Cueva: envía aldeanos"*. Mover gente entre zonas es siempre una
+     decisión del jugador (ventana de traslado).
      Los **ancianos pueden ser chamanes** (y rinden ×1,5): la Jefatura los prefiere
      para ese puesto y, si un adulto lo ocupa, lo cambia por un anciano libre.
   2. **El resto se reparte con la regla de Zipf** según el orden de prioridades que
@@ -193,7 +197,7 @@ qué cambió y qué hacer con eso (*"¡Caza! Tu gente de Comida ahora va a la ma
 
 - **Multiplica** la productividad y la natalidad.
 - **Baja** cuando crece la población (hacinamiento y desorden).
-- **Lo suben** el arte (P11), la Fogata (P04), las Leyes (B13), la religión y, mucho
+- **Lo suben** el arte (P11), la Fogata (P04), las Leyes (B06), la religión y, mucho
   después, la Radio y la TV.
 - Todo lo que en el árbol dice "felicidad" u "orden" se refiere a este valor.
 
@@ -230,7 +234,7 @@ tecnologías nuevas. Por eso cada recurso básico tiene un **nivel máximo**: qu
 
 | Recurso | Tecnología | Edificios (X) | Aldeanos fijos (Y) | Era |
 |---|---|---|---|---|
-| Comida | B08 Arado + B09 Irrigación | 4 parcelas + 1 granero | 8 agricultores | 3 |
+| Comida | B09 Arado e irrigación | 4 parcelas **junto a un canal** + 1 granero | 8 agricultores | 3 |
 | Ramas, piedra, fibras | B04 Rueda | 1 granero + 1 depósito *(edificio por definir)* | 2 recolectores de cada uno | 3 |
 | Arcilla, cerámica | Alfarería Nv2 (torno) | 2 hornos | 2 alfareros + 2 arcilleros | 3–4 |
 | Madera | H12 Silvicultura | 3 bosques plantados | 3 leñadores | 4 |
@@ -238,8 +242,8 @@ tecnologías nuevas. Por eso cada recurso básico tiene un **nivel máximo**: qu
 | Lana, pieles, tela | I03 Fábrica | Fábrica textil | por definir | 7 |
 | Cobre, estaño, bronce, hierro | I03 Fábrica + I05 Ferrocarril | Fábricas + estación | por definir | 7 |
 
-> **En el prototipo (Eras 1–2):** como la Era 3 todavía no existe, la comida se resuelve
-> con **N01 Granero** + 4 parcelas + 1 granero + 8 agricultores, para poder probarlo.
+> **En el prototipo:** la comida se resuelve como en el diseño final: **B09 Arado e
+> irrigación** + 4 parcelas junto a un canal + 1 granero + 8 agricultores.
 
 ### Arco de energía
 
@@ -265,7 +269,11 @@ cambia cómo se distribuye la ciudad:
 
 ### Monedas y la Tienda del diablo
 
-- **B10 Comercio** abre la 🏗️ **Tienda del diablo**, un kiosco infernal abierto 24/7
+> ⚠️ **Pospuesto (playtest 3):** la Tienda del diablo no se implementa por ahora y
+> puede que no se implemente nunca. Si se descarta, las Monedas, la Banca y los pactos
+> necesitan otro diseño.
+
+- **B04 Comercio** abre la 🏗️ **Tienda del diablo**, un kiosco infernal abierto 24/7
   en el Valle. Al principio funciona por **trueque**: vendes lo que te sobra y compras
   lo que te falta, a una tasa mala.
 - **H07 Moneda** pasa todo a **Monedas**: vendes excedentes en la Tienda y recibes
@@ -367,9 +375,10 @@ lejanas. Y así sucesivamente.
   en la zona hasta que el jugador los traiga. Se mandan primero los libres y después
   gente de la categoría con más personas; los especialistas no se mueven de su puesto.
   Los **niños y ancianos viven en el Valle** (un anciano chamán va a su Círculo).
-- **Jefatura por zona:** las prioridades valen para todas las zonas, pero cada zona
-  reparte a su gente según el trabajo que hay ahí (en la Cueva no hay comida, así que
-  nadie queda en Comida).
+- **Jefatura por zona:** **cada zona tiene su propio orden de prioridades** (por defecto,
+  Comida primero en el Valle y Materiales primero en la Cueva y las Montañas), y reparte
+  a su gente según el trabajo que hay ahí (en la Cueva no hay comida, así que nadie queda
+  en Comida). Si hay una obra pendiente en una zona, al menos una persona construye.
 - **Inventario único con eficiencia de transporte:** todas las zonas comparten un solo
   inventario, pero lo que se produce lejos llega con una pérdida. No hay rutas que
   gestionar a mano.
@@ -399,14 +408,14 @@ lejanas. Y así sucesivamente.
 ### Ramas de soporte
 
 Al calcular el cierre de prerrequisitos de las 13 piezas del PC sale un dato
-importante: **108 de 124 nodos son obligatorios**. El árbol está muy entrelazado. Varias
+importante: **103 de 118 nodos son obligatorios**. El árbol está muy entrelazado. Varias
 cosas "sociales" resultan ser prerrequisitos indirectos del PC:
 
-- **N11 Aldea organizada → B13 Leyes → M04 Universidad / M05 Gremios → … → CPU**
+- **N11 Aldea organizada → B06 Leyes → M04 Universidad / M05 Gremios → … → CPU**
 - **N01 Agricultura → B09 Irrigación → M01 Molino → M03 Papel → R01 Imprenta**
 - **R11 Higiene → X07 Sala limpia** (*"Bañarse ahora es obligatorio."*)
 
-Solo **16 nodos 🌿 son opcionales**: medicina, silvicultura, catedral, escuelas, alcantarillado,
+Solo **15 nodos 🌿 son opcionales**: medicina, silvicultura, catedral, escuelas, alcantarillado,
 TV, etc. No bloquean el PC directamente, pero sin ellos cuesta alcanzar la población
 de los hitos (mortalidad, hambre, desorden). Es la tensión cómica del juego:
 *"¿por qué tengo que inventar el alcantarillado para tener una GPU?"*
@@ -503,34 +512,31 @@ Las 12 tecnologías originales se fusionaron en **6**.
 
 #### Mecánicas que introduce esta era
 
-- **Primera cadena de producción de tres pasos** (ver *Cadenas de producción y
-  adyacencia*):
-  > Madera → **Carbonera** → Carbón vegetal
-  > Mineral de cobre + Carbón vegetal → **Horno** → Cobre
-  > Cobre + Estaño → **Herrero** → Bronce
-- La **madera pasa a ser un recurso disputado** entre construir y quemar, y los árboles
-  tienen techo natural.
-- **Bonos por adyacencia** (canales, hornos junto a la carbonera).
-- **Segunda zona nueva:** las **Montañas** (Rueda), con el estaño y la pista del hierro.
-- **La Crónica** (con la Escritura): un registro de aldeanos notables, como el primero
-  que fundió cobre, el más longevo o el que murió de forma ridícula. Le da sentido a
-  que cada aldeano tenga nombre, aunque viva 6 minutos.
+Las 13 tecnologías originales se fusionaron en **7** (playtest 3).
+
+- **Primera cadena de producción de tres pasos**, toda con especialistas:
+  > Vetas de la Cueva → **Mina** (minero) → Mineral de cobre
+  > Madera → **Carbonera** (carbonero) → Carbón vegetal
+  > Mineral de cobre + Carbón vegetal → **Horno de fundición** (fundidor) → Cobre
+  > Cobre + Estaño → **Herrería** (herrero) → Bronce
+- Las **minas son edificios** que se construyen **sobre las vetas** (cobre en la Cueva,
+  estaño en las Montañas), con su puesto de minero visible en el mapa.
+- **Tercera zona:** las **Montañas** (Rueda), con estaño, piedra, madera y rocas rojas de
+  hierro como pista. Lo que se junta ahí **llega al 60%** (están lejos).
+- **Canales:** se construyen casilla por casilla desde el río; las parcelas junto a un
+  canal producen más. **Aquí se resuelve la comida.**
+- **Tienda del diablo:** pospuesta; puede que no se implemente (ver *Monedas y la Tienda
+  del diablo*).
 
 | ID | Tecnología | Requiere | Se manifiesta como | Qué aporta |
 |---|---|---|---|---|
-| B01 | Minería | P02, N10 | 🏗️ Mina (sobre vetas de la Cueva o de las Montañas) · 👤 Minero · ✋ Pico | Acceso a minerales |
-| B02 | Fundición de cobre | N03, B01, B05 | 🏗️ Horno de fundición · 👤 Fundidor · 📦 Cobre | **Cobre: el metal del PC.** Consume carbón vegetal |
-| B03 | Bronce | B02, B04 | 👤 Herrero · 📦 Bronce · ✋ Herram. de bronce | Mejora todas las herramientas. Necesita el estaño de las Montañas |
-| B04 | Rueda | P02, N02 | ✋ Carretilla · ⚙️ | Los aldeanos cargan más y caminan más rápido con carga. **Abre la zona Montañas** |
-| B05 | Carbón vegetal | P04, P02 | 🏗️ Carbonera · 👤 Carbonero · 📦 Carbón vegetal | Combustible para los hornos. *"Quemar árboles para hacer piedras brillantes. Tiene lógica."* |
-| B06 | Escritura | N09, P11 | 👤 Escriba · 🏗️ Archivo de tablillas | **El saber ya no muere con los maestros.** Abre **La Crónica** |
-| B07 | Ladrillo cocido | N03, B02 | 🏗️ Edificios de ladrillo · 📦 Ladrillo | Mejora edificios y hornos más calientes |
-| B08 | Arado 🌿 | N01, N02, B03 | ✋ Arado con bueyes | Comida ↑↑ |
-| B09 | Irrigación | N01, B01 | 🏗️ Canal (casilla por casilla desde el río) | **Bono por adyacencia**: las parcelas junto a un canal producen más. Agua para máquinas futuras |
-| B10 | Comercio | B04, N09 | 🏗️ Tienda del diablo | **Abre la Tienda del diablo**: trueque de excedentes por lo que falta, a una tasa mala. *"Atendemos 24/7. Literalmente para siempre."* |
-| B11 | Vidrio primitivo | B02 | 📦 Arena, Vidrio | Usa arena de la orilla del río. Raíz del monitor, las lentes y el silicio |
-| B12 | Astronomía | B06, N09 | 📖 · 🏗️ Piedras alineadas (varias casillas) | Comprensión ↑. **Primer edificio grande**, tarda en construirse. *"Nadie sabe para qué sirve. Se ve imponente."* |
-| B13 | Código de leyes | B06, N11 | 🏛️ | Reduce cuánto baja el **Ánimo** al crecer la población |
+| B01 | Minería | P02, N10 | 🏗️ Mina (sobre las vetas) · 👤 Minero · ✋ Pico · 📦 Mineral de cobre | Se construyen **minas sobre las vetas verdes de la Cueva** (y luego sobre el estaño de las Montañas) |
+| B02 | Fundición | N03, B01 | 🏗️ Carbonera, Horno de fundición · 👤 Carbonero, Fundidor · 📦 Carbón vegetal, Cobre | *(Fundición + Carbón vegetal)*. **Cobre: el metal del PC.** *"Quemar árboles para hacer piedras brillantes. Tiene lógica."* |
+| B03 | Bronce | B02, B04 | 🏗️ Herrería · 👤 Herrero · 📦 Bronce · ✋ Herram. de bronce | Cobre + estaño → bronce. **Herramientas de bronce: todos trabajan más rápido** |
+| B04 | Rueda y comercio | P02, N02, N09 | ✋ Carretilla · ⚙️ | *(Rueda + Comercio)*. Se carga más por viaje. **Abre la zona Montañas.** La Tienda del diablo queda pospuesta |
+| B06 | Escritura | N09, P11, N11 | 👤 Escriba · 🏗️ Archivo, Piedras alineadas · 🏛️ | *(Escritura + Astronomía + Código de leyes)*. **Escribas** en el Archivo (mucha Comprensión; los ancianos también sirven). **Leyes**: la sobrepoblación baja menos el Ánimo. **Piedras alineadas**: proyecto grande que da Comprensión. *(La Crónica, más adelante.)* |
+| B07 | Ladrillo y vidrio | N03, B02 | 🏗️ Horno de ladrillos, Vidriería, Casa de ladrillo · 👤 Ladrillero, Vidriero · 📦 Ladrillo, Arena, Vidrio | *(Ladrillo cocido + Vidrio primitivo)*. Casa de ladrillo (+10 de capacidad). **Vidrio** con arena de la orilla: raíz del monitor, las lentes y el silicio |
+| B09 | Arado e irrigación | N01, N02, B03 | 🏗️ Canal · ✋ Arado | *(Irrigación + Arado)*. **Canales** desde el río: parcelas junto a un canal ×1,5. Arado: parcelas ×1,25. **Resuelve la comida** |
 
 ### Era 4 — Hierro / Clásica
 *Recursos nuevos: Mineral de hierro, Hierro, Monedas, Vidrio claro, Magnetita, Engranajes*
@@ -552,13 +558,13 @@ La aldea pasa a ser **ciudad**: hierro, filosofía, dinero y edificios grandes.
 | ID | Tecnología | Requiere | Se manifiesta como | Qué aporta |
 |---|---|---|---|---|
 | H01 | Hierro | B03, B07 | 🏗️ Forja · 📦 Hierro · ✋ Herram. de hierro | Metal barato y fuerte. Consume mucho carbón vegetal |
-| H02 | Geometría | B12, B06 | ✋ Escuadra y compás · 📖 | **Los constructores van más rápido.** Base de la matemática |
+| H02 | Geometría | B06 | ✋ Escuadra y compás · 📖 | **Los constructores van más rápido.** Base de la matemática |
 | H03 | Arco y arquitectura 🌿 | H02, B07 | 🏗️ Templo, edificios grandes | **Amplía la grilla del Valle** (por ejemplo, de 8×12 a 10×16) y permite edificios de varias casillas |
 | H04 | Acueducto 🌿 | H03, B09 | 🏗️ Acueducto (casilla por casilla) | **Lleva agua lejos del río**: canales y parcelas en cualquier parte |
-| H05 | Filosofía | B06, B13 | 👤 Filósofo · 🏗️ Academia | Comprensión ↑↑. Filósofos que caminan en círculos discutiendo: *"Si un árbol cae en el bosque y nadie lo convierte en carbón…"* |
+| H05 | Filosofía | B06 | 👤 Filósofo · 🏗️ Academia | Comprensión ↑↑. Filósofos que caminan en círculos discutiendo: *"Si un árbol cae en el bosque y nadie lo convierte en carbón…"* |
 | H06 | Lógica | H05, H02 | 📖 | **Raíz del software.** Aumenta la Comprensión de la Academia. Globos de diálogo con silogismos absurdos: *"Si p entonces GPU."* |
-| H07 | Moneda | B10, B03 | 📦 Monedas · 🏛️ | La Tienda del diablo pasa a funcionar con **Monedas**. Se pueden **comprar pactos** |
-| H08 | Vidrio soplado | B11, H01 | 🏗️ Vidriería · 👤 Vidriero · 📦 Vidrio claro | Lentes, tubos, matraces y (mucho después) pantallas |
+| H07 | Moneda | B04, B03 | 📦 Monedas · 🏛️ | La Tienda del diablo pasa a funcionar con **Monedas**. Se pueden **comprar pactos** |
+| H08 | Vidrio soplado | B07, H01 | 🏗️ Vidriería · 👤 Vidriero · 📦 Vidrio claro | Lentes, tubos, matraces y (mucho después) pantallas |
 | H09 | Magnetita | B01, H05 | ✋ Piedra imán · 📦 Magnetita | Los aldeanos juegan con ella y eso da un poco de Comprensión. Raíz del magnetismo y la electricidad |
 | H10 | Medicina clásica 🌿 | N11, H05 | 🏗️ Casa de salud | **+10 años de vida** (50 → 60) |
 | H11 | Palanca y polea | H02, P02 | 🏗️ Grúa | **Acelera las construcciones** a su alrededor (adyacencia) |
@@ -587,8 +593,8 @@ saber (universidad, gremios).
 | M01 | Molino de agua | H13, B09 | 🏗️ Molino (junto a un río o canal) · ⚙️ | **Da energía a los edificios vecinos** (aserradero, forja, batán): trabajan más rápido y con menos aldeanos |
 | M02 | Molino de viento 🌿 | H13 | 🏗️ Molino de viento · ⚙️ | Igual que el de agua, pero **más débil**. Se pone en cualquier parte, incluidas las Montañas |
 | M03 | Papel | N02, M01 | 🏗️ Papelera · 📦 Papel | La escritura escala |
-| M04 | Universidad | H05, M03, B13 | 🏗️ Universidad · 👤 Profesor | Comprensión ↑↑ y especialización más rápida |
-| M05 | Gremios | H07, B13 | 🏛️ | **Desbloquean la maestría Nv4–5** (hasta ahora el techo era Nv3) |
+| M04 | Universidad | H05, M03, B06 | 🏗️ Universidad · 👤 Profesor | Comprensión ↑↑ y especialización más rápida |
+| M05 | Gremios | H07, B06 | 🏛️ | **Desbloquean la maestría Nv4–5** (hasta ahora el techo era Nv3) |
 | M06 | Reloj mecánico | H13, H01 | 🏗️ Torre del reloj · 👤 Relojero | **Bono de productividad en un radio**: los edificios cercanos "trabajan con horario". *"Primer reloj de CPU: 1 Hz."* |
 | M07 | Lentes | H08, H02 | ✋ Anteojos · 📦 Lentes | **Los ancianos siguen trabajando en oficios de precisión.** Raíz de la óptica y la fotolitografía |
 | M08 | Alquimia | H08, B02, H05 | 👤 Alquimista · 🏗️ Laboratorio | Intentan hacer oro: **de vez en cuando generan Monedas**. Explosiones cómicas que dañan el laboratorio. Comprensión. Precursora de la química. Diablo: *"Por fin alguien con iniciativa."* |
@@ -732,7 +738,7 @@ del juego.
 |---|---|---|---|---|
 | X01 | Computadora de válvulas | E10, E12, I07 | 🏗️ Sala de cómputo (4×4) · ⚙️ | Gigante, caliente y **se rompe seguido**. **Predicciones y alertas en la interfaz** |
 | X02 | Física cuántica | R05, E10, M04 | 👤 Investigador · 📖 | *"Nadie la entiende. Funciona igual."* |
-| X03 | Silicio metalúrgico | E04, B11 (+ cuarzo) | 🏗️ Horno de arco · 📦 Silicio | Cuarzo → silicio |
+| X03 | Silicio metalúrgico | E04, B07 (+ cuarzo) | 🏗️ Horno de arco · 📦 Silicio | Cuarzo → silicio |
 | X04 | Silicio monocristalino | X03, R03, X02 | 🏗️ Cristalizador · 📦 Lingote, Obleas | Silicio ultrapuro, cortado en **obleas** |
 | X05 | Transistor | X02, X04 | 📦 Transistores | **Hito.** La computadora se achica a **2×2** y deja de romperse. *"La cosita que cambió todo."* |
 | X06 | Circuito impreso | E09, E02, R03 | 🏗️ Fábrica de PCB · 📦 PCB | Raíz de la placa madre |
@@ -860,13 +866,13 @@ silueta existe en pantalla, aunque esté vacía.
 | **Gabinete** | H01 Hierro (armazón) → I04 Acero industrial (chapa) → E09 Plásticos (frente) | G01 Gabinete con vidrio templado |
 | **Fuente de poder** | H09 Magnetita (imán) → I08 Pila voltaica → E02 Cable de cobre → E04 Corriente alterna | D10 Fuente conmutada |
 | **Placa madre** | B02 Fundición de cobre → E02 Cable de cobre → X06 Circuito impreso | D11 Placa madre multicapa |
-| **CPU** | B11 Vidrio primitivo (arena) → X03 Silicio metalúrgico → X05 Transistor → X09 Circuito integrado | D01 Microprocesador |
+| **CPU** | B07 Ladrillo y vidrio (arena) → X03 Silicio metalúrgico → X05 Transistor → X09 Circuito integrado | D01 Microprocesador |
 | **GPU** | R04 Cálculo (la matemática de los gráficos) → X09 Circuito integrado → D05 Gráficos 3D | D06 GPU |
 | **RAM** | N09 Conteo (recordar números) → B06 Escritura (memoria externa) → X09 Circuito integrado | D02 Memoria DRAM |
 | **Almacenamiento** | B06 Escritura → M03 Papel → X13 Almacenamiento magnético | D03 Memoria flash |
 | **Sistema operativo** | H06 Lógica → R12 Sistema binario → X10 Lenguajes de programación | D04 Sistema operativo |
 | **Teclado y mouse** | B06 Escritura (letras) → R01 Imprenta (tipos móviles = teclas) → E09 Plásticos → D08 LED | D13 Periféricos |
-| **Monitor** | B11 Vidrio primitivo → H08 Vidrio soplado → E14 Rayos catódicos 🌿 (CRT verde) → D07 Pantalla LCD | G02 Monitor gamer |
+| **Monitor** | B07 Ladrillo y vidrio → H08 Vidrio soplado → E14 Rayos catódicos 🌿 (CRT verde) → D07 Pantalla LCD | G02 Monitor gamer |
 | **Refrigeración** | M01 Molino de agua (aspas = ventilador) → E13 Aluminio (disipador) → X12 Refrigeración activa → G03 Pasta térmica | G04 Disipador y cooler |
 | **RGB** | P11 Pigmentos (*"el primer RGB de la historia"*) → E03 Bombilla → D08 LED | G05 RGB |
 | **Juego** | P11 Pigmentos (arte) → I06 Telar de tarjetas (primer programa) → D12 Motor de videojuegos → D09 Internet (parche del día uno) | G06 El Juego |
@@ -913,10 +919,9 @@ flowchart LR
   P11[Arte y ritos] --> B06[Escritura]
   N09[Conteo] --> B06
   N10[Exploración] --> B01[Minería] --> B02
-  P02 --> B05[Carbón vegetal] --> B02
   B04[Rueda] --> B03
   B02 --> B03[Bronce] --> H01[Hierro] --> M10[Acero de crisol]
-  B02 --> B11[Vidrio] --> H08[Vidrio soplado] --> M07[Lentes]
+  B02 --> B07[Vidrio] --> H08[Vidrio soplado] --> M07[Lentes]
   B06 --> H05[Filosofía] --> H06[Lógica] --> R12[Binario] --> E12[Boole]
   H05 --> M04[Universidad] --> R02[Método científico]
   R02 --> R03[Química]
@@ -952,7 +957,7 @@ flowchart LR
 |---|---|---|---|
 | Piedra | 6 | 0 | Categorías 🍖 Comida, 🧱 Materiales, 🔨 Construcción · Anciano · Chamán |
 | Neolítico | 6 | 0 | Pastor, Tejedor, Alfarero, Curandero (especialistas) |
-| Bronce | 13 | 1 | Minero, Carbonero, Fundidor, Herrero, Escriba |
+| Bronce | 7 | 0 | Minero, Carbonero, Fundidor, Herrero, Escriba, Ladrillero, Vidriero (especialistas) |
 | Hierro | 13 | 4 | Vidriero, Filósofo |
 | Medieval | 11 | 2 | Relojero, Profesor, Alquimista |
 | Renacimiento | 12 | 2 | Impresor, Científico, Químico |
@@ -961,7 +966,7 @@ flowchart LR
 | Electrónica | 14 | 1 | Investigador, Programador |
 | Digital | 13 | 0 | Desarrollador de juegos |
 | Gamer | 9 | 1 | — |
-| **Total** | **124** | **16** | — |
+| **Total** | **118** | **15** | — |
 
 Los nodos opcionales se concentran en las primeras eras: al principio se construye la
 sociedad y al final se construye el PC.
@@ -986,6 +991,17 @@ sociedad y al final se construye el PC.
 ---
 
 ## 9. Historial de cambios
+
+### v2.4 (borrador) — Era 3 en el prototipo y Jefatura por zona
+- Era 3 implementada: minas sobre vetas, cadena del cobre, bronce, ladrillo y vidrio, Archivo, Piedras alineadas, canales y comida resuelta con Arado e irrigación. Zona Montañas (Rueda) al 60%.
+- **Prioridades de la Jefatura por zona**; con una obra pendiente en una zona, al menos una persona construye.
+- **Especialidades solo con gente de la misma zona**: la Jefatura no mueve gente entre zonas.
+
+### v2.3 (borrador) — Era 3 consolidada
+- **Era 3** de 13 a 7 tecnologías: B02 ← B05 · B04 ← B10 · B06 ← B12, B13 · B07 ← B11 · B09 ← B08. Referencias de las demás eras actualizadas.
+- **Minas como edificios** sobre las vetas (cobre en la Cueva, estaño en las Montañas), con minero especialista.
+- **Comida resuelta** pasa a B09 Arado e irrigación (4 parcelas junto a un canal + granero + 8 agricultores).
+- **Tienda del diablo pospuesta**; puede que no se implemente.
 
 ### v2.2 (borrador) — Zonas: la Cueva
 - **Zonas implementadas en el prototipo**: Valle y Cueva, cada una con su grilla. La Cueva se abre con N10 Exploración.

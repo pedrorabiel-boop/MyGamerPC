@@ -63,10 +63,15 @@ export function roleCap(s: GameState, role: Role, zone: ZoneId = "valle"): numbe
  * que da enteros y proporciones justas.
  */
 export function zipfTargets(s: GameState, total: number, zone: ZoneId = "valle"): Map<Role, number> {
-  const caps = new Map(s.jefatura.priorities.map((r) => [r, roleCap(s, r, zone)]));
-  const active = s.jefatura.priorities.filter((r) => caps.get(r)! > 0);
-  const out = new Map<Role, number>(s.jefatura.priorities.map((r) => [r, 0]));
-  for (let k = 0; k < total; k++) {
+  const prio = s.jefatura.priorities[zone];
+  const caps = new Map(prio.map((r) => [r, roleCap(s, r, zone)]));
+  const active = prio.filter((r) => caps.get(r)! > 0);
+  const out = new Map<Role, number>(prio.map((r) => [r, 0]));
+  // Si hay una obra pendiente en la zona, al menos una persona construye (si no, nunca se terminaría
+  // en una zona con poca gente).
+  let k0 = 0;
+  if (total > 0 && caps.get("construccion")! > 0) { out.set("construccion", 1); k0 = 1; }
+  for (let k = k0; k < total; k++) {
     let best: Role | null = null, bestScore = -1;
     active.forEach((r, i) => {
       const n = out.get(r)!;
@@ -106,8 +111,9 @@ export function runJefatura(s: GameState, dt: number) {
       if (v) { v.workplace = null; reset(v); }
     } else if (BUILDING_BY_ID[type].staff?.elders) {
       // Privilegiar a los ancianos: si un adulto ocupa un puesto que puede ocupar un anciano libre, se cambian.
-      const elder = s.villagers.find(isFreeElder);
       const adult = s.villagers.find((x) => !x.manual && inType(x) && stageOf(x) === "adult" && !x.carry);
+      const zoneOf = adult ? s.buildings.find((b) => b.id === adult.workplace)?.zone : undefined;
+      const elder = zoneOf ? s.villagers.find((x) => isFreeElder(x) && x.zone === zoneOf && !x.transit) : undefined;
       if (elder && adult) { elder.workplace = adult.workplace; reset(elder); adult.workplace = null; reset(adult); }
     }
   }
@@ -125,13 +131,14 @@ function rebalanceZone(s: GameState, zone: ZoneId) {
   if (!pool.length) return;
   const targets = zipfTargets(s, pool.length, zone);
   const count = (r: Role) => pool.filter((v) => v.role === r).length;
-  const under = s.jefatura.priorities.filter((r) => count(r) < (targets.get(r) ?? 0));
+  const prio = s.jefatura.priorities[zone];
+  const under = prio.filter((r) => count(r) < (targets.get(r) ?? 0));
   if (!under.length) return;
   const to = under[0];
   // Primero los libres; si no hay, alguien de una categoría que tenga de sobra.
   const free = pool.find((v) => v.role === null && movable(v));
   if (free) { free.role = to; reset(free); return; }
-  const over = s.jefatura.priorities.filter((r) => count(r) > (targets.get(r) ?? 0));
+  const over = prio.filter((r) => count(r) > (targets.get(r) ?? 0));
   for (const r of over) {
     const v = pool.find((x) => x.role === r && movable(x));
     if (v) { v.role = to; reset(v); return; }
@@ -140,21 +147,31 @@ function rebalanceZone(s: GameState, zone: ZoneId) {
 
 const isFreeElder = (v: Villager) => stageOf(v) === "elder" && v.workplace == null && !v.manual;
 
-/** Alguien para un puesto de especialista: un anciano libre (si el puesto lo admite), un libre, o de la categoría que más gente tiene. */
+/**
+ * Alguien para un puesto de especialista, SOLO entre la gente que ya está en la zona del edificio
+ * (la Jefatura no mueve gente entre zonas: eso lo decide el jugador con la ventana de traslado).
+ * Primero un anciano libre (si el puesto lo admite), después un libre, después de la categoría con más gente.
+ */
 function pickDonor(s: GameState, type: string, zone: ZoneId): Villager | null {
+  const here = (v: Villager) => v.zone === zone && !v.transit;
   if (BUILDING_BY_ID[type].staff?.elders) {
-    const elder = s.villagers.find(isFreeElder);
+    const elder = s.villagers.find((v) => isFreeElder(v) && here(v));
     if (elder) return elder;
   }
-  // Preferir a alguien que ya esté en la zona del edificio.
-  const all = s.villagers.filter((v) => movable(v) && v.workplace == null && !v.transit);
-  const pool = all.some((v) => v.zone === zone) ? all.filter((v) => v.zone === zone) : all;
+  const pool = s.villagers.filter((v) => movable(v) && v.workplace == null && here(v));
   const free = pool.find((v) => v.role === null);
   if (free) return free;
   const counts = new Map<Role, number>();
   for (const v of pool) if (v.role) counts.set(v.role, (counts.get(v.role) ?? 0) + 1);
   const biggest = [...counts.entries()].sort((a, b) => b[1] - a[1])[0]?.[0];
   return biggest ? pool.find((v) => v.role === biggest) ?? null : null;
+}
+
+/** Zonas donde una especialidad no llega a su meta porque no hay gente disponible ahí. */
+export function specialtyShortZones(s: GameState, type: string): ZoneId[] {
+  if (specialtyStaffed(s, type) >= specialtyTarget(s, type)) return [];
+  const zones = [...new Set(s.buildings.filter((b) => b.built && b.type === type && staffCount(s, b) < (BUILDING_BY_ID[type].staff?.slots ?? 0)).map((b) => b.zone))];
+  return zones.filter((z) => !pickDonor(s, type, z));
 }
 
 /** Edificio de especialidad: el jugador cambia cuántos puestos quiere (con Jefatura). */
@@ -170,8 +187,9 @@ export function setSpecialtyFull(s: GameState, type: string, full: boolean) {
   if (!full) c.n = Math.min(c.n, specialtySlots(s, type));
 }
 
-export function movePriority(s: GameState, role: Role, dir: -1 | 1) {
-  const p = s.jefatura.priorities;
+/** Sube o baja una categoría en las prioridades de una zona. */
+export function movePriority(s: GameState, role: Role, dir: -1 | 1, zone: ZoneId = "valle") {
+  const p = s.jefatura.priorities[zone];
   const i = p.indexOf(role);
   const j = i + dir;
   if (i < 0 || j < 0 || j >= p.length) return;

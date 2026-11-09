@@ -29,7 +29,7 @@ export function ZoneModal() {
   const { s, ui } = useEngine();
   const target = ui.zoneModal;
   if (!target) return null;
-  const other: ZoneId = target === "valle" ? "cueva" : "valle";
+  const other: ZoneId = "valle"; // las zonas se conectan a través del Valle
   const zone = ZONE_BY_ID[target];
   const inside = adultsIn(s, target).length;
   const coming = travelingTo(s, target);
@@ -62,6 +62,7 @@ export function ZoneModal() {
         <p className="muted">
           + manda un adulto desde {ZONE_BY_ID[other].label} ({available} {available === 1 ? "disponible" : "disponibles"}); − trae uno de vuelta.
           Los niños y los ancianos se quedan en el Valle; los especialistas no se mueven de su puesto.
+          {target === "montanas" ? " Las Montañas están lejos: lo que se junta ahí llega al 60%." : ""}
           {hasJefatura(s) ? " Adentro, la Jefatura los reparte según el trabajo que haya ahí." : " Adentro siguen en su categoría: si no tiene trabajo ahí, dan vueltas."}
         </p>
         <div className="inline">

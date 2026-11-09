@@ -1,6 +1,6 @@
 {
   "generatedFrom": "docs/01-arbol-tecnologico.md",
-  "version": "2.0 (borrador: Eras 1–2 consolidadas)",
+  "version": "2.3 (borrador: Eras 1–3 consolidadas)",
   "manifestationTypes": {
     "knowledge": "📖",
     "building": "🏗",
@@ -230,7 +230,7 @@
     {
       "name": "CPU",
       "partials": [
-        "B11",
+        "B07",
         "X03",
         "X05",
         "X09"
@@ -292,7 +292,7 @@
     {
       "name": "Monitor",
       "partials": [
-        "B11",
+        "B07",
         "H08",
         "E14",
         "D07"
@@ -665,7 +665,7 @@
       "manifestations": [
         {
           "type": "building",
-          "name": "Mina (sobre vetas de la Cueva o de las Montañas)"
+          "name": "Mina (sobre las vetas)"
         },
         {
           "type": "job",
@@ -674,37 +674,44 @@
         {
           "type": "tool",
           "name": "Pico"
+        },
+        {
+          "type": "resource",
+          "name": "Mineral de cobre"
         }
       ],
-      "effect": "Acceso a minerales"
+      "effect": "Se construyen **minas sobre las vetas verdes de la Cueva** (y luego sobre el estaño de las Montañas)"
     },
     {
       "id": "B02",
-      "name": "Fundición de cobre",
+      "name": "Fundición",
       "era": 3,
       "order": 1,
       "optional": false,
       "requires": [
         "N03",
-        "B01",
-        "B05"
+        "B01"
       ],
       "requiresPopulation": null,
       "manifestations": [
         {
           "type": "building",
-          "name": "Horno de fundición"
+          "name": "Carbonera, Horno de fundición"
         },
         {
           "type": "job",
-          "name": "Fundidor"
+          "name": "Carbonero, Fundidor"
+        },
+        {
+          "type": "resource",
+          "name": "Carbón vegetal"
         },
         {
           "type": "resource",
           "name": "Cobre"
         }
       ],
-      "effect": "**Cobre: el metal del PC.** Consume carbón vegetal",
+      "effect": "*(Fundición + Carbón vegetal)*. **Cobre: el metal del PC.** *\"Quemar árboles para hacer piedras brillantes. Tiene lógica.\"*",
       "advancesPcPieces": [
         "Placa madre"
       ]
@@ -722,6 +729,10 @@
       "requiresPopulation": null,
       "manifestations": [
         {
+          "type": "building",
+          "name": "Herrería"
+        },
+        {
           "type": "job",
           "name": "Herrero"
         },
@@ -734,17 +745,18 @@
           "name": "Herram. de bronce"
         }
       ],
-      "effect": "Mejora todas las herramientas. Necesita el estaño de las Montañas"
+      "effect": "Cobre + estaño → bronce. **Herramientas de bronce: todos trabajan más rápido**"
     },
     {
       "id": "B04",
-      "name": "Rueda",
+      "name": "Rueda y comercio",
       "era": 3,
       "order": 3,
       "optional": false,
       "requires": [
         "P02",
-        "N02"
+        "N02",
+        "N09"
       ],
       "requiresPopulation": null,
       "manifestations": [
@@ -757,45 +769,19 @@
           "name": null
         }
       ],
-      "effect": "Los aldeanos cargan más y caminan más rápido con carga. **Abre la zona Montañas**",
+      "effect": "*(Rueda + Comercio)*. Se carga más por viaje. **Abre la zona Montañas.** La Tienda del diablo queda pospuesta",
       "unlocksZone": "Montañas"
-    },
-    {
-      "id": "B05",
-      "name": "Carbón vegetal",
-      "era": 3,
-      "order": 4,
-      "optional": false,
-      "requires": [
-        "P04",
-        "P02"
-      ],
-      "requiresPopulation": null,
-      "manifestations": [
-        {
-          "type": "building",
-          "name": "Carbonera"
-        },
-        {
-          "type": "job",
-          "name": "Carbonero"
-        },
-        {
-          "type": "resource",
-          "name": "Carbón vegetal"
-        }
-      ],
-      "effect": "Combustible para los hornos. *\"Quemar árboles para hacer piedras brillantes. Tiene lógica.\"*"
     },
     {
       "id": "B06",
       "name": "Escritura",
       "era": 3,
-      "order": 5,
+      "order": 4,
       "optional": false,
       "requires": [
         "N09",
-        "P11"
+        "P11",
+        "N11"
       ],
       "requiresPopulation": null,
       "manifestations": [
@@ -805,10 +791,14 @@
         },
         {
           "type": "building",
-          "name": "Archivo de tablillas"
+          "name": "Archivo, Piedras alineadas"
+        },
+        {
+          "type": "institution",
+          "name": null
         }
       ],
-      "effect": "**El saber ya no muere con los maestros.** Abre **La Crónica**",
+      "effect": "*(Escritura + Astronomía + Código de leyes)*. **Escribas** en el Archivo (mucha Comprensión; los ancianos también sirven). **Leyes**: la sobrepoblación baja menos el Ánimo. **Piedras alineadas**: proyecto grande que da Comprensión. *(La Crónica, más adelante.)*",
       "advancesPcPieces": [
         "RAM",
         "Almacenamiento",
@@ -817,9 +807,9 @@
     },
     {
       "id": "B07",
-      "name": "Ladrillo cocido",
+      "name": "Ladrillo y vidrio",
       "era": 3,
-      "order": 6,
+      "order": 5,
       "optional": false,
       "requires": [
         "N03",
@@ -829,84 +819,16 @@
       "manifestations": [
         {
           "type": "building",
-          "name": "Edificios de ladrillo"
+          "name": "Horno de ladrillos, Vidriería, Casa de ladrillo"
+        },
+        {
+          "type": "job",
+          "name": "Ladrillero, Vidriero"
         },
         {
           "type": "resource",
           "name": "Ladrillo"
-        }
-      ],
-      "effect": "Mejora edificios y hornos más calientes"
-    },
-    {
-      "id": "B08",
-      "name": "Arado",
-      "era": 3,
-      "order": 7,
-      "optional": true,
-      "requires": [
-        "N01",
-        "N02",
-        "B03"
-      ],
-      "requiresPopulation": null,
-      "manifestations": [
-        {
-          "type": "tool",
-          "name": "Arado con bueyes"
-        }
-      ],
-      "effect": "Comida ↑↑"
-    },
-    {
-      "id": "B09",
-      "name": "Irrigación",
-      "era": 3,
-      "order": 8,
-      "optional": false,
-      "requires": [
-        "N01",
-        "B01"
-      ],
-      "requiresPopulation": null,
-      "manifestations": [
-        {
-          "type": "building",
-          "name": "Canal (casilla por casilla desde el río)"
-        }
-      ],
-      "effect": "**Bono por adyacencia**: las parcelas junto a un canal producen más. Agua para máquinas futuras"
-    },
-    {
-      "id": "B10",
-      "name": "Comercio",
-      "era": 3,
-      "order": 9,
-      "optional": false,
-      "requires": [
-        "B04",
-        "N09"
-      ],
-      "requiresPopulation": null,
-      "manifestations": [
-        {
-          "type": "building",
-          "name": "Tienda del diablo"
-        }
-      ],
-      "effect": "**Abre la Tienda del diablo**: trueque de excedentes por lo que falta, a una tasa mala. *\"Atendemos 24/7. Literalmente para siempre.\"*"
-    },
-    {
-      "id": "B11",
-      "name": "Vidrio primitivo",
-      "era": 3,
-      "order": 10,
-      "optional": false,
-      "requires": [
-        "B02"
-      ],
-      "requiresPopulation": null,
-      "manifestations": [
+        },
         {
           "type": "resource",
           "name": "Arena"
@@ -916,53 +838,35 @@
           "name": "Vidrio"
         }
       ],
-      "effect": "Usa arena de la orilla del río. Raíz del monitor, las lentes y el silicio",
+      "effect": "*(Ladrillo cocido + Vidrio primitivo)*. Casa de ladrillo (+10 de capacidad). **Vidrio** con arena de la orilla: raíz del monitor, las lentes y el silicio",
       "advancesPcPieces": [
         "CPU",
         "Monitor"
       ]
     },
     {
-      "id": "B12",
-      "name": "Astronomía",
+      "id": "B09",
+      "name": "Arado e irrigación",
       "era": 3,
-      "order": 11,
+      "order": 6,
       "optional": false,
       "requires": [
-        "B06",
-        "N09"
+        "N01",
+        "N02",
+        "B03"
       ],
       "requiresPopulation": null,
       "manifestations": [
-        {
-          "type": "knowledge",
-          "name": null
-        },
         {
           "type": "building",
-          "name": "Piedras alineadas (varias casillas)"
-        }
-      ],
-      "effect": "Comprensión ↑. **Primer edificio grande**, tarda en construirse. *\"Nadie sabe para qué sirve. Se ve imponente.\"*"
-    },
-    {
-      "id": "B13",
-      "name": "Código de leyes",
-      "era": 3,
-      "order": 12,
-      "optional": false,
-      "requires": [
-        "B06",
-        "N11"
-      ],
-      "requiresPopulation": null,
-      "manifestations": [
+          "name": "Canal"
+        },
         {
-          "type": "institution",
-          "name": null
+          "type": "tool",
+          "name": "Arado"
         }
       ],
-      "effect": "Reduce cuánto baja el **Ánimo** al crecer la población"
+      "effect": "*(Irrigación + Arado)*. **Canales** desde el río: parcelas junto a un canal ×1,5. Arado: parcelas ×1,25. **Resuelve la comida**"
     },
     {
       "id": "H01",
@@ -1001,7 +905,6 @@
       "order": 1,
       "optional": false,
       "requires": [
-        "B12",
         "B06"
       ],
       "requiresPopulation": null,
@@ -1062,8 +965,7 @@
       "order": 4,
       "optional": false,
       "requires": [
-        "B06",
-        "B13"
+        "B06"
       ],
       "requiresPopulation": null,
       "manifestations": [
@@ -1107,7 +1009,7 @@
       "order": 6,
       "optional": false,
       "requires": [
-        "B10",
+        "B04",
         "B03"
       ],
       "requiresPopulation": null,
@@ -1130,7 +1032,7 @@
       "order": 7,
       "optional": false,
       "requires": [
-        "B11",
+        "B07",
         "H01"
       ],
       "requiresPopulation": null,
@@ -1342,7 +1244,7 @@
       "requires": [
         "H05",
         "M03",
-        "B13"
+        "B06"
       ],
       "requiresPopulation": null,
       "manifestations": [
@@ -1365,7 +1267,7 @@
       "optional": false,
       "requires": [
         "H07",
-        "B13"
+        "B06"
       ],
       "requiresPopulation": null,
       "manifestations": [
@@ -2451,7 +2353,7 @@
       "optional": false,
       "requires": [
         "E04",
-        "B11"
+        "B07"
       ],
       "requiresPopulation": null,
       "requiresNotes": [
