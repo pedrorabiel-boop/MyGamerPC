@@ -135,7 +135,9 @@ export function changeSpecialists(s: GameState, buildingId: number, delta: 1 | -
   if (hasJefatura(s)) { changeSpecialtyTarget(s, b.type, delta); return null; }
   if (delta === 1) {
     if (staffCount(s, b) >= staff.slots) return "Ya no hay puestos libres.";
-    const free = s.villagers.find(isFree);
+    // Para los puestos que lo admiten (chamán), primero un anciano libre: son los mejores.
+    const elder = staff.elders ? s.villagers.find((v) => stageOf(v) === "elder" && v.workplace == null) : undefined;
+    const free = elder ?? s.villagers.find(isFree);
     if (!free) return "No hay aldeanos libres: quita a alguien de una categoría en 👥 Aldeanos.";
     free.workplace = b.id;
     free.order = null;

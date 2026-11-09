@@ -91,13 +91,20 @@ export function runJefatura(s: GameState, dt: number) {
   for (const type of specialtyTypes(s)) {
     const target = specialtyTarget(s, type);
     const staffed = specialtyStaffed(s, type);
+    const inType = (x: Villager) => x.workplace != null && s.buildings.find((b) => b.id === x.workplace)?.type === type;
     if (staffed < target) {
       const b = s.buildings.find((x) => x.built && x.type === type && staffCount(s, x) < (BUILDING_BY_ID[type].staff?.slots ?? 0));
-      const v = pickDonor(s);
+      const v = pickDonor(s, type);
       if (b && v) { v.workplace = b.id; v.role = null; reset(v); }
     } else if (staffed > target) {
-      const v = s.villagers.find((x) => managed(x) && x.workplace != null && s.buildings.find((b) => b.id === x.workplace)?.type === type);
+      // Se libera primero a un adulto (los ancianos se quedan en su puesto si pueden).
+      const v = s.villagers.find((x) => !x.manual && inType(x) && stageOf(x) === "adult") ?? s.villagers.find((x) => !x.manual && inType(x));
       if (v) { v.workplace = null; reset(v); }
+    } else if (BUILDING_BY_ID[type].staff?.elders) {
+      // Privilegiar a los ancianos: si un adulto ocupa un puesto que puede ocupar un anciano libre, se cambian.
+      const elder = s.villagers.find(isFreeElder);
+      const adult = s.villagers.find((x) => !x.manual && inType(x) && stageOf(x) === "adult" && !x.carry);
+      if (elder && adult) { elder.workplace = adult.workplace; reset(elder); adult.workplace = null; reset(adult); }
     }
   }
 
@@ -118,8 +125,14 @@ export function runJefatura(s: GameState, dt: number) {
   }
 }
 
-/** Alguien para ocupar un puesto de especialista: un libre, o de la categoría que más gente tiene. */
-function pickDonor(s: GameState): Villager | null {
+const isFreeElder = (v: Villager) => stageOf(v) === "elder" && v.workplace == null && !v.manual;
+
+/** Alguien para un puesto de especialista: un anciano libre (si el puesto lo admite), un libre, o de la categoría que más gente tiene. */
+function pickDonor(s: GameState, type: string): Villager | null {
+  if (BUILDING_BY_ID[type].staff?.elders) {
+    const elder = s.villagers.find(isFreeElder);
+    if (elder) return elder;
+  }
   const pool = s.villagers.filter((v) => movable(v) && v.workplace == null);
   const free = pool.find((v) => v.role === null);
   if (free) return free;

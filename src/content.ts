@@ -76,6 +76,8 @@ export interface StaffDef {
   cycle: number; // segundos por ciclo de trabajo
   inputs?: Cost;
   outputs?: Cost;
+  elders?: boolean; // los ancianos pueden ocupar el puesto
+  elderBonus?: number; // multiplicador de producción si lo ocupa un anciano
 }
 
 export interface BuildingDef {
@@ -101,8 +103,8 @@ export const BUILDINGS: BuildingDef[] = [
   { id: "choza", name: "Choza de ramas", icon: "🛖", color: 0x7a6a3a, unlockedBy: "P06", cost: { ramas: 10, fibras: 5 }, buildTime: 8, place: "pasto", housing: 3, desc: "+3 de capacidad de población." },
   { id: "trampa", name: "Trampa", icon: "🪤", color: 0x5a4a2a, unlockedBy: "P05", cost: { ramas: 3, fibras: 2 }, buildTime: 4, place: "pasto", passive: { res: "comida", rate: 0.06 }, desc: "Produce comida de a poco, sin que nadie la atienda." },
   { id: "pared", name: "Pared pintada", icon: "🖼️", color: 0x6a4a6a, unlockedBy: "P11", cost: { piedra: 5, pigmento: 3 }, buildTime: 6, place: "pasto", animo: 0.05, desc: "Ánimo ↑. El primer RGB de la historia." },
-  { id: "circulo", name: "Círculo de piedras", icon: "🗿", color: 0x5a5a6a, unlockedBy: "P11", cost: { piedra: 10 }, buildTime: 8, place: "pasto", desc: "El chamán genera mucha Comprensión.",
-    staff: { slots: 1, by: "especialista", title: "Chamán", icon: "🔮", cycle: 2.5, outputs: { comprension: 10 } } },
+  { id: "circulo", name: "Círculo de piedras", icon: "🗿", color: 0x5a5a6a, unlockedBy: "P11", cost: { piedra: 10 }, buildTime: 8, place: "pasto", desc: "El chamán genera mucha Comprensión. Los ancianos son los mejores chamanes (×1,5).",
+    staff: { slots: 1, by: "especialista", title: "Chamán", icon: "🔮", cycle: 2.5, outputs: { comprension: 10 }, elders: true, elderBonus: 1.5 } },
   { id: "parcela", name: "Parcela", icon: "🌾", color: 0x8a7a30, unlockedBy: "N01", cost: { madera: 4, fibras: 2 }, buildTime: 5, place: "pasto", desc: "La gente de Comida la trabaja sola. Rompe el techo de la naturaleza.",
     staff: { slots: 2, by: "comida", title: "Agricultor", icon: "🌾", cycle: 2.5, outputs: { comida: 1 } } },
   { id: "granero", name: "Granero", icon: "🏚️", color: 0x7a5a3a, unlockedBy: "N01", cost: { madera: 15, piedra: 8 }, buildTime: 12, place: "pasto", storage: true, desc: "Más almacenamiento. También sirve de punto de entrega." },
@@ -165,6 +167,7 @@ export const TECH_INTRO: Record<string, string[]> = {
   P11: [
     "Puedes construir la 🖼️ Pared pintada (Ánimo ↑) y el 🗿 Círculo de piedras.",
     "El Círculo necesita un 🔮 chamán: tócalo en el mapa y asígnale a alguien. Da mucha 💡 Comprensión.",
+    "Los 🧓 ancianos también pueden ser chamanes, y son los mejores (×1,5).",
     "La gente de 🧱 Materiales ahora junta 🎨 pigmento.",
   ],
   N01: [

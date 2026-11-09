@@ -82,7 +82,8 @@ function ageAndDie(s: GameState, dt: number) {
     v.age += years;
     if (!v.wasAdult && v.age >= config.EDAD_ADULTO) v.wasAdult = true; // llega a adulto libre (sin herencia)
     // Al volverse anciano deja su puesto de especialista (el edificio queda con un puesto vacío).
-    if (v.workplace != null && stageOf(v) === "elder") { v.workplace = null; v.task = { kind: "idle", t: 0 }; }
+    // Al volverse anciano deja su puesto, salvo que sea uno que los ancianos pueden ocupar (chamán).
+    if (v.workplace != null && stageOf(v) === "elder" && !elderCanWork(s, v.workplace)) { v.workplace = null; v.task = { kind: "idle", t: 0 }; }
     let p = illness * years;
     if (hungry) p += config.MORTALIDAD_HAMBRE * years;
     if (v.age >= v.lifespan || rand(s) < p) dead.push(v);
@@ -116,7 +117,8 @@ function births(s: GameState, dt: number) {
 
 function elderComprension(s: GameState, dt: number) {
   if (!has(s, "P01")) return;
-  const elders = s.villagers.filter((v) => stageOf(v) === "elder").length;
+  // Los ancianos que trabajan de chamán ya producen en su puesto (y más).
+  const elders = s.villagers.filter((v) => stageOf(v) === "elder" && v.workplace == null).length;
   add(s, "comprension", elders * config.COMPRENSION_ANCIANO * dt);
 }
 
@@ -199,7 +201,12 @@ function updateVillager(s: GameState, v: Villager, dt: number, occ: Map<number, 
   const stage = stageOf(v);
   const a = anchor(s);
   if (stage === "child") return wander(s, v, dt, a.x + 0.5, a.y + 0.5, 1.5);
-  if (stage === "elder") return wander(s, v, dt, a.x + 0.5, a.y + 0.5, 0.8);
+  if (stage === "elder") {
+    const b = v.workplace != null ? s.buildings.find((x) => x.id === v.workplace && x.built) : undefined;
+    if (b && elderCanWork(s, b.id)) return workAt(s, v, dt, b);
+    if (v.workplace != null) v.workplace = null;
+    return wander(s, v, dt, a.x + 0.5, a.y + 0.5, 0.8);
+  }
 
   // "Señalar": un solo viaje, tiene prioridad.
   if (v.order) {
@@ -369,6 +376,13 @@ function workAt(s: GameState, v: Villager, dt: number, b: Building) {
   if (v.task.t >= staff.cycle) {
     v.task.t = 0;
     if (staff.inputs) pay(s, staff.inputs);
-    for (const [r, amt] of Object.entries(staff.outputs ?? {})) add(s, r as ResId, amt ?? 0);
+    const bonus = stageOf(v) === "elder" ? staff.elderBonus ?? 1 : 1; // los ancianos chamanes rinden más
+    for (const [r, amt] of Object.entries(staff.outputs ?? {})) add(s, r as ResId, (amt ?? 0) * bonus);
   }
+}
+
+/** ¿Un anciano puede trabajar en este edificio? (hoy: solo el Círculo, como chamán) */
+export function elderCanWork(s: GameState, buildingId: number): boolean {
+  const b = s.buildings.find((x) => x.id === buildingId);
+  return !!b && !!BUILDING_BY_ID[b.type].staff?.elders;
 }

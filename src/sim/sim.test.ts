@@ -187,6 +187,36 @@ describe("Jefatura", () => {
     expect(v.role).not.toBe("construccion");
   });
 
+  it("los ancianos pueden ser chamanes, rinden más y la Jefatura los prefiere", () => {
+    const s = withJefatura(25, 4);
+    s.techs.P11 = true;
+    const elder = s.villagers.find((v) => stageOf(v) === "adult")!;
+    elder.age = elder.lifespan * 0.85; // anciano, pero vivo un buen rato
+    const c = addBuilding(s, "circulo", 3, 3);
+    // Un adulto ocupa el puesto a mano (antes de que la Jefatura actúe).
+    const adult = s.villagers.find((v) => stageOf(v) === "adult" && v !== elder)!;
+    adult.workplace = c.id;
+    setSpecialtyFull(s, "circulo", true);
+    run(s, 5);
+    expect(elder.workplace).toBe(c.id); // la Jefatura lo cambió por el anciano
+    expect(adult.workplace).toBeNull();
+
+    // El anciano chamán produce ×1,5 frente a un adulto chamán.
+    const measure = (who: "elder" | "adult") => {
+      const t = createState(26);
+      t.techs.P01 = t.techs.P11 = true;
+      t.debug.infinite.comida = true;
+      const circ = addBuilding(t, "circulo", 3, 3);
+      const v = t.villagers.find((x) => stageOf(x) === "adult")!;
+      if (who === "elder") v.age = v.lifespan * 0.85;
+      v.workplace = circ.id;
+      for (const x of t.villagers) if (x !== v) x.age = 5; // sin otros ancianos que sumen Comprensión
+      run(t, 30);
+      return t.inv.comprension;
+    };
+    expect(measure("elder") / measure("adult")).toBeGreaterThan(1.3);
+  });
+
   it("sin herencia: los niños llegan a adultos libres", () => {
     const s = createState(24);
     s.techs.P01 = true;

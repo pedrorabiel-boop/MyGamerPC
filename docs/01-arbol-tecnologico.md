@@ -113,6 +113,8 @@ oficios a mano a ese ritmo sería un castigo. La solución es la **Jefatura**.
      especialidades (chamán, alfarero, tejedor, pastor, curandero…), cada una con
      **"ocupación total"** o una **cantidad** elegida. **No se llenan todas por defecto.**
      Las parcelas y el muelle no están en esta lista: los ocupa la gente de Comida.
+     Los **ancianos pueden ser chamanes** (y rinden ×1,5): la Jefatura los prefiere
+     para ese puesto y, si un adulto lo ocupa, lo cambia por un anciano libre.
   2. **El resto se reparte con la regla de Zipf** según el orden de prioridades que
      elige el jugador: la 1.ª categoría pesa 1, la 2.ª ½, la 3.ª ⅓… (por ejemplo, con 3
      categorías activas: 55%, 27%, 18%).
@@ -981,6 +983,7 @@ sociedad y al final se construye el PC.
 - **Sin herencia de categoría**: los niños llegan a adultos libres.
 - **Tareas manuales**: un aldeano con tarea manual queda fuera de la Jefatura hasta que se lo devuelve.
 - Demoler edificios (50% de los materiales) y cancelar obras (100%).
+- **Ancianos chamanes**: los ancianos pueden ocupar el Círculo (×1,5) y la Jefatura los prefiere.
 
 ### v2.0 (borrador) — Playtest 2: menos tecnologías, oficios por categoría
 - **Eras 1 y 2 consolidadas** de 12 a 6 tecnologías cada una (total: 124). Fusiones: P02 ← P03, P07, P08 · P05 ← P09, P10 · P11 ← P12 · N01 ← N07 · N02 ← N05 · N03 ← N06 · N09 ← N04 · N10 ← N12 · N11 ← N08. Las referencias de las demás eras se actualizaron.
