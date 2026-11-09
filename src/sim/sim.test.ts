@@ -4,12 +4,13 @@ import { BUILDINGS, MATERIALS, ROLES, TECH_INTRO } from "../content";
 import { TECHS, TECH_BY_ID, techCost } from "../data/tree";
 import {
   changeRoleCount, changeSpecialists, debugAddVillagers, demolish, debugToggleInfinite, place, setRole, study, tapBook, techStatus,
-  transferVillager, adultsIn,
+  transferVillager, adultsIn, startUpgrade,
 } from "./actions";
 import { movePriority, returnToJefatura, setSpecialtyFull, specialtyShortZones, zipfTargets } from "./jefatura";
-import { isTribeLost, pay, staffCount, stageOf } from "./economy";
+import { housing, isTribeLost, pay, staffCount, stageOf } from "./economy";
 import { parseSave, simulateOffline } from "./save";
 import { changeZoneQuota, zoneCount } from "./zones";
+import { focusPlan, isFocusable, sourcesOf, usesOf } from "./guide";
 import { createState, type Building, type GameState } from "./state";
 import { step } from "./step";
 
@@ -476,6 +477,132 @@ describe("Era 3", () => {
     v.transit = "montanas";
     run(s, 40);
     expect(v.zone).toBe("montanas");
+  });
+});
+
+describe("playtest 5: traslados, mejoras y escuela", () => {
+  it("a una zona lejana se manda a los adultos más jóvenes", () => {
+    const s = createState(50);
+    s.techs.P01 = s.techs.P02 = s.techs.P04 = s.techs.N10 = true;
+    s.debug.infinite.comida = true;
+    debugAddVillagers(s, 4);
+    const adults = s.villagers.filter((v) => stageOf(v) === "adult");
+    const youngest = [...adults].sort((a, b) => (b.lifespan * 0.8 - b.age) - (a.lifespan * 0.8 - a.age))[0];
+    transferVillager(s, "valle", "cueva");
+    expect(youngest.transit).toBe("cueva");
+  });
+
+  it("mejorar una choza a casa de adobe: cuesta menos, sigue funcionando y termina siendo adobe", () => {
+    const s = createState(51);
+    s.techs.P01 = s.techs.P02 = s.techs.P04 = s.techs.P06 = s.techs.N03 = true;
+    s.debug.infinite.comida = true;
+    const choza = addBuilding(s, "choza", 3, 3);
+    s.inv.arcilla = 20; s.inv.madera = 20;
+    expect(startUpgrade(s, choza.id)).toBeNull();
+    expect(s.inv.arcilla).toBe(20 - Math.ceil(12 * (1 - config.DESCUENTO_MEJORA)));
+    expect(housing(s)).toBe(config.CAPACIDAD_BASE + 3); // la choza sigue dando techo mientras tanto
+    run(s, 60);
+    expect(choza.type).toBe("adobe");
+    expect(housing(s)).toBe(config.CAPACIDAD_BASE + 6);
+  });
+
+  it("mejorar el Círculo a Piedras alineadas conserva al chamán", () => {
+    const s = createState(52);
+    s.techs.P01 = s.techs.P11 = s.techs.B06 = true;
+    s.debug.infinite.comida = true; s.debug.infinite.piedra = true;
+    const c = addBuilding(s, "circulo", 3, 3);
+    changeSpecialists(s, c.id, 1);
+    const chaman = s.villagers.find((v) => v.workplace === c.id)!;
+    chaman.lifespan = 200; // que no se muera de viejo durante la prueba
+    const illness = config.MORTALIDAD_ENFERMEDAD;
+    config.MORTALIDAD_ENFERMEDAD = 0; // ni de una enfermedad al azar
+    try {
+      expect(startUpgrade(s, c.id)).toBeNull();
+      run(s, 120);
+    } finally {
+      config.MORTALIDAD_ENFERMEDAD = illness;
+    }
+    expect(c.type).toBe("piedras");
+    expect(chaman.workplace).toBe(c.id);
+  });
+
+  it("los niños van a la escuela, quedan adentro y llegan a adultos antes", () => {
+    const s = createState(53);
+    s.techs.P01 = s.techs.N09 = true;
+    s.debug.infinite.comida = true;
+    addBuilding(s, "escuela", 3, 4);
+    const kid = s.villagers.find((v) => stageOf(v) === "child")!;
+    run(s, 10);
+    expect(kid.task.kind).toBe("work");
+    expect(kid.adultAge).toBeCloseTo(config.EDAD_ADULTO * (1 - config.BONO_ESCUELA), 5);
+    kid.age = config.EDAD_ADULTO * (1 - config.BONO_ESCUELA) + 0.01;
+    expect(stageOf(kid)).toBe("adult");
+  });
+});
+
+describe("playtest 6: enfermedades, guía y foco", () => {
+  it("con menos de 10 habitantes nadie muere de enfermedad", () => {
+    const s = createState(60);
+    s.debug.infinite.comida = true;
+    const before = config.MORTALIDAD_ENFERMEDAD;
+    config.MORTALIDAD_ENFERMEDAD = 1000; // si hubiera enfermedades, morirían todos de inmediato
+    try { run(s, 5); } finally { config.MORTALIDAD_ENFERMEDAD = before; }
+    expect(s.stats.deaths).toBe(0);
+  });
+
+  it("la guía sabe cómo se consigue el ladrillo y la arcilla", () => {
+    const s = createState(61);
+    const ladrillo = sourcesOf(s, "ladrillo");
+    expect(ladrillo.some((x) => x.kind === "building" && x.building === "horno_ladrillo" && "arcilla" in x.inputs && "carbon" in x.inputs)).toBe(true);
+    const arcilla = sourcesOf(s, "arcilla");
+    expect(arcilla.some((x) => x.kind === "gather" && x.who === "materiales" && x.zones.includes("valle"))).toBe(true);
+    expect(usesOf("arcilla").some((u) => u.building === "adobe")).toBe(true);
+  });
+
+  it("con foco en arcilla, la gente de Materiales va por arcilla", () => {
+    const s = createState(62);
+    s.techs.P01 = s.techs.P02 = s.techs.N03 = true;
+    s.debug.infinite.comida = true;
+    for (const v of s.villagers) if (stageOf(v) === "adult") v.role = "materiales";
+    s.inv.arcilla = 0;
+    s.focus = "arcilla";
+    run(s, 20);
+    expect(s.inv.arcilla).toBeGreaterThan(0);
+    expect(s.inv.ramas + s.inv.piedra + s.inv.fibras + s.inv.madera).toBe(0);
+  });
+
+  it("el foco en un recurso de edificio baja por la cadena hasta lo que se recolecta", () => {
+    const s = createState(63);
+    for (const t of ["P01", "P02", "N03", "B01", "B02", "B03", "B07"]) s.techs[t] = true;
+    const ladrillo = focusPlan(s, "ladrillo");
+    expect([...ladrillo.targets].sort()).toEqual(["arcilla", "madera"]); // arcilla directa; madera → carbón
+    expect(ladrillo.gaps).toContainEqual({ building: "horno_ladrillo", issue: "construir" });
+    expect(focusPlan(s, "bronce").targets).toEqual(["madera"]); // mineral y estaño salen de minas
+    expect(isFocusable(s, "lana")).toBe(false);
+    expect(isFocusable(s, "comida")).toBe(false);
+    delete s.techs.B07;
+    expect(isFocusable(s, "ladrillo")).toBe(false); // sin el horno desbloqueado no hay cadena
+  });
+
+  it("avisa si el edificio de la cadena no tiene trabajador", () => {
+    const s = createState(64);
+    for (const t of ["P01", "P02", "N03", "B02", "B07"]) s.techs[t] = true;
+    addBuilding(s, "horno_ladrillo", 3, 4);
+    const gaps = focusPlan(s, "ladrillo").gaps;
+    expect(gaps).toContainEqual({ building: "horno_ladrillo", issue: "trabajador" });
+    expect(gaps).toContainEqual({ building: "carbonera", issue: "construir" });
+  });
+
+  it("con foco en ladrillo, Materiales junta arcilla y madera", () => {
+    const s = createState(65);
+    for (const t of ["P01", "P02", "N03", "B02", "B07"]) s.techs[t] = true;
+    s.debug.infinite.comida = true;
+    for (const v of s.villagers) if (stageOf(v) === "adult") v.role = "materiales";
+    for (const r of ["arcilla", "madera", "ramas", "piedra", "fibras", "arena"] as const) s.inv[r] = 0;
+    s.focus = "ladrillo";
+    run(s, 30);
+    expect(s.inv.arcilla + s.inv.madera).toBeGreaterThan(0);
+    expect(s.inv.ramas + s.inv.piedra + s.inv.fibras + s.inv.arena).toBe(0);
   });
 });
 

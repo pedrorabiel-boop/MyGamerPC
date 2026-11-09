@@ -1,14 +1,18 @@
 import { config } from "../config";
-import { RESOURCES } from "../content";
+import { BUILDING_BY_ID, RESOURCES } from "../content";
 import { ERAS } from "../data/tree";
-import { useEngine } from "../engine";
+import { engine, useEngine } from "../engine";
 import { amount, housing } from "../sim/economy";
+import { isGatherable } from "../sim/guide";
 import { qty } from "./format";
 
 export function TopBar() {
   const { s, speed } = useEngine();
   const era = ERAS.find((e) => e.id === s.erasOpen)!;
-  const shown = RESOURCES.filter((r) => r.id === "comprension" || r.id === "comida" || amount(s, r.id) > 0);
+  // También en 0: los que se recolectan, el que está en foco y los que produce un edificio ya
+  // construido (para poder tocarlos y concentrarse en ellos).
+  const made = new Set(s.buildings.filter((b) => b.built).flatMap((b) => Object.keys(BUILDING_BY_ID[b.type]?.staff?.outputs ?? {})));
+  const shown = RESOURCES.filter((r) => r.id === "comprension" || r.id === "comida" || amount(s, r.id) > 0 || isGatherable(s, r.id) || s.focus === r.id || made.has(r.id));
   return (
     <header className="topbar">
       <div className="topline">
@@ -20,9 +24,14 @@ export function TopBar() {
       </div>
       <div className="resources">
         {shown.map((r) => (
-          <span key={r.id} className={"res" + (s.resolved[r.id] ? " solved" : s.debug.infinite[r.id] ? " inf" : "")} title={r.name}>
-            {r.icon} {qty(s, r.id)}
-          </span>
+          <button
+            key={r.id}
+            className={"res" + (s.resolved[r.id] ? " solved" : s.debug.infinite[r.id] ? " inf" : "") + (s.focus === r.id ? " focus" : "")}
+            title={r.name}
+            onClick={() => { engine.ui.resMenu = engine.ui.resMenu === r.id ? null : r.id; engine.notify(); }}
+          >
+            {s.focus === r.id ? "🎯" : ""}{r.icon} {qty(s, r.id)}
+          </button>
         ))}
       </div>
     </header>

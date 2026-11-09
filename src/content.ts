@@ -116,6 +116,7 @@ export interface BuildingDef {
   housing?: number;
   storage?: boolean; // punto de entrega de los recolectores
   passive?: { res: ResId; rate: number }; // producción sin trabajadores, por segundo
+  school?: number; // escuela: cuántos niños caben
   animo?: number;
   desc: string;
 }
@@ -158,12 +159,25 @@ export const BUILDINGS: BuildingDef[] = [
   { id: "casa_ladrillo", name: "Casa de ladrillo", icon: "🏘️", color: 0x9a4a3a, unlockedBy: "B07", cost: { ladrillo: 12, madera: 4 }, buildTime: 15, place: ["pasto"], housing: 10, desc: "+10 de capacidad de población." },
   { id: "archivo", name: "Archivo", icon: "📜", color: 0x6a5a3a, unlockedBy: "B06", cost: { arcilla: 10, madera: 6 }, buildTime: 10, place: ["pasto"], desc: "Los escribas generan mucha Comprensión. Los ancianos también sirven.",
     staff: { slots: 2, by: "especialista", title: "Escriba", icon: "✍️", cycle: 3, outputs: { comprension: 6 }, elders: true, elderBonus: 1.2 } },
-  { id: "piedras", name: "Piedras alineadas", icon: "🌓", color: 0x5a5a5a, unlockedBy: "B06", cost: { piedra: 30 }, buildTime: 40, place: ["pasto"], passive: { res: "comprension", rate: 1.5 }, desc: "Proyecto grande: da Comprensión solo. Nadie sabe para qué sirve. Se ve imponente." },
+  { id: "piedras", name: "Piedras alineadas", icon: "🌓", color: 0x5a5a5a, unlockedBy: "B06", cost: { piedra: 30 }, buildTime: 40, place: ["pasto"], passive: { res: "comprension", rate: 1.5 }, desc: "El Círculo, en grande: el chamán sigue trabajando y además da Comprensión solo. Nadie sabe para qué sirve. Se ve imponente.",
+    staff: { slots: 1, by: "especialista", title: "Chamán", icon: "🔮", cycle: 2.5, outputs: { comprension: 10 }, elders: true, elderBonus: 1.5 } },
+  { id: "escuela", name: "Escuela de la tradición", icon: "🏫", color: 0x6a7a4a, unlockedBy: "N09", cost: { madera: 6, piedra: 6 }, buildTime: 10, place: ["pasto"], school: 8, desc: "Los niños estudian adentro (dejan de dar vueltas por el mapa) y llegan a adultos 10% antes." },
+  { id: "escuela_escribas", name: "Escuela de escribas", icon: "🏫", color: 0x7a6a3a, unlockedBy: "B06", cost: { madera: 10, arcilla: 10 }, buildTime: 14, place: ["pasto"], school: 16, desc: "Escuela más grande: caben 16 niños, que llegan a adultos 10% antes." },
   { id: "canal", name: "Canal", icon: "💧", color: 0x2f6fb5, unlockedBy: "B09", cost: { piedra: 2 }, buildTime: 2, place: ["pasto"], nearWater: true, desc: "Tiene que tocar el río u otro canal. Las parcelas junto a un canal rinden ×1,5." },
   { id: "huerto", name: "Huerto medicinal", icon: "🌱", color: 0x3a7a4a, unlockedBy: "N11", cost: { madera: 4, fibras: 4 }, buildTime: 6, place: ["pasto"], desc: "Con un curandero trabajando, las enfermedades matan menos.",
     staff: { slots: 1, by: "especialista", title: "Curandero", icon: "🌱", cycle: 5 } },
 ];
 export const BUILDING_BY_ID = Object.fromEntries(BUILDINGS.map((b) => [b.id, b])) as Record<string, BuildingDef>;
+
+// ---------- Mejoras de edificios ----------
+// Desde la ficha de un edificio se lo puede mejorar al siguiente, con descuento (config.DESCUENTO_MEJORA).
+// Mientras se mejora, el edificio sigue funcionando.
+export const UPGRADES: Record<string, string> = {
+  choza: "adobe",
+  adobe: "casa_ladrillo",
+  circulo: "piedras",
+  escuela: "escuela_escribas",
+};
 
 // ---------- Recursos resueltos (autosuficiencia) ----------
 // Mientras existan los edificios y estén ocupados sus puestos, el recurso deja de tener
@@ -230,6 +244,7 @@ export const TECH_INTRO: Record<string, string[]> = {
   ],
   N09: [
     "Ahora ves números exactos en vez de «pocos» o «muchos».",
+    "Puedes construir la 🏫 Escuela de la tradición: los niños estudian adentro (ya no dan vueltas por el mapa) y llegan a adultos 10% antes.",
     "La tradición oral protegerá la maestría cuando exista (todavía no en el prototipo).",
   ],
   N10: [
@@ -266,7 +281,8 @@ Object.assign(TECH_INTRO, {
   B06: [
     "Puedes construir el 📜 Archivo: los escribas (y los ancianos) dan mucha 💡 Comprensión.",
     "Leyes: la sobrepoblación baja mucho menos el Ánimo.",
-    "Y las 🌓 Piedras alineadas: un proyecto grande que da Comprensión solo.",
+    "Y las 🌓 Piedras alineadas: el Círculo en grande (mejóralo desde su ficha), que además da Comprensión solo.",
+    "La 🏫 Escuela se puede mejorar a Escuela de escribas: caben el doble de niños.",
   ],
   B07: [
     "Puedes construir el 🧱 Horno de ladrillos y la 💎 Vidriería (con 🟨 arena de la orilla).",

@@ -196,3 +196,33 @@ h4 { margin: 16px 0 6px; font-size: 13px; color: var(--muted); text-transform: u
 .transfer-mid small { color: var(--muted); font-size: 12px; }
 .modal-box.zone .inline button:not(.primary) { background: var(--panel-2); border: 1px solid var(--line); border-radius: 8px; padding: 7px 12px; }
 .zonebar button.people-btn { color: var(--text); border-color: var(--ok); }
+.upgrade { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 8px; font-size: 12px; }
+.upgrade button:not(.primary) { background: var(--panel-2); border: 1px solid var(--line); border-radius: 8px; padding: 4px 10px; font-size: 12px; }
+
+/* Barra de recursos tocable y foco */
+.resources button.res { border: 0; font: inherit; color: inherit; cursor: pointer; }
+.res.focus { outline: 2px solid var(--warn); }
+.resmenu { position: absolute; top: 46px; left: 8px; right: 8px; background: rgba(38,33,27,.97); border: 1px solid var(--line); border-radius: 12px; padding: 10px; z-index: 7; font-size: 13px; }
+.focusctl { display: flex; flex-direction: column; gap: 4px; margin: 6px 0; align-items: flex-start; }
+.focusctl .warn { color: #e8b04a; font-size: 12px; }
+
+/* Guía de recursos */
+.booktabs { margin-bottom: 8px; }
+.booktabs button { background: var(--panel-2); border: 1px solid var(--line); border-radius: 8px; padding: 5px 12px; }
+.booktabs button.sel { border-color: var(--accent); background: #4a2a1e; }
+.gall { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 6px; }
+.gchip { background: var(--panel-2); border: 1px solid var(--line); border-radius: 999px; padding: 3px 9px; font-size: 12px; white-space: nowrap; }
+.gchip.big { border-radius: 10px; padding: 7px 10px; text-align: left; display: flex; align-items: center; gap: 6px; }
+.gchip.big small { margin-left: auto; color: var(--muted); }
+.gback { background: none; border: 0; color: var(--muted); padding: 0; margin-bottom: 4px; }
+.guide h3 { margin: 4px 0 8px; }
+.gsrc { background: var(--panel-2); border: 1px solid var(--line); border-radius: 10px; padding: 8px 10px; }
+.gsrc.locked { opacity: .6; border-style: dashed; }
+.gflow { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.gins { display: inline-flex; gap: 4px; flex-wrap: wrap; }
+.gbox { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 3px 8px; font-weight: 600; font-size: 13px; }
+.garrow { color: var(--muted); font-size: 12px; }
+.gout { font-size: 20px; }
+.gmeta { color: var(--muted); font-size: 11px; margin-top: 4px; }
+.glock { color: var(--warn); font-size: 11px; margin-top: 3px; }
+.guses { display: flex; flex-wrap: wrap; gap: 5px; }

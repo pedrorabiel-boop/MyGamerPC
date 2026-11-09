@@ -80,6 +80,15 @@ En desarrollo, el motor también queda en la consola del navegador como `window.
 - Construcción con planos: los aldeanos libres ayudan; los constructores van más rápido.
   Tocando un edificio se puede **demoler** (recuperas 50% de los materiales) o cancelar
   una obra (se devuelve todo).
+  También se puede **mejorar** con descuento (choza → adobe → ladrillo, Círculo → Piedras
+  alineadas, escuelas); mientras se mejora, sigue funcionando.
+- **Escuela** (Conteo y tradición oral): los niños entran y dejan de dar vueltas por el
+  mapa, y llegan a adultos 10% antes.
+- Tocando un recurso de la barra de arriba: **🎯 concentrar** a la gente de Materiales en
+  él, o ver **cómo se consigue** (Libro → 📦 Recursos, con las cadenas en diagrama). Si el
+  recurso sale de un edificio (ladrillo, vidrio…), Materiales junta lo que alimenta su
+  cadena (arcilla, madera…) y el menú avisa si falta construir algo o poner un trabajador.
+- La enfermedad solo mata cuando la tribu llega a 10 habitantes.
 - 19 tecnologías (6 + 6 + 7, consolidadas tras los playtests) con **tarjeta de novedad**
   al estudiarlas, costos exponenciales, almacenamiento con límite, Ánimo, la interfaz
   "pocos/muchos" antes del Conteo y la comida **resuelta** (Arado e irrigación: 4 parcelas

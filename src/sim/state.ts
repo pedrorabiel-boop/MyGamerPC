@@ -60,6 +60,7 @@ export interface Villager {
   workplace: number | null; // id del edificio si es especialista
   manual: boolean; // tarea asignada a mano: queda fuera de la Jefatura
   wasAdult: boolean;
+  adultAge?: number; // si fue a la escuela, llega antes a adulto
   zone: ZoneId;
   transit: ZoneId | null; // camino a otra zona
   x: number; // posición libre, en casillas
@@ -89,6 +90,8 @@ export interface Building {
   y: number;
   progress: number; // segundos de construcción acumulados
   built: boolean;
+  upgradeTo?: string; // mejora en curso (el edificio sigue funcionando mientras tanto)
+  upgradeProgress?: number;
 }
 
 export interface LogEntry { at: number; msg: string }
@@ -113,6 +116,7 @@ export interface GameState {
   log: LogEntry[];
   debug: { infinite: Partial<Record<ResId, boolean>>; unlockOnTap: boolean };
   resolved: Partial<Record<ResId, boolean>>; // recursos resueltos por infraestructura
+  focus: ResId | null; // recurso en el que se concentra la gente de Materiales
   introQueue: string[]; // tarjetas de novedad pendientes (ids de tecnología)
   prototypeEnded: boolean;
   lostDismissed?: boolean; // el jugador eligió seguir mirando tras perder
@@ -283,6 +287,7 @@ export function createState(seed = Date.now() % 100000): GameState {
     log: [],
     debug: { infinite: {}, unlockOnTap: false },
     resolved: {},
+    focus: null,
     introQueue: [],
     prototypeEnded: false,
     birthAcc: 0,

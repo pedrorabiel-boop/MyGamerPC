@@ -2,8 +2,8 @@ import { useState } from "react";
 import { config } from "../config";
 import { BUILDING_BY_ID, RES_BY_ID, type ResId } from "../content";
 import { engine, useEngine } from "../engine";
-import { changeSpecialists, demolish } from "../sim/actions";
-import { staffCount } from "../sim/economy";
+import { cancelUpgrade, changeSpecialists, demolish, startUpgrade, upgradeCost, upgradeTarget } from "../sim/actions";
+import { canAfford, staffCount } from "../sim/economy";
 import { hasJefatura, specialtyTarget } from "../sim/jefatura";
 
 const fmtCost = (c: Partial<Record<ResId, number>>) =>
@@ -15,6 +15,7 @@ export function BuildingCard() {
   const b = s.buildings.find((x) => x.id === ui.selectedBuilding);
   if (!b) return null;
   const def = BUILDING_BY_ID[b.type];
+  const upTo = upgradeTarget(s, b.id);
   const staff = def.staff;
   const have = staffCount(s, b);
   const workers = s.villagers.filter((v) => v.workplace === b.id || ((v.task.kind === "toBuilding" || v.task.kind === "work") && v.task.bId === b.id));
@@ -58,6 +59,23 @@ export function BuildingCard() {
             </div>
           )}
           {workers.length > 0 && <div className="muted">Trabajan aquí: {workers.map((w) => w.name).join(", ")}</div>}
+        </div>
+      )}
+      {def.school && b.built && (
+        <div className="muted">🧒 Niños estudiando: {s.villagers.filter((v) => v.task.kind === "work" && v.task.bId === b.id).length}/{def.school}</div>
+      )}
+      {b.upgradeTo && (
+        <div className="upgrade">
+          <span>⬆️ Mejorando a {BUILDING_BY_ID[b.upgradeTo].name}: {Math.floor(((b.upgradeProgress ?? 0) / (BUILDING_BY_ID[b.upgradeTo].buildTime * (1 - config.DESCUENTO_MEJORA))) * 100)}%</span>
+          <button onClick={() => { cancelUpgrade(s, b.id); engine.notify(); }}>Cancelar mejora</button>
+        </div>
+      )}
+      {upTo && (
+        <div className="upgrade">
+          <button className="primary" disabled={!canAfford(s, upgradeCost(upTo))} onClick={() => { const err = startUpgrade(s, b.id); if (err) engine.toast(err); engine.notify(); }}>
+            ⬆️ Mejorar a {BUILDING_BY_ID[upTo].icon} {BUILDING_BY_ID[upTo].name}
+          </button>
+          <span className="muted">{fmtCost(upgradeCost(upTo))} · {Math.round(config.DESCUENTO_MEJORA * 100)}% de descuento</span>
         </div>
       )}
       {def.unlockedBy && (

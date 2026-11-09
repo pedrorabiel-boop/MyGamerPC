@@ -4,6 +4,9 @@ import { loadOrCreate, save, simulateOffline, type OfflineSummary } from "./sim/
 import { isTribeLost } from "./sim/economy";
 import { step } from "./sim/step";
 import { createState, type GameState, type ZoneId } from "./sim/state";
+import type { ResId } from "./content";
+
+export type Tab = "mapa" | "libro" | "construir" | "aldeanos" | "debug";
 
 const MAX_SUBSTEP = 0.1; // segundos de juego por sub-paso
 const UI_INTERVAL_MS = 200;
@@ -34,6 +37,10 @@ class Engine {
     placing: null as string | null,
     zone: "valle" as ZoneId, // zona que se está mirando
     zoneModal: null as ZoneId | null, // ventana de traslado abierta
+    tab: "mapa" as Tab,
+    bookTab: "tecnologias" as "tecnologias" | "recursos",
+    guideRes: null as ResId | null, // recurso abierto en la guía del Libro
+    resMenu: null as ResId | null, // menú al tocar un recurso en la barra de arriba
     toast: null as { msg: string; at: number } | null,
   };
   offlineSummary: OfflineSummary | null = null;

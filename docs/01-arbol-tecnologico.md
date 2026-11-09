@@ -10,7 +10,7 @@ Este documento es la **columna vertebral** del juego. Cada tecnología es un nod
 oficio, recurso, etc. Primero fijamos el árbol completo; después diseñamos cada nodo
 en detalle.
 
-**Versión:** 2.3 (borrador: Eras 1–3 consolidadas) · 11 eras · 118 tecnologías · 13 piezas de PC
+**Versión:** 2.7 (borrador: Eras 1–3 consolidadas) · 11 eras · 118 tecnologías · 13 piezas de PC
 (ver el [historial de cambios](#9-historial-de-cambios) al final)
 
 ---
@@ -266,6 +266,26 @@ cambia cómo se distribuye la ciudad:
 - **H02 Geometría** les da ✋ escuadra y compás: los constructores van todavía más rápido.
 - **H11 Palanca y polea** permite la 🏗️ **Grúa**, que acelera las construcciones a su
   alrededor (bono por adyacencia).
+
+### Mejoras de edificios
+
+Desde la ficha de un edificio se lo puede **mejorar** al siguiente de su línea, con
+**descuento** (hoy 40% menos en materiales y tiempo). Mientras se mejora, **sigue
+funcionando**; la obra la hacen los constructores como cualquier otra.
+
+| Línea | Mejoras |
+|---|---|
+| Vivienda | Choza → Casa de adobe (N03) → Casa de ladrillo (B07) |
+| Chamán | Círculo de piedras → Piedras alineadas (B06): conserva al chamán y además da Comprensión sola |
+| Escuela | Escuela de la tradición (N09) → Escuela de escribas (B06) |
+
+### Escuela (playtest 5)
+
+Desde **N09 Conteo y tradición oral** se puede construir una **escuela**. Los niños
+entran y **dejan de dar vueltas por el mapa** (que se llenaba de niños y tapaba los
+edificios), y los que estudian **llegan a adultos 10% antes**, así que su etapa de
+trabajo se alarga. Con **B06 Escritura** se mejora a una escuela más grande. Más
+adelante, I12 Escuela pública sigue esta misma línea.
 
 ### Monedas y la Tienda del diablo
 
@@ -993,6 +1013,16 @@ sociedad y al final se construye el PC.
 ---
 
 ## 9. Historial de cambios
+
+### v2.7 (borrador) — Playtest 6: enfermedad, guía de recursos y foco
+- La **enfermedad** solo mata desde los 10 habitantes.
+- **Libro → 📦 Recursos:** de dónde sale cada recurso (diagramas de cadenas: insumos → edificio → producto) y para qué sirve.
+- **Foco en un recurso** desde la barra de arriba: Materiales lo junta primero. Si sale de un edificio, junta lo recolectable de su cadena y avisa qué edificio falta o no tiene trabajador.
+
+### v2.6 (borrador) — Playtest 5: traslados, mejoras y escuela
+- Los traslados y los especialistas prefieren a los **adultos más jóvenes** (antes se mandaba a los que estaban por volverse ancianos).
+- **Mejoras de edificios** con descuento desde su ficha (vivienda, Círculo → Piedras alineadas, escuelas).
+- **Escuela** desde N09 (mejorable con B06): los niños quedan adentro y llegan a adultos 10% antes.
 
 ### v2.5 (borrador) — Metas de población por zona
 - La ventana de traslado fija una **meta de adultos por zona** que se mantiene sola (reemplaza a quien envejece o muere).

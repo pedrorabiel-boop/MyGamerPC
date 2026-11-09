@@ -2,7 +2,7 @@ import { useState } from "react";
 import { config } from "../config";
 import { RES_BY_ID, TECH_INTRO, type ResId } from "../content";
 import { TECH_BY_ID } from "../data/tree";
-import { DEBUG_ENABLED, engine, useEngine } from "../engine";
+import { DEBUG_ENABLED, engine, useEngine, type Tab } from "../engine";
 import { MapView } from "../render/MapView";
 import { dismissIntro, tapBook } from "../sim/actions";
 import { isTribeLost } from "../sim/economy";
@@ -15,12 +15,13 @@ import { TopBar } from "./TopBar";
 import { VillagerCard } from "./VillagerCard";
 import { VillagersPanel } from "./VillagersPanel";
 import { ZoneBar, ZoneModal } from "./ZoneUI";
+import { ResourceMenu } from "./ResourceMenu";
 
-type Tab = "mapa" | "libro" | "construir" | "aldeanos" | "debug";
 
 export function App() {
   const { s, ui, offlineSummary } = useEngine();
-  const [tab, setTab] = useState<Tab>("mapa");
+  const tab = ui.tab;
+  const setTab = (t: Tab) => { engine.ui.tab = t; engine.ui.resMenu = null; engine.notify(); };
   const [bump, setBump] = useState(0);
 
   const lastLog = s.log[s.log.length - 1];
@@ -41,6 +42,7 @@ export function App() {
         <MapView />
         <ZoneBar />
         <ZoneModal />
+        <ResourceMenu />
 
         {tab === "mapa" && <VillagerCard />}
         {tab === "mapa" && <BuildingCard />}

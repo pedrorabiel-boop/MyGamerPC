@@ -27,6 +27,7 @@ export function parseSave(text: string): GameState | null {
     s.debug ??= { infinite: {}, unlockOnTap: false };
     s.resolved ??= {};
     s.introQueue ??= [];
+    s.focus ??= null;
     s.jefatura ??= defaultJefatura();
     migratePriorities(s.jefatura);
     migrateToZones(s);

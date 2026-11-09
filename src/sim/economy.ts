@@ -46,8 +46,17 @@ export function pay(s: GameState, cost: Cost): boolean {
 }
 
 export type Stage = "child" | "adult" | "elder";
+/** Edad a la que un aldeano llega a adulto (antes si fue a la escuela). */
+export const adultAge = (v: Villager) => v.adultAge ?? config.EDAD_ADULTO;
+
+/** Años de adulto que le quedan antes de volverse anciano. */
+export const workYearsLeft = (v: Villager) => v.lifespan * (1 - config.FRACCION_ANCIANO) - v.age;
+
+/** Ordena de más joven (más años de trabajo por delante) a más viejo. */
+export const youngestFirst = <T extends Villager>(list: T[]) => [...list].sort((a, b) => workYearsLeft(b) - workYearsLeft(a));
+
 export function stageOf(v: Villager): Stage {
-  if (v.age < config.EDAD_ADULTO) return "child";
+  if (v.age < adultAge(v)) return "child";
   if (v.age >= v.lifespan * (1 - config.FRACCION_ANCIANO)) return "elder";
   return "adult";
 }

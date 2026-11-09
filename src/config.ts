@@ -26,6 +26,7 @@ export const config = {
   CAPACIDAD_BASE: 6, // gente que duerme a la intemperie
   MORTALIDAD_HAMBRE: 0.15, // probabilidad por año
   MORTALIDAD_ENFERMEDAD: 0.01, // probabilidad por año
+  POBLACION_ENFERMEDAD: 10, // las enfermedades recién aparecen con esta población (Playtest 6: al inicio era devastador)
 
   // Trabajo
   VELOCIDAD_CAMINAR: 1.6, // casillas por segundo
@@ -41,6 +42,8 @@ export const config = {
   FACTOR_AYUDA_CONSTRUCCION: 0.5, // aldeano sin oficio que ayuda a construir
   JEFATURA_INTERVALO: 1, // segundos entre cada reasignación de la Jefatura
   DEVOLUCION_DEMOLER: 0.5, // fracción de los materiales que se recupera al demoler (una obra sin terminar devuelve todo)
+  DESCUENTO_MEJORA: 0.4, // mejorar un edificio cuesta 40% menos que construir el nuevo (materiales y tiempo)
+  BONO_ESCUELA: 0.1, // los niños que van a la escuela llegan a adultos 10% antes
 
   // Almacenamiento
   ALMACEN_BASE: 60,

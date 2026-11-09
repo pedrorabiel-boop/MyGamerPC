@@ -5,7 +5,7 @@
 // Los aldeanos con tarea manual quedan fuera hasta que el jugador los devuelve.
 import { config } from "../config";
 import { BUILDINGS, BUILDING_BY_ID, FOOD_GATHER, MATERIALS, type Role } from "../content";
-import { has, roleUnlocked, staffCount, stageOf, storageCap, unlimited } from "./economy";
+import { has, roleUnlocked, staffCount, stageOf, storageCap, unlimited, youngestFirst } from "./economy";
 import type { Building, GameState, Villager, ZoneId } from "./state";
 
 export const JEFATURA_TECH = "N11";
@@ -54,7 +54,7 @@ export function roleCap(s: GameState, role: Role, zone: ZoneId = "valle"): numbe
     const needed = MATERIALS.some((m) => has(s, m.tech) && nodeHere(m.node) && !unlimited(s, m.res) && s.inv[m.res] < storageCap(s, m.res) - 1);
     return needed ? Infinity : 0;
   }
-  return s.buildings.some((b) => !b.built && b.zone === zone) ? Infinity : 0; // construcción: solo si hay planos ahí
+  return s.buildings.some((b) => (!b.built || b.upgradeTo) && b.zone === zone) ? Infinity : 0; // construcción: solo si hay obras ahí
 }
 
 /**
@@ -158,7 +158,7 @@ function pickDonor(s: GameState, type: string, zone: ZoneId): Villager | null {
     const elder = s.villagers.find((v) => isFreeElder(v) && here(v));
     if (elder) return elder;
   }
-  const pool = s.villagers.filter((v) => movable(v) && v.workplace == null && here(v));
+  const pool = youngestFirst(s.villagers.filter((v) => movable(v) && v.workplace == null && here(v)));
   const free = pool.find((v) => v.role === null);
   if (free) return free;
   const counts = new Map<Role, number>();

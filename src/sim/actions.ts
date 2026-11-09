@@ -1,8 +1,8 @@
 // Acciones del jugador y del modo debug. Todas mutan el estado directamente.
 import { config } from "../config";
-import { BUILDING_BY_ID, NODE_DEFS, TECH_INTRO, type ResId, type Role } from "../content";
+import { BUILDING_BY_ID, NODE_DEFS, TECH_INTRO, UPGRADES, type Cost, type ResId, type Role } from "../content";
 import { TECHS, TECH_BY_ID, techCost } from "../data/tree";
-import { add, canAfford, has, isFree, pay, roleUnlocked, staffCount, stageOf } from "./economy";
+import { add, canAfford, has, isFree, pay, roleUnlocked, staffCount, stageOf, youngestFirst } from "./economy";
 import { changeSpecialtyTarget, hasJefatura } from "./jefatura";
 import { log, newVillager, ZONE_BY_ID, type GameState, type Villager, type ZoneId } from "./state";
 
@@ -88,6 +88,7 @@ export function demolish(s: GameState, buildingId: number): string | null {
   if (!b) return null;
   const def = BUILDING_BY_ID[b.type];
   if (!def.unlockedBy) return "Eso no se puede demoler.";
+  if (b.upgradeTo) cancelUpgrade(s, b.id);
   const refund = b.built ? config.DEVOLUCION_DEMOLER : 1;
   for (const [r, n] of Object.entries(def.cost)) add(s, r as ResId, Math.floor((n ?? 0) * refund));
   for (const v of s.villagers) {
@@ -97,6 +98,44 @@ export function demolish(s: GameState, buildingId: number): string | null {
   s.buildings.splice(s.buildings.indexOf(b), 1);
   log(s, b.built ? `🗑️ Demolido: ${def.name}. Se recuperó parte de los materiales.` : `Obra cancelada: ${def.name}. Se devolvieron los materiales.`);
   return null;
+}
+
+// ---------- Mejoras ----------
+
+/** Costo de mejorar: el del edificio nuevo, con descuento. */
+export function upgradeCost(to: string): Cost {
+  const out: Cost = {};
+  for (const [r, n] of Object.entries(BUILDING_BY_ID[to].cost)) out[r as ResId] = Math.ceil((n ?? 0) * (1 - config.DESCUENTO_MEJORA));
+  return out;
+}
+
+/** A qué se puede mejorar este edificio ahora (o null). */
+export function upgradeTarget(s: GameState, buildingId: number): string | null {
+  const b = s.buildings.find((x) => x.id === buildingId);
+  const to = b ? UPGRADES[b.type] : undefined;
+  if (!b || !to || !b.built || b.upgradeTo) return null;
+  const req = BUILDING_BY_ID[to].unlockedBy;
+  return req && has(s, req) ? to : null;
+}
+
+export function startUpgrade(s: GameState, buildingId: number): string | null {
+  const to = upgradeTarget(s, buildingId);
+  if (!to) return "Este edificio no se puede mejorar ahora.";
+  const cost = upgradeCost(to);
+  if (!pay(s, cost)) return "No alcanzan los materiales.";
+  const b = s.buildings.find((x) => x.id === buildingId)!;
+  b.upgradeTo = to;
+  b.upgradeProgress = 0;
+  log(s, `Mejora en curso: ${BUILDING_BY_ID[b.type].name} → ${BUILDING_BY_ID[to].name}. Sigue funcionando mientras tanto.`);
+  return null;
+}
+
+export function cancelUpgrade(s: GameState, buildingId: number) {
+  const b = s.buildings.find((x) => x.id === buildingId);
+  if (!b?.upgradeTo) return;
+  for (const [r, n] of Object.entries(upgradeCost(b.upgradeTo))) add(s, r as ResId, n ?? 0);
+  delete b.upgradeTo;
+  delete b.upgradeProgress;
 }
 
 // ---------- Aldeanos ----------
@@ -158,7 +197,7 @@ export function changeSpecialists(s: GameState, buildingId: number, delta: 1 | -
     // Solo gente que ya está en la zona del edificio; para los puestos que lo admiten (chamán), primero un anciano.
     const here = (v: Villager) => v.zone === b.zone && !v.transit;
     const elder = staff.elders ? s.villagers.find((v) => stageOf(v) === "elder" && v.workplace == null && here(v)) : undefined;
-    const free = elder ?? s.villagers.find((v) => isFree(v) && here(v));
+    const free = elder ?? youngestFirst(s.villagers.filter((v) => isFree(v) && here(v)))[0];
     if (!free) {
       return b.zone === "valle"
         ? "No hay aldeanos libres: quita a alguien de una categoría en 👥 Aldeanos."
@@ -196,10 +235,13 @@ export function transferVillager(s: GameState, from: ZoneId, to: ZoneId, auto = 
   // Los traslados automáticos (metas por zona) no mueven a quien tiene una tarea manual.
   const pool = adultsIn(s, from).filter((v) => v.workplace == null && !v.order && !(auto && v.manual));
   if (!pool.length) return `No hay adultos disponibles en ${ZONE_BY_ID[from].label}.`;
+  // A una zona lejana se manda a los más jóvenes (así duran más antes de volverse ancianos);
+  // de vuelta al Valle se trae a los más viejos.
+  const ordered = to === "valle" ? youngestFirst(pool).reverse() : youngestFirst(pool);
   const counts = new Map<string, number>();
-  for (const v of pool) counts.set(v.role ?? "", (counts.get(v.role ?? "") ?? 0) + 1);
-  const v = pool.find((x) => x.role === null)
-    ?? pool.find((x) => x.role === [...counts.entries()].sort((a, b) => b[1] - a[1])[0][0])!;
+  for (const v of ordered) counts.set(v.role ?? "", (counts.get(v.role ?? "") ?? 0) + 1);
+  const v = ordered.find((x) => x.role === null)
+    ?? ordered.find((x) => x.role === [...counts.entries()].sort((a, b) => b[1] - a[1])[0][0])!;
   v.transit = to;
   v.task = { kind: "idle", t: 0 };
   return null;

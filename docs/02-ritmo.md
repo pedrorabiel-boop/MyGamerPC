@@ -136,3 +136,14 @@ abajo y se vuelve a probar.
 
 ### Playtest 4 (2026-11-10)
 - **Llegar al chamán costaba ≈ 420 toques** antes de poder automatizar la Comprensión → *Arte y ritos* (P11) pasa a **costo fijo de 200** (`COSTO_ARTE_Y_RITOS`), fuera de la fórmula. El resto de la Era 1 no cambia.
+
+### Playtest 5 (2026-11-10)
+- **Los enviados a la Cueva y las Montañas eran los adultos más viejos:** duraban segundos antes de volverse ancianos y volver → ahora se manda a los más jóvenes y se trae de vuelta a los más viejos.
+- **El mapa se llenaba de niños** que tapaban los edificios → escuela (N09): los niños quedan adentro y llegan a adultos 10% antes (`BONO_ESCUELA`).
+- **Mejoras con descuento** (`DESCUENTO_MEJORA` = 0,4).
+
+### Playtest 6 (2026-11-11)
+- **Las muertes por enfermedad al principio eran devastadoras** (una sola muerte en una tribu de 4–5) → no hay muertes por enfermedad con menos de **10 habitantes** (`POBLACION_ENFERMEDAD`).
+- **No quedaba claro cómo conseguir cada recurso** → pestaña **📦 Recursos** en el Libro: cada recurso muestra en diagramas de dónde sale (recolección, minas, cadenas de edificios con sus insumos) y para qué sirve.
+- **La arcilla siempre en 0** al querer casas de adobe → tocando un recurso de la barra de arriba se puede **concentrar a la gente de Materiales** en él (🎯), mientras no esté lleno.
+- **Foco en recursos de edificio:** al concentrarse en algo que sale de un edificio (ladrillo, vidrio, bronce…), Materiales junta lo que se recolecta a mano de su cadena (ladrillo → arcilla y madera para el carbón), empezando por lo más bajo. El menú avisa si la cadena se traba por otra cosa: un edificio sin construir o sin trabajador. Sin foco posible: lana, comida y Comprensión.

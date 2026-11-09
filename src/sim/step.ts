@@ -5,10 +5,11 @@ import {
 } from "../content";
 import { ERAS } from "../data/tree";
 import {
-  add, canAfford, countBuilt, has, housing, isResolutionMet, pay, roleUnlocked, stageOf, storageCap, unlimited,
+  add, adultAge, canAfford, countBuilt, has, housing, isResolutionMet, pay, roleUnlocked, stageOf, storageCap, unlimited,
 } from "./economy";
 import { hasJefatura, runJefatura } from "./jefatura";
 import { maintainZoneQuotas } from "./zones";
+import { focusTargets } from "./guide";
 import { log, newVillager, rand, type Building, type GameState, type ResNode, type Villager, type ZoneId } from "./state";
 
 /** Avanza la simulación `dt` segundos de juego. Usar pasos pequeños (≤ 0,5 s). */
@@ -80,11 +81,13 @@ function ageAndDie(s: GameState, dt: number) {
   const years = dt / config.TIEMPO_POR_AÑO;
   const hungry = s.inv.comida <= 0 && !unlimited(s, "comida");
   const healer = s.villagers.some((v) => v.workplace != null && s.buildings.find((b) => b.id === v.workplace)?.type === "huerto" && v.task.kind === "work");
-  const illness = config.MORTALIDAD_ENFERMEDAD * (healer ? 0.5 : 1) * (has(s, "P05") ? 0.8 : 1);
+  // Sin enfermedades al principio: recién aparecen cuando la tribu ya tiene cierto tamaño.
+  const illness = s.villagers.length < config.POBLACION_ENFERMEDAD ? 0
+    : config.MORTALIDAD_ENFERMEDAD * (healer ? 0.5 : 1) * (has(s, "P05") ? 0.8 : 1);
   const dead: Villager[] = [];
   for (const v of s.villagers) {
     v.age += years;
-    if (!v.wasAdult && v.age >= config.EDAD_ADULTO) v.wasAdult = true; // llega a adulto libre (sin herencia)
+    if (!v.wasAdult && v.age >= adultAge(v)) v.wasAdult = true; // llega a adulto libre (sin herencia)
     // Al volverse anciano deja su puesto de especialista (el edificio queda con un puesto vacío).
     // Al volverse anciano deja su puesto, salvo que sea uno que los ancianos pueden ocupar (chamán).
     if (v.workplace != null && stageOf(v) === "elder" && !elderCanWork(s, v.workplace)) { v.workplace = null; v.task = { kind: "idle", t: 0 }; }
@@ -239,7 +242,10 @@ function updateVillager(s: GameState, v: Villager, dt: number, occ: Map<number, 
   // Un especialista cuyo edificio está en otra zona, va para allá.
   if (stage === "adult" && workplaceB && workplaceB.zone !== v.zone && !v.carry) { v.transit = workplaceB.zone; return; }
   const a = anchor(s, v.zone);
-  if (stage === "child") return wander(s, v, dt, a.x + 0.5, a.y + 0.5, 1.5);
+  if (stage === "child") {
+    if (goToSchool(s, v, dt, occ)) return;
+    return wander(s, v, dt, a.x + 0.5, a.y + 0.5, 1.5);
+  }
   if (stage === "elder") {
     const b = workplaceB;
     if (b && elderCanWork(s, b.id)) return workAt(s, v, dt, b);
@@ -307,6 +313,18 @@ function foodWork(s: GameState, v: Villager, dt: number, occ: Map<number, number
 function materialsWork(s: GameState, v: Villager, dt: number) {
   if (busyGathering(v)) return gather(s, v, dt, currentGatherSpec(s, v), null);
   let pick: (typeof MATERIALS)[number] | null = null, low = Infinity;
+  // Recurso en foco (elegido por el jugador): si no está lleno, va primero lo que lo alimenta y se
+  // junta a mano (él mismo, o lo de su cadena: ladrillo → arcilla y madera), empezando por lo más bajo.
+  if (s.focus && !unlimited(s, s.focus) && s.inv[s.focus] < storageCap(s, s.focus) - 1) {
+    for (const res of focusTargets(s, s.focus)) {
+      if (unlimited(s, res) || s.inv[res] >= storageCap(s, res) - 1) continue;
+      const m = MATERIALS.find((x) => x.res === res && has(s, x.tech) && nearestNode(s, v, x.node, x.res));
+      if (!m) continue;
+      const ratio = s.inv[res] / storageCap(s, res) + rand(s) * 0.05;
+      if (ratio < low) { low = ratio; pick = m; }
+    }
+    if (pick) return gather(s, v, dt, { node: pick.node, res: pick.res, carryMult: 1 }, null);
+  }
   for (const m of MATERIALS) {
     if (!has(s, m.tech) || unlimited(s, m.res) || !nearestNode(s, v, m.node, m.res)) continue;
     const ratio = s.inv[m.res] / storageCap(s, m.res) + rand(s) * 0.05; // un poco de azar para repartir
@@ -371,16 +389,19 @@ function gather(s: GameState, v: Villager, dt: number, spec: GatherSpec | null, 
   }
 }
 
+/** ¿Hay trabajo de construcción en este edificio? (obra nueva o mejora en curso) */
+export const needsBuilding = (b: Building) => !b.built || !!b.upgradeTo;
+
 function buildWork(s: GameState, v: Villager, dt: number, rate: number): boolean {
   let site: Building | undefined;
   if (v.task.kind === "toSite" || v.task.kind === "build") {
     const id = v.task.bId;
-    site = s.buildings.find((b) => b.id === id && !b.built);
+    site = s.buildings.find((b) => b.id === id && needsBuilding(b));
   }
   if (!site) {
     let bd = Infinity;
     for (const b of s.buildings) {
-      if (b.built || b.zone !== v.zone) continue;
+      if (!needsBuilding(b) || b.zone !== v.zone) continue;
       const d = dist(v.x, v.y, b.x + 0.5, b.y + 0.5);
       if (d < bd) { bd = d; site = b; }
     }
@@ -389,6 +410,20 @@ function buildWork(s: GameState, v: Villager, dt: number, rate: number): boolean
   }
   if (v.task.kind === "toSite") {
     if (moveTo(v, site.x + 0.5, site.y + 0.5, dt)) v.task = { kind: "build", bId: site.id };
+    return true;
+  }
+  if (site.built && site.upgradeTo) {
+    // Mejora: el edificio sigue funcionando hasta que se termina.
+    site.upgradeProgress = (site.upgradeProgress ?? 0) + dt * rate * s.animo;
+    const to = BUILDING_BY_ID[site.upgradeTo];
+    if (site.upgradeProgress >= to.buildTime * (1 - config.DESCUENTO_MEJORA)) {
+      const from = BUILDING_BY_ID[site.type].name;
+      site.type = site.upgradeTo;
+      delete site.upgradeTo;
+      delete site.upgradeProgress;
+      log(s, `⬆️ Mejorado: ${from} → ${to.name}.`);
+      v.task = { kind: "idle", t: 0 };
+    }
     return true;
   }
   site.progress += dt * rate * s.animo;
@@ -423,6 +458,36 @@ function workAt(s: GameState, v: Villager, dt: number, b: Building) {
     bonus *= zoneEfficiency(b.zone);
     for (const [r, amt] of Object.entries(staff.outputs ?? {})) add(s, r as ResId, (amt ?? 0) * bonus);
   }
+}
+
+/**
+ * Escuela: el niño camina hasta una escuela con lugar y se queda adentro (no se dibuja).
+ * Mientras estudia, llegará a adulto antes (config.BONO_ESCUELA).
+ */
+function goToSchool(s: GameState, v: Villager, dt: number, occ: Map<number, number>): boolean {
+  let school: Building | undefined;
+  if (v.task.kind === "toBuilding" || v.task.kind === "work") {
+    const id = v.task.bId;
+    school = s.buildings.find((b) => b.id === id && b.built && BUILDING_BY_ID[b.type].school);
+  }
+  if (!school) {
+    let bd = Infinity;
+    for (const b of s.buildings) {
+      const cap = b.built && b.zone === v.zone ? BUILDING_BY_ID[b.type].school ?? 0 : 0;
+      if (!cap || (occ.get(b.id) ?? 0) >= cap) continue;
+      const d = dist(v.x, v.y, b.x + 0.5, b.y + 0.5);
+      if (d < bd) { bd = d; school = b; }
+    }
+    if (!school) return false;
+    occ.set(school.id, (occ.get(school.id) ?? 0) + 1);
+    v.task = { kind: "toBuilding", bId: school.id };
+  }
+  if (v.task.kind === "toBuilding") {
+    if (moveTo(v, school.x + 0.5, school.y + 0.5, dt)) v.task = { kind: "work", bId: school.id, t: 0 };
+    return true;
+  }
+  v.adultAge ??= config.EDAD_ADULTO * (1 - config.BONO_ESCUELA);
+  return true;
 }
 
 /** ¿Un anciano puede trabajar en este edificio? (hoy: solo el Círculo, como chamán) */

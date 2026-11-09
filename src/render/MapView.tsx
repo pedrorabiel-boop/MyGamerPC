@@ -5,7 +5,11 @@ import { BUILDING_BY_ID, NODE_DEFS, ROLE_BY_ID, SPECIALIST_COLOR, type ResId } f
 import { engine } from "../engine";
 import { canPlace, orderGather, place, zoneUnlocked } from "../sim/actions";
 import { has, staffCount, stageOf } from "../sim/economy";
-import type { ZoneId } from "../sim/state";
+import type { Villager, ZoneId } from "../sim/state";
+import { config } from "../config";
+
+/** Niño adentro de la escuela: no se dibuja (ya llegó y está estudiando). */
+const atSchool = (v: Villager) => v.task.kind === "work" && stageOf(v) === "child";
 
 const TILE_COLORS = { pasto: 0x557a35, rio: 0x2f6fb5, orilla: 0x8a7a50, cueva: 0x1a1a1a, suelo: 0x4a4038, pared: 0x1f1b18, salida: 0x8a7a5a, sendero: 0x8a7a50, monte: 0x6f7a6a, pico: 0xd8dde4 } as const;
 
@@ -220,6 +224,12 @@ export function MapView() {
               buildingsG.circle(bx, by + r * 0.45, r * 0.2).fill(0xffffff);
             }
           }
+          if (b.built && b.upgradeTo) {
+            const to = BUILDING_BY_ID[b.upgradeTo];
+            const p = Math.min(1, (b.upgradeProgress ?? 0) / (to.buildTime * (1 - config.DESCUENTO_MEJORA)));
+            buildingsG.rect(x + 4, y + 3, ts - 8, 4).fill({ color: 0x000000, alpha: 0.5 });
+            buildingsG.rect(x + 4, y + 3, (ts - 8) * p, 4).fill(0x6ec6ff);
+          }
           if (engine.ui.selectedBuilding === b.id) {
             buildingsG.roundRect(x, y, ts, ts, ts * 0.15).stroke({ width: 2, color: 0xffffff });
           }
@@ -237,7 +247,7 @@ export function MapView() {
         // Aldeanos
         villagersG.clear();
         for (const v of s.villagers) {
-          if (v.zone !== zone) continue;
+          if (v.zone !== zone || atSchool(v)) continue;
           const stage = stageOf(v);
           const r = ts * (stage === "child" ? 0.11 : 0.16);
           const cx = v.x * ts, cy = v.y * ts;
@@ -273,7 +283,7 @@ export function MapView() {
         // ¿Tocó un aldeano?
         let best: number | null = null, bd = 0.45;
         for (const v of s.villagers) {
-          if (v.zone !== zone) continue;
+          if (v.zone !== zone || atSchool(v)) continue;
           const d = Math.hypot(v.x - fx, v.y - fy);
           if (d < bd) { bd = d; best = v.id; }
         }

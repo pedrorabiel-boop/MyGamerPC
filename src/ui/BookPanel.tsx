@@ -4,6 +4,7 @@ import { engine, useEngine } from "../engine";
 import { study, techStatus, unlock } from "../sim/actions";
 import { amount } from "../sim/economy";
 import { mdToHtml } from "./format";
+import { ResourceGuide } from "./ResourceGuide";
 
 const STATUS_LABEL = {
   sellada: "Sellada",
@@ -28,8 +29,18 @@ export function BookPanel() {
     setOpenId(openId === id ? null : id);
   };
 
+  const bookTab = engine.ui.bookTab;
+  const tabs = (
+    <div className="seg booktabs">
+      <button className={bookTab === "tecnologias" ? "sel" : ""} onClick={() => { engine.ui.bookTab = "tecnologias"; engine.notify(); }}>📜 Tecnologías</button>
+      <button className={bookTab === "recursos" ? "sel" : ""} onClick={() => { engine.ui.bookTab = "recursos"; engine.notify(); }}>📦 Recursos</button>
+    </div>
+  );
+  if (bookTab === "recursos") return <div className="book">{tabs}<ResourceGuide /></div>;
+
   return (
     <div className="book">
+      {tabs}
       <p className="hint">
         {debugTap
           ? "🐞 Modo debug: tocar una página la desbloquea (o la vuelve a bloquear)."
