@@ -1,11 +1,11 @@
 import { config } from "../config";
 import {
-  BUILDING_BY_ID, FOOD_GATHER, MATERIALS, NODE_DEFS, RES_BY_ID, RESOLUTIONS,
+  BUILDING_BY_ID, FOOD_GATHER, MATERIALS, NODE_DEFS, NODE_UPGRADES, RES_BY_ID, RESOLUTIONS,
   type NodeType, type ResId,
 } from "../content";
 import { ERAS } from "../data/tree";
 import {
-  add, adultAge, canAfford, countBuilt, has, housing, isResolutionMet, pay, roleUnlocked, stageOf, storageCap, unlimited,
+  add, adultAge, canAfford, countBuilt, has, housing, isResolutionMet, nodeMax, nodeRegen, pay, roleUnlocked, stageOf, storageCap, unlimited,
 } from "./economy";
 import { hasJefatura, runJefatura } from "./jefatura";
 import { maintainZoneQuotas } from "./zones";
@@ -47,9 +47,9 @@ function updateResolutions(s: GameState) {
 
 function regenNodes(s: GameState, dt: number) {
   for (const n of s.nodes) {
-    for (const [res, def] of Object.entries(NODE_DEFS[n.type].stocks)) {
+    for (const res of Object.keys(NODE_DEFS[n.type].stocks)) {
       const r = res as ResId;
-      n.stock[r] = Math.min(def!.max, (n.stock[r] ?? 0) + def!.regen * dt);
+      n.stock[r] = Math.min(nodeMax(n, r), (n.stock[r] ?? 0) + nodeRegen(n, r) * dt);
     }
   }
 }
@@ -389,22 +389,51 @@ function gather(s: GameState, v: Villager, dt: number, spec: GatherSpec | null, 
   }
 }
 
+/** Obra de mejora de un recurso natural (Barrero, Cantera…). false si no está en una. */
+function improveWork(s: GameState, v: Villager, dt: number, rate: number): boolean {
+  if (v.task.kind !== "toImprove" && v.task.kind !== "improve") return false;
+  const id = v.task.nId;
+  const n = s.nodes.find((x) => x.id === id && x.improving != null);
+  const up = n ? NODE_UPGRADES[n.type] : undefined;
+  if (!n || !up) { v.task = { kind: "idle", t: 0 }; return false; }
+  if (v.task.kind === "toImprove") {
+    if (moveTo(v, n.x + 0.5, n.y + 0.5, dt)) v.task = { kind: "improve", nId: n.id };
+    return true;
+  }
+  n.improving! += dt * rate * s.animo;
+  if (n.improving! >= up.buildTime) {
+    delete n.improving;
+    n.improved = true;
+    log(s, `🌱 Mejorado: ${NODE_DEFS[n.type].name} → ${up.name}. Se regenera más rápido y guarda más.`);
+    v.task = { kind: "idle", t: 0 };
+  }
+  return true;
+}
+
 /** ¿Hay trabajo de construcción en este edificio? (obra nueva o mejora en curso) */
 export const needsBuilding = (b: Building) => !b.built || !!b.upgradeTo;
 
 function buildWork(s: GameState, v: Villager, dt: number, rate: number): boolean {
+  if (improveWork(s, v, dt, rate)) return true;
   let site: Building | undefined;
   if (v.task.kind === "toSite" || v.task.kind === "build") {
     const id = v.task.bId;
     site = s.buildings.find((b) => b.id === id && needsBuilding(b));
   }
   if (!site) {
-    let bd = Infinity;
+    let bd = Infinity, node: ResNode | undefined;
     for (const b of s.buildings) {
       if (!needsBuilding(b) || b.zone !== v.zone) continue;
       const d = dist(v.x, v.y, b.x + 0.5, b.y + 0.5);
       if (d < bd) { bd = d; site = b; }
     }
+    // Las mejoras de recursos naturales son obras como cualquier otra.
+    for (const n of s.nodes) {
+      if (n.improving == null || n.zone !== v.zone) continue;
+      const d = dist(v.x, v.y, n.x + 0.5, n.y + 0.5);
+      if (d < bd) { bd = d; node = n; site = undefined; }
+    }
+    if (node) { v.task = { kind: "toImprove", nId: node.id }; return improveWork(s, v, dt, rate); }
     if (!site) return false;
     v.task = { kind: "toSite", bId: site.id };
   }

@@ -147,3 +147,6 @@ abajo y se vuelve a probar.
 - **No quedaba claro cómo conseguir cada recurso** → pestaña **📦 Recursos** en el Libro: cada recurso muestra en diagramas de dónde sale (recolección, minas, cadenas de edificios con sus insumos) y para qué sirve.
 - **La arcilla siempre en 0** al querer casas de adobe → tocando un recurso de la barra de arriba se puede **concentrar a la gente de Materiales** en él (🎯), mientras no esté lleno.
 - **Foco en recursos de edificio:** al concentrarse en algo que sale de un edificio (ladrillo, vidrio, bronce…), Materiales junta lo que se recolecta a mano de su cadena (ladrillo → arcilla y madera para el carbón), empezando por lo más bajo. El menú avisa si la cadena se traba por otra cosa: un edificio sin construir o sin trabajador. Sin foco posible: lana, comida y Comprensión.
+
+### Playtest 7 (2026-11-12)
+- **La arcilla siempre en 0 aunque 10 personas la junten:** medido, el Valle da ≈9 de arcilla por minuto (3 depósitos × 0,05/s) una vez gastada la reserva inicial, igual con 1 que con 10 personas. La piedra, ≈5 por minuto. Un ladrillero consume 24 por minuto. → **N12 Técnicas de recolección** (costo fijo `COSTO_TECNICAS_RECOLECCION` = 600): los recursos naturales se mejoran en su lugar (×4 minerales, ×3 plantas, ×2 bayas; reserva ×2).

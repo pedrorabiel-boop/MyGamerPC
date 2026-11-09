@@ -1,10 +1,10 @@
 // Acciones del jugador y del modo debug. Todas mutan el estado directamente.
 import { config } from "../config";
-import { BUILDING_BY_ID, NODE_DEFS, TECH_INTRO, UPGRADES, type Cost, type ResId, type Role } from "../content";
+import { BUILDING_BY_ID, NODE_DEFS, NODE_UPGRADE_TECH, NODE_UPGRADES, TECH_INTRO, UPGRADES, type Cost, type ResId, type Role } from "../content";
 import { TECHS, TECH_BY_ID, techCost } from "../data/tree";
 import { add, canAfford, has, isFree, pay, roleUnlocked, staffCount, stageOf, youngestFirst } from "./economy";
 import { changeSpecialtyTarget, hasJefatura } from "./jefatura";
-import { log, newVillager, ZONE_BY_ID, type GameState, type Villager, type ZoneId } from "./state";
+import { log, newVillager, ZONE_BY_ID, type GameState, type ResNode, type Villager, type ZoneId } from "./state";
 
 // ---------- Libro ----------
 
@@ -128,6 +128,38 @@ export function startUpgrade(s: GameState, buildingId: number): string | null {
   b.upgradeProgress = 0;
   log(s, `Mejora en curso: ${BUILDING_BY_ID[b.type].name} → ${BUILDING_BY_ID[to].name}. Sigue funcionando mientras tanto.`);
   return null;
+}
+
+// ---------- Mejoras de recursos naturales (N12) ----------
+
+/** Por qué este recurso natural no se puede mejorar todavía (o null si se puede). */
+export function nodeUpgradeBlock(s: GameState, n: ResNode): string | null {
+  const up = NODE_UPGRADES[n.type];
+  if (!up) return "Esto no se puede mejorar.";
+  if (!has(s, NODE_UPGRADE_TECH)) return `hace falta 🌱 ${TECH_BY_ID[NODE_UPGRADE_TECH].name}.`;
+  if (up.needs && !has(s, up.needs)) return `hace falta ${TECH_BY_ID[up.needs].name}.`;
+  return null;
+}
+
+export function startImproveNode(s: GameState, nodeId: number): string | null {
+  const n = s.nodes.find((x) => x.id === nodeId);
+  if (!n) return "No existe.";
+  const up = NODE_UPGRADES[n.type];
+  const block = nodeUpgradeBlock(s, n);
+  if (block || !up) return block ?? "Esto no se puede mejorar.";
+  if (n.improved || n.improving != null) return "Ya está mejorado.";
+  if (!pay(s, up.cost)) return "No alcanzan los materiales.";
+  n.improving = 0;
+  log(s, `Mejora encargada: ${NODE_DEFS[n.type].name} → ${up.name}. Los constructores van para allá.`);
+  return null;
+}
+
+export function cancelImproveNode(s: GameState, nodeId: number) {
+  const n = s.nodes.find((x) => x.id === nodeId);
+  const up = n ? NODE_UPGRADES[n.type] : undefined;
+  if (!n || !up || n.improving == null) return;
+  for (const [r, a] of Object.entries(up.cost)) add(s, r as ResId, a ?? 0);
+  delete n.improving;
 }
 
 export function cancelUpgrade(s: GameState, buildingId: number) {

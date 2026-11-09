@@ -10,7 +10,7 @@ Este documento es la **columna vertebral** del juego. Cada tecnología es un nod
 oficio, recurso, etc. Primero fijamos el árbol completo; después diseñamos cada nodo
 en detalle.
 
-**Versión:** 2.7 (borrador: Eras 1–3 consolidadas) · 11 eras · 118 tecnologías · 13 piezas de PC
+**Versión:** 2.8 (borrador: Eras 1–3 consolidadas) · 11 eras · 119 tecnologías · 13 piezas de PC
 (ver el [historial de cambios](#9-historial-de-cambios) al final)
 
 ---
@@ -279,6 +279,34 @@ funcionando**; la obra la hacen los constructores como cualquier otra.
 | Chamán | Círculo de piedras → Piedras alineadas (B06): conserva al chamán y además da Comprensión sola |
 | Escuela | Escuela de la tradición (N09) → Escuela de escribas (B06) |
 
+### Mejoras de recursos naturales (playtest 7)
+
+Con **N12 Técnicas de recolección**, tocar un recurso natural abre su ficha con un botón
+para **mejorarlo en su lugar** (no es un edificio aparte: el recurso queda donde estaba,
+con otro dibujo). Se encarga como una obra: los materiales se pagan al encargarla y los
+**constructores** trabajan ahí; mientras tanto se sigue recolectando. Es **permanente**.
+
+El techo natural sigue existiendo, pero más alto: por ejemplo, la arcilla del Valle pasa
+de ≈9 a ≈36 por minuto con los 3 barreros, y un ladrillero consume 24.
+
+| Natural | Mejorado | Regeneración | Reserva | Costo | Requiere además |
+|---|---|---|---|---|---|
+| Depósito de arcilla | **Barrero** | ×4 | ×2 | 4 madera + 2 piedra | — |
+| Rocas | **Cantera** | ×4 (piedra y pigmento) | ×2 | 6 madera | — |
+| Árbol | **Arboleda** | ×3 (ramas y madera) | ×2 | 3 piedra + 3 fibras | — |
+| Pasto alto | **Pastizal** | ×3 | ×2 | 2 madera | — |
+| Arbusto de bayas | **Huerto de bayas** | ×2 | ×2 | 3 madera | — |
+| Ocre (Cueva) | **Cantera de ocre** | ×4 | ×2 | 4 madera | Arte y ritos |
+| Arena (orilla) | **Arenal** | ×4 | ×2 | 4 madera | Ladrillo y vidrio |
+
+Los multiplicadores son perillas (`MEJORA_REGEN_MINERAL`, `MEJORA_REGEN_PLANTA`,
+`MEJORA_REGEN_BAYAS`, `MEJORA_RESERVA`). **Más adelante (sin implementar):** un segundo
+nivel por línea — la Arboleda pasa a **Plantación** con H12 Silvicultura, y la Cantera
+podría mejorar con el Hierro.
+
+Si un recurso silvestre se está agotando, el menú del 🎯 lo avisa: más gente no ayuda,
+hay que mejorar los depósitos.
+
 ### Escuela (playtest 5)
 
 Desde **N09 Conteo y tradición oral** se puede construir una **escuela**. Los niños
@@ -516,7 +544,7 @@ La tribu **deja de vagar y se instala**. Es la era de pasar de *recolectar* a *p
   importa para decidir dónde construir.
 - **Primera zona nueva:** la **Cueva** y la **Costa**, con N10 Exploración (ver *Zonas del mapa*).
 
-Las 12 tecnologías originales se fusionaron en **6**.
+Las 12 tecnologías originales se fusionaron en **6**; el playtest 7 sumó **N12** (7 en total).
 
 | ID | Tecnología | Requiere | Se manifiesta como | Qué aporta |
 |---|---|---|---|---|
@@ -526,6 +554,7 @@ Las 12 tecnologías originales se fusionaron en **6**.
 | N09 | Conteo y tradición oral | P01, N01 | ✋ Palitos de conteo · 📖 | *(Conteo + Tradición oral)*. **Números exactos en la interfaz** (antes: "pocos / muchos") y se pierde menos maestría al morir un maestro. Raíz de la matemática y de la Escritura. *"Contar el grano antes de que alguien se lo coma."* |
 | N10 | Exploración | P02, P04 | ✋ Antorcha · 🏗️ Muelle · 👤 Pescador | *(Antorcha + Balsa y pesca)*. **Abre la Cueva y la Costa.** Muelle: la gente de Comida pesca. *"Ahora podemos ver a los murciélagos. No sé si eso es mejor."* |
 | N11 | Aldea organizada | P11, N01 + pob. 15 | 🏛️ · ⚙️ · 🏗️ Huerto medicinal · 👤 Curandero | *(Jefatura + Herbolaria)*. **Jefatura**: eliges especialidades y prioridades, y la tribu se reparte sola (Zipf). **Curandero** (especialista del huerto): enfermedad ↓ |
+| N12 | Técnicas de recolección 🌿 | N01, N03 | ✋ Cuidado de lo silvestre | **Mejora los recursos naturales en su lugar** (sin edificio aparte): tocando un depósito de arcilla, unas rocas, un árbol, pasto alto o un arbusto se lo mejora a Barrero, Cantera, Arboleda, Pastizal o Huerto de bayas: **se regenera más rápido y guarda el doble**. *"Si no se los come todos de una vez, vuelven. Revolucionario."* |
 
 ### Era 3 — Bronce
 *Recursos nuevos: Carbón vegetal, Mineral de cobre, Estaño, Cobre, Bronce, Arena, Vidrio, Ladrillo*
@@ -590,7 +619,7 @@ La aldea pasa a ser **ciudad**: hierro, filosofía, dinero y edificios grandes.
 | H09 | Magnetita | B01, H05 | ✋ Piedra imán · 📦 Magnetita | Los aldeanos juegan con ella y eso da un poco de Comprensión. Raíz del magnetismo y la electricidad |
 | H10 | Medicina clásica 🌿 | N11, H05 | 🏗️ Casa de salud | **+10 años de vida** (50 → 60) |
 | H11 | Palanca y polea | H02, P02 | 🏗️ Grúa | **Acelera las construcciones** a su alrededor (adyacencia) |
-| H12 | Silvicultura 🌿 | H01, N01 | 🏗️ Bosque plantado | **Rompe el techo natural de la madera.** *"Plantar árboles para quemarlos. El ciclo de la vida."* |
+| H12 | Silvicultura 🌿 | H01, N12 | 🏗️ Bosque plantado | **Rompe el techo natural de la madera:** la Arboleda (N12) pasa a **Plantación**, segundo nivel. *"Plantar árboles para quemarlos. El ciclo de la vida."* |
 | H13 | Engranajes | H11, B03 | 🏗️ Noria · 📦 Engranajes | **Noria**: bono de adyacencia fuerte a parcelas y canales. Primera máquina con engranajes; adelanta al Molino |
 
 ### Era 5 — Medieval
@@ -1013,6 +1042,10 @@ sociedad y al final se construye el PC.
 ---
 
 ## 9. Historial de cambios
+
+### v2.8 (borrador) — Playtest 7: mejorar los recursos naturales
+- La arcilla quedaba siempre en 0: con 3 depósitos que se regeneran ≈9 por minuto en total, más gente no ayudaba.
+- **N12 Técnicas de recolección** (Era 2, requiere Agricultura y Alfarería): los recursos naturales se mejoran en su lugar (Barrero, Cantera, Arboleda, Pastizal, Huerto de bayas, Cantera de ocre, Arenal) con más regeneración y reserva. H12 Silvicultura queda como el segundo nivel de la Arboleda.
 
 ### v2.7 (borrador) — Playtest 6: enfermedad, guía de recursos y foco
 - La **enfermedad** solo mata desde los 10 habitantes.

@@ -8,6 +8,7 @@ import { dismissIntro, tapBook } from "../sim/actions";
 import { isTribeLost } from "../sim/economy";
 import { BookPanel } from "./BookPanel";
 import { BuildingCard } from "./BuildingCard";
+import { NodeCard } from "./NodeCard";
 import { BuildPanel } from "./BuildPanel";
 import { DebugPanel } from "./DebugPanel";
 import { formatNumber } from "./format";
@@ -46,6 +47,7 @@ export function App() {
 
         {tab === "mapa" && <VillagerCard />}
         {tab === "mapa" && <BuildingCard />}
+        {tab === "mapa" && <NodeCard />}
 
         {engine.ui.placing && (
           <div className="placing">

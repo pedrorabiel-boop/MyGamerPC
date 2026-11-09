@@ -4,13 +4,13 @@ import { BUILDINGS, MATERIALS, ROLES, TECH_INTRO } from "../content";
 import { TECHS, TECH_BY_ID, techCost } from "../data/tree";
 import {
   changeRoleCount, changeSpecialists, debugAddVillagers, demolish, debugToggleInfinite, place, setRole, study, tapBook, techStatus,
-  transferVillager, adultsIn, startUpgrade,
+  transferVillager, adultsIn, startUpgrade, startImproveNode, cancelImproveNode,
 } from "./actions";
 import { movePriority, returnToJefatura, setSpecialtyFull, specialtyShortZones, zipfTargets } from "./jefatura";
-import { housing, isTribeLost, pay, staffCount, stageOf } from "./economy";
+import { housing, isTribeLost, nodeMax, nodeRegen, pay, staffCount, stageOf } from "./economy";
 import { parseSave, simulateOffline } from "./save";
 import { changeZoneQuota, zoneCount } from "./zones";
-import { focusPlan, isFocusable, sourcesOf, usesOf } from "./guide";
+import { focusPlan, isFocusable, sourcesOf, usesOf, WILD_LOW, wildState } from "./guide";
 import { createState, type Building, type GameState } from "./state";
 import { step } from "./step";
 
@@ -33,12 +33,16 @@ describe("contenido", () => {
   });
 
   it("los costos crecen de forma exponencial dentro de la era", () => {
-    const era2 = TECHS.filter((t) => t.era === 2).sort((a, b) => a.order - b.order).map(techCost);
+    const era2 = TECHS.filter((t) => t.era === 2 && t.id !== "N12").sort((a, b) => a.order - b.order).map(techCost); // N12: costo fijo
     for (let i = 1; i < era2.length; i++) expect(era2[i] / era2[i - 1]).toBeCloseTo(config.G, 1);
   });
 
   it("Arte y ritos (el chamán) tiene costo fijo", () => {
     expect(techCost(TECH_BY_ID.P11)).toBe(config.COSTO_ARTE_Y_RITOS);
+  });
+
+  it("Técnicas de recolección tiene costo fijo", () => {
+    expect(techCost(TECH_BY_ID.N12)).toBe(config.COSTO_TECNICAS_RECOLECCION);
   });
 });
 
@@ -603,6 +607,75 @@ describe("playtest 6: enfermedades, guía y foco", () => {
     run(s, 30);
     expect(s.inv.arcilla + s.inv.madera).toBeGreaterThan(0);
     expect(s.inv.ramas + s.inv.piedra + s.inv.fibras + s.inv.arena).toBe(0);
+  });
+});
+
+describe("playtest 7: mejorar recursos naturales", () => {
+  const withN12 = (seed: number) => {
+    const s = createState(seed);
+    for (const t of ["P01", "P02", "P04", "P06", "N01", "N03", "N12"]) s.techs[t] = true;
+    s.debug.infinite.comida = true;
+    return s;
+  };
+
+  it("un barrero se regenera ×4 y guarda el doble", () => {
+    const s = withN12(70);
+    const n = s.nodes.find((x) => x.type === "arcilla")!;
+    expect(nodeRegen(n, "arcilla")).toBeCloseTo(0.05);
+    n.improved = true;
+    expect(nodeRegen(n, "arcilla")).toBeCloseTo(0.05 * config.MEJORA_REGEN_MINERAL);
+    expect(nodeMax(n, "arcilla")).toBe(15 * config.MEJORA_RESERVA);
+  });
+
+  it("sin N12 no se puede mejorar; con N12 los constructores hacen la obra", () => {
+    const s = withN12(71);
+    delete s.techs.N12;
+    const n = s.nodes.find((x) => x.type === "arcilla")!;
+    expect(startImproveNode(s, n.id)).toMatch(/hace falta/);
+    s.techs.N12 = true;
+    s.inv.madera = 10; s.inv.piedra = 10;
+    expect(startImproveNode(s, n.id)).toBeNull();
+    expect(s.inv.madera).toBe(6);
+    expect(s.inv.piedra).toBe(8);
+    for (const v of s.villagers) if (stageOf(v) === "adult") v.role = "construccion";
+    run(s, 30);
+    expect(n.improving).toBeUndefined();
+    expect(n.improved).toBe(true);
+  });
+
+  it("cancelar la mejora devuelve todo", () => {
+    const s = withN12(72);
+    const n = s.nodes.find((x) => x.type === "roca")!;
+    s.inv.madera = 6;
+    expect(startImproveNode(s, n.id)).toBeNull();
+    expect(s.inv.madera).toBe(0);
+    cancelImproveNode(s, n.id);
+    expect(s.inv.madera).toBe(6);
+    expect(n.improving).toBeUndefined();
+  });
+
+  it("con los barreros, la arcilla rinde mucho más una vez agotada la reserva", () => {
+    const flow = (improve: boolean) => {
+      const s = withN12(73);
+      for (const v of s.villagers) { v.age = 20; v.lifespan = 999; v.role = "materiales"; }
+      if (improve) for (const n of s.nodes) if (n.type === "arcilla") n.improved = true;
+      s.focus = "arcilla";
+      let got = 0;
+      for (let i = 0; i < 1800; i++) { s.inv.arcilla = 0; step(s, 0.1); if (i >= 1200) got += s.inv.arcilla; } // minuto 3
+      return got;
+    };
+    const wild = flow(false), barrero = flow(true);
+    expect(wild).toBeLessThan(15);
+    expect(barrero).toBeGreaterThan(wild * 2.5);
+  });
+
+  it("avisa cuando la arcilla silvestre se agota", () => {
+    const s = withN12(74);
+    for (const n of s.nodes) if (n.type === "arcilla") n.stock.arcilla = 1;
+    const w = wildState(s, "arcilla")!;
+    expect(w.fill).toBeLessThan(WILD_LOW);
+    expect(w.unimproved).toBe(3);
+    expect(w.upgrade).toBe("Barrero");
   });
 });
 

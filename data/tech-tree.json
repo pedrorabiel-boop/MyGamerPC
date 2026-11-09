@@ -1,6 +1,6 @@
 {
   "generatedFrom": "docs/01-arbol-tecnologico.md",
-  "version": "2.3 (borrador: Eras 1–3 consolidadas)",
+  "version": "2.8 (borrador: Eras 1–3 consolidadas)",
   "manifestationTypes": {
     "knowledge": "📖",
     "building": "🏗",
@@ -652,6 +652,25 @@
       "effect": "*(Jefatura + Herbolaria)*. **Jefatura**: eliges especialidades y prioridades, y la tribu se reparte sola (Zipf). **Curandero** (especialista del huerto): enfermedad ↓"
     },
     {
+      "id": "N12",
+      "name": "Técnicas de recolección",
+      "era": 2,
+      "order": 6,
+      "optional": true,
+      "requires": [
+        "N01",
+        "N03"
+      ],
+      "requiresPopulation": null,
+      "manifestations": [
+        {
+          "type": "tool",
+          "name": "Cuidado de lo silvestre"
+        }
+      ],
+      "effect": "**Mejora los recursos naturales en su lugar** (sin edificio aparte): tocando un depósito de arcilla, unas rocas, un árbol, pasto alto o un arbusto se lo mejora a Barrero, Cantera, Arboleda, Pastizal o Huerto de bayas: **se regenera más rápido y guarda el doble**. *\"Si no se los come todos de una vez, vuelven. Revolucionario.\"*"
+    },
+    {
       "id": "B01",
       "name": "Minería",
       "era": 3,
@@ -1127,7 +1146,7 @@
       "optional": true,
       "requires": [
         "H01",
-        "N01"
+        "N12"
       ],
       "requiresPopulation": null,
       "manifestations": [
@@ -1136,7 +1155,7 @@
           "name": "Bosque plantado"
         }
       ],
-      "effect": "**Rompe el techo natural de la madera.** *\"Plantar árboles para quemarlos. El ciclo de la vida.\"*"
+      "effect": "**Rompe el techo natural de la madera:** la Arboleda (N12) pasa a **Plantación**, segundo nivel. *\"Plantar árboles para quemarlos. El ciclo de la vida.\"*"
     },
     {
       "id": "H13",

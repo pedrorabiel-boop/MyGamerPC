@@ -1,8 +1,10 @@
 // Menú al tocar un recurso en la barra de arriba: concentrar a la gente de Materiales en él
 // (o en lo que lo alimenta, si sale de un edificio) y ver cómo se consigue (pestaña Recursos del Libro).
-import { BUILDING_BY_ID, RES_BY_ID, type ResId } from "../content";
+import { BUILDING_BY_ID, NODE_UPGRADE_TECH, RES_BY_ID, type ResId } from "../content";
+import { TECH_BY_ID } from "../data/tree";
+import { has } from "../sim/economy";
 import { engine, useEngine } from "../engine";
-import { focusPlan, isGatherable } from "../sim/guide";
+import { focusPlan, isGatherable, WILD_LOW, wildState } from "../sim/guide";
 import type { GameState } from "../sim/state";
 import { qty } from "./format";
 
@@ -24,6 +26,7 @@ export function FocusControls({ s, res, after }: { s: GameState; res: ResId; aft
           Materiales juntará: {plan.targets.map((t) => `${RES_BY_ID[t].icon} ${RES_BY_ID[t].name}`).join(" · ")}
         </div>
       )}
+      {plan.targets.map((t) => <WildWarning key={t} s={s} res={t} />)}
       {plan.gaps.map((g) => {
         const d = BUILDING_BY_ID[g.building];
         return (
@@ -34,6 +37,19 @@ export function FocusControls({ s, res, after }: { s: GameState; res: ResId; aft
       })}
     </div>
   );
+}
+
+/** Aviso: la reserva silvestre se está agotando, así que más gente no ayuda. */
+function WildWarning({ s, res }: { s: GameState; res: ResId }) {
+  const w = wildState(s, res);
+  if (!w || w.fill >= WILD_LOW) return null;
+  const name = RES_BY_ID[res].name.toLowerCase();
+  const fix = !has(s, NODE_UPGRADE_TECH)
+    ? `Con 🌱 ${TECH_BY_ID[NODE_UPGRADE_TECH].name} se pueden mejorar.`
+    : w.unimproved > 0 && w.upgrade
+      ? `Tócalos en el mapa para mejorarlos a ${w.upgrade} (quedan ${w.unimproved} sin mejorar).`
+      : "Ya están todos mejorados.";
+  return <div className="warn">🌿 La {name} silvestre se está agotando: más gente no ayuda. {fix}</div>;
 }
 
 export function ResourceMenu() {

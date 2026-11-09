@@ -1,10 +1,10 @@
 // Mapa de la zona con PixiJS. Solo dibuja: el estado vive en la simulación.
 import { Application, Container, Graphics, Text } from "pixi.js";
 import { useEffect, useRef } from "react";
-import { BUILDING_BY_ID, NODE_DEFS, ROLE_BY_ID, SPECIALIST_COLOR, type ResId } from "../content";
+import { BUILDING_BY_ID, NODE_DEFS, NODE_UPGRADES, ROLE_BY_ID, SPECIALIST_COLOR, type ResId } from "../content";
 import { engine } from "../engine";
 import { canPlace, orderGather, place, zoneUnlocked } from "../sim/actions";
-import { has, staffCount, stageOf } from "../sim/economy";
+import { has, nodeMax, staffCount, stageOf } from "../sim/economy";
 import type { Villager, ZoneId } from "../sim/state";
 import { config } from "../config";
 
@@ -132,8 +132,18 @@ export function MapView() {
           if (n.zone !== zone) continue;
           const def = NODE_DEFS[n.type];
           const nStocks = Object.keys(def.stocks).length;
-          const fullness = nStocks ? Object.entries(def.stocks).reduce((acc, [r, d]) => acc + (n.stock[r as ResId] ?? 0) / d!.max, 0) / nStocks : 1;
+          const fullness = nStocks ? Object.keys(def.stocks).reduce((acc, r) => acc + (n.stock[r as ResId] ?? 0) / nodeMax(n, r as ResId), 0) / nStocks : 1;
           const cx = (n.x + 0.5) * ts, cy = (n.y + 0.5) * ts;
+          // Mejorado (N12): suelo trabajado y cerco; en obra: barra de progreso.
+          if (n.improved) {
+            nodesG.roundRect(n.x * ts + 2, n.y * ts + 2, ts - 4, ts - 4, ts * 0.12).fill({ color: 0x6b4a2a, alpha: 0.35 }).stroke({ width: 2, color: 0xc8a060, alpha: 0.9 });
+          }
+          if (n.improving != null && NODE_UPGRADES[n.type]) {
+            const p = Math.min(1, n.improving / NODE_UPGRADES[n.type]!.buildTime);
+            nodesG.rect(n.x * ts + 4, n.y * ts + 3, ts - 8, 4).fill({ color: 0x000000, alpha: 0.5 });
+            nodesG.rect(n.x * ts + 4, n.y * ts + 3, (ts - 8) * p, 4).fill(0x8fd16a);
+          }
+          if (engine.ui.selectedNode === n.id) nodesG.roundRect(n.x * ts, n.y * ts, ts, ts, ts * 0.15).stroke({ width: 2, color: 0xffffff });
           const alpha = 0.35 + 0.65 * fullness;
           if (n.type === "arbol") {
             nodesG.rect(cx - ts * 0.05, cy, ts * 0.1, ts * 0.35).fill({ color: 0x5a3a1a, alpha });
@@ -287,7 +297,7 @@ export function MapView() {
           const d = Math.hypot(v.x - fx, v.y - fy);
           if (d < bd) { bd = d; best = v.id; }
         }
-        if (best != null) { engine.ui.selected = best; engine.ui.selectedBuilding = null; engine.notify(); return; }
+        if (best != null) { engine.ui.selected = best; engine.ui.selectedBuilding = null; engine.ui.selectedNode = null; engine.notify(); return; }
 
         // Con un aldeano seleccionado, tocar un recurso = señalar.
         const node = s.nodes.find((n) => n.zone === zone && n.x === tx && n.y === ty);
@@ -303,9 +313,9 @@ export function MapView() {
           engine.notify();
           return;
         }
-        if (node) { engine.toast(`${NODE_DEFS[node.type].name}. Selecciona un aldeano y toca aquí para que recolecte.`); return; }
+        if (node) { engine.ui.selectedNode = node.id; engine.ui.selectedBuilding = null; engine.notify(); return; }
         const b = s.buildings.find((x) => x.zone === zone && x.x === tx && x.y === ty);
-        if (b) { engine.ui.selectedBuilding = b.id; engine.ui.selected = null; engine.notify(); return; }
+        if (b) { engine.ui.selectedBuilding = b.id; engine.ui.selected = null; engine.ui.selectedNode = null; engine.notify(); return; }
         // Entradas (en el Valle) o salida (en otra zona): ventana de traslado de esa zona.
         const target: ZoneId | null = tile === "cueva" ? "cueva" : tile === "sendero" ? "montanas" : tile === "salida" ? zone : null;
         if (target) {

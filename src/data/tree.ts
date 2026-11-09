@@ -42,7 +42,7 @@ export const TECH_BY_ID: Record<string, Tech> = Object.fromEntries(TECHS.map((t)
 export const IMPLEMENTED_ERAS = 3;
 
 /** Tecnologías con costo fijo (perilla propia en config), fuera de la fórmula. */
-const COST_OVERRIDES: Record<string, keyof typeof config> = { P11: "COSTO_ARTE_Y_RITOS" };
+const COST_OVERRIDES: Record<string, keyof typeof config> = { P11: "COSTO_ARTE_Y_RITOS", N12: "COSTO_TECNICAS_RECOLECCION" };
 
 export function techCost(t: Tech): number {
   const override = COST_OVERRIDES[t.id];

@@ -56,6 +56,29 @@ export const NODE_DEFS: Record<NodeType, { name: string; color: number; stocks: 
   hierro: { name: "Rocas rojas", color: 0x9a3a2a, stocks: {} }, // hierro: Era 4
 };
 
+// ---------- Mejoras de recursos naturales (N12 Técnicas de recolección) ----------
+// El recurso queda en su lugar, con otro dibujo, y se regenera más rápido y guarda más.
+
+export interface NodeUpgradeDef {
+  name: string;
+  regen: "MEJORA_REGEN_MINERAL" | "MEJORA_REGEN_PLANTA" | "MEJORA_REGEN_BAYAS"; // perilla del multiplicador
+  cost: Cost;
+  buildTime: number; // segundos de trabajo de un constructor
+  needs: string | null; // tecnología extra, además de N12
+}
+
+export const NODE_UPGRADE_TECH = "N12";
+
+export const NODE_UPGRADES: Partial<Record<NodeType, NodeUpgradeDef>> = {
+  arcilla: { name: "Barrero", regen: "MEJORA_REGEN_MINERAL", cost: { madera: 4, piedra: 2 }, buildTime: 8, needs: null },
+  roca: { name: "Cantera", regen: "MEJORA_REGEN_MINERAL", cost: { madera: 6 }, buildTime: 10, needs: null },
+  arbol: { name: "Arboleda", regen: "MEJORA_REGEN_PLANTA", cost: { piedra: 3, fibras: 3 }, buildTime: 8, needs: null },
+  pasto: { name: "Pastizal", regen: "MEJORA_REGEN_PLANTA", cost: { madera: 2 }, buildTime: 6, needs: null },
+  arbusto: { name: "Huerto de bayas", regen: "MEJORA_REGEN_BAYAS", cost: { madera: 3 }, buildTime: 6, needs: null },
+  ocre: { name: "Cantera de ocre", regen: "MEJORA_REGEN_MINERAL", cost: { madera: 4 }, buildTime: 8, needs: "P11" },
+  arena: { name: "Arenal", regen: "MEJORA_REGEN_MINERAL", cost: { madera: 4 }, buildTime: 8, needs: "B07" },
+};
+
 // ---------- Categorías de oficio ----------
 // Los aldeanos se asignan a una categoría; las tecnologías mejoran CÓMO trabaja cada una.
 
@@ -252,6 +275,11 @@ export const TECH_INTRO: Record<string, string[]> = {
     "🕳️ ¡La Cueva! Toca su entrada (arriba a la izquierda del Valle) para enviar aldeanos y entrar a verla.",
     "Adentro hay mucho 🎨 ocre, piedra y unas vetas verdes que todavía no sabemos aprovechar.",
     "La Costa llegará en una versión futura.",
+  ],
+  N12: [
+    "Ahora puedes **mejorar los recursos naturales**: toca un depósito de arcilla, unas rocas, un árbol, pasto o un arbusto.",
+    "Barrero, Cantera, Arboleda…: los constructores trabajan ahí y el recurso se regenera mucho más rápido y guarda el doble.",
+    "Úsalo cuando un recurso no sube aunque pongas más gente: es que lo silvestre se está agotando.",
   ],
   N11: [
     "¡Jefatura! Ahora la tribu se reparte sola: en 👥 Aldeanos eliges qué especialidades llenar y el orden de prioridad de las categorías.",

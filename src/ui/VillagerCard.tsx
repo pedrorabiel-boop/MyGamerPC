@@ -6,7 +6,7 @@ import { has, roleUnlocked, stageOf } from "../sim/economy";
 
 const TASK_LABEL: Record<string, string> = {
   idle: "dando vueltas", toNode: "yendo a recolectar", gather: "recolectando", toBuilding: "yendo a trabajar",
-  work: "trabajando", toSite: "yendo a una obra", build: "construyendo",
+  work: "trabajando", toSite: "yendo a una obra", build: "construyendo", toImprove: "yendo a mejorar un recurso", improve: "mejorando un recurso",
 };
 
 export function VillagerCard() {

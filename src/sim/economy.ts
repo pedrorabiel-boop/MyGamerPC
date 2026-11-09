@@ -1,8 +1,22 @@
 import { config } from "../config";
-import { BUILDING_BY_ID, ROLE_BY_ID, type Cost, type ResId, type ResolutionDef, type Role } from "../content";
-import type { Building, GameState, Villager } from "./state";
+import { BUILDING_BY_ID, NODE_DEFS, NODE_UPGRADES, ROLE_BY_ID, type Cost, type ResId, type ResolutionDef, type Role } from "../content";
+import type { Building, GameState, ResNode, Villager, ZoneId } from "./state";
 
 export const has = (s: GameState, techId: string) => !!s.techs[techId];
+
+/** Reserva máxima y regeneración de un recurso natural (más si está mejorado). */
+export function nodeMax(n: ResNode, res: ResId): number {
+  return (NODE_DEFS[n.type].stocks[res]?.max ?? 0) * (n.improved && NODE_UPGRADES[n.type] ? config.MEJORA_RESERVA : 1);
+}
+export function nodeRegen(n: ResNode, res: ResId): number {
+  const up = n.improved ? NODE_UPGRADES[n.type] : undefined;
+  return (NODE_DEFS[n.type].stocks[res]?.regen ?? 0) * (up ? config[up.regen] : 1);
+}
+
+/** ¿Hay obras en esta zona? (edificios, mejoras de edificios o de recursos naturales) */
+export function hasWorks(s: GameState, zone: ZoneId): boolean {
+  return s.buildings.some((b) => (!b.built || !!b.upgradeTo) && b.zone === zone) || s.nodes.some((n) => n.improving != null && n.zone === zone);
+}
 
 export const roleUnlocked = (s: GameState, role: Role) => has(s, ROLE_BY_ID[role].unlockedBy);
 

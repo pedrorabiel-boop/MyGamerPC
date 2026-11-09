@@ -34,6 +34,7 @@ class Engine {
   ui = {
     selected: null as number | null, // aldeano
     selectedBuilding: null as number | null,
+    selectedNode: null as number | null, // recurso natural tocado (ficha con la mejora)
     placing: null as string | null,
     zone: "valle" as ZoneId, // zona que se está mirando
     zoneModal: null as ZoneId | null, // ventana de traslado abierta
@@ -88,6 +89,7 @@ class Engine {
     this.offlineSummary = null;
     this.ui.selected = null;
     this.ui.selectedBuilding = null;
+    this.ui.selectedNode = null;
     this.ui.placing = null;
     this.ui.zone = "valle";
     this.ui.zoneModal = null;

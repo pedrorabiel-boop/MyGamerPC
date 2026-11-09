@@ -89,7 +89,10 @@ En desarrollo, el motor también queda en la consola del navegador como `window.
   recurso sale de un edificio (ladrillo, vidrio…), Materiales junta lo que alimenta su
   cadena (arcilla, madera…) y el menú avisa si falta construir algo o poner un trabajador.
 - La enfermedad solo mata cuando la tribu llega a 10 habitantes.
-- 19 tecnologías (6 + 6 + 7, consolidadas tras los playtests) con **tarjeta de novedad**
+- **Técnicas de recolección** (Era 2, 🌿): tocando un recurso natural se abre su ficha, y se
+  puede **mejorar en su lugar** (Barrero, Cantera, Arboleda, Pastizal, Huerto de bayas…): se
+  regenera más rápido y guarda el doble. Lo hacen los constructores.
+- 20 tecnologías (6 + 7 + 7, consolidadas tras los playtests) con **tarjeta de novedad**
   al estudiarlas, costos exponenciales, almacenamiento con límite, Ánimo, la interfaz
   "pocos/muchos" antes del Conteo y la comida **resuelta** (Arado e irrigación: 4 parcelas
   junto a un canal, llenas, + granero).

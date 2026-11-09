@@ -45,6 +45,13 @@ export const config = {
   DESCUENTO_MEJORA: 0.4, // mejorar un edificio cuesta 40% menos que construir el nuevo (materiales y tiempo)
   BONO_ESCUELA: 0.1, // los niños que van a la escuela llegan a adultos 10% antes
 
+  // Mejoras de recursos naturales (N12 Técnicas de recolección, Playtest 7)
+  COSTO_TECNICAS_RECOLECCION: 600, // N12 con costo fijo (por su posición en la tabla saldría carísima)
+  MEJORA_REGEN_MINERAL: 4, // barrero, cantera, arenal, cantera de ocre
+  MEJORA_REGEN_PLANTA: 3, // arboleda, pastizal
+  MEJORA_REGEN_BAYAS: 2, // huerto de bayas (la comida grande viene de la Agricultura)
+  MEJORA_RESERVA: 2, // reserva máxima del recurso mejorado
+
   // Almacenamiento
   ALMACEN_BASE: 60,
   ALMACEN_VASIJAS: 40, // N03 Alfarería

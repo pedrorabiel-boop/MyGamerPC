@@ -1,9 +1,9 @@
 // Guía de recursos: de dónde sale cada recurso y para qué se usa. Se calcula desde los datos
 // del juego (recolección, edificios y sus entradas/salidas), así que se mantiene sola al día.
 import {
-  BUILDINGS, FOOD_GATHER, MATERIALS, NODE_DEFS, type BuildingDef, type Cost, type NodeType, type ResId,
+  BUILDINGS, FOOD_GATHER, MATERIALS, NODE_DEFS, NODE_UPGRADES, type BuildingDef, type Cost, type NodeType, type ResId,
 } from "../content";
-import { has, staffCount } from "./economy";
+import { has, nodeMax, staffCount } from "./economy";
 import { ZONE_BY_ID, type GameState, type Tile, type ZoneId } from "./state";
 
 export type Source =
@@ -104,3 +104,22 @@ export function focusPlan(s: GameState, res: ResId, withGaps = true): FocusPlan 
 
 export const focusTargets = (s: GameState, res: ResId) => focusPlan(s, res, false).targets;
 export const isFocusable = (s: GameState, res: ResId) => focusTargets(s, res).length > 0;
+
+/**
+ * Qué tan llena está la reserva silvestre de un recurso que se recolecta (0 = agotada, 1 = llena),
+ * y cuántos de sus recursos naturales todavía se pueden mejorar. null si no se recolecta a mano.
+ */
+export function wildState(s: GameState, res: ResId): { fill: number; unimproved: number; upgrade: string | null; node: NodeType } | null {
+  const types = MATERIALS.filter((m) => m.res === res && has(s, m.tech)).map((m) => m.node);
+  const nodes = s.nodes.filter((n) => types.includes(n.type) && nodeMax(n, res) > 0);
+  if (nodes.length === 0) return null;
+  const stock = nodes.reduce((a, n) => a + (n.stock[res] ?? 0), 0);
+  const max = nodes.reduce((a, n) => a + nodeMax(n, res), 0);
+  const upgradable = nodes.filter((n) => !n.improved && n.improving == null && NODE_UPGRADES[n.type]
+    && (!NODE_UPGRADES[n.type]!.needs || has(s, NODE_UPGRADES[n.type]!.needs!)));
+  const main = types[types.length - 1]; // el último desbloqueado suele ser el mejor (ocre > rocas)
+  return { fill: stock / max, unimproved: upgradable.length, upgrade: NODE_UPGRADES[main]?.name ?? null, node: main };
+}
+
+/** Por debajo de esto, el menú del 🎯 avisa que lo silvestre se está agotando. */
+export const WILD_LOW = 0.3;

@@ -1,6 +1,7 @@
 // Pestaña "Recursos" del Libro: tocas un recurso y ves cómo se consigue, como diagrama
 // (entradas → edificio → salida), y para qué se usa. Las entradas se pueden tocar para seguir la cadena.
-import { BUILDING_BY_ID, RESOURCES, RES_BY_ID, ROLE_BY_ID, type ResId } from "../content";
+import { config } from "../config";
+import { BUILDING_BY_ID, NODE_UPGRADE_TECH, NODE_UPGRADES, RESOURCES, RES_BY_ID, ROLE_BY_ID, type ResId } from "../content";
 import { TECH_BY_ID } from "../data/tree";
 import { engine, useEngine } from "../engine";
 import { nodeName, sourceUnlocked, sourcesOf, usesOf, zonesLabel, type Source } from "../sim/guide";
@@ -34,6 +35,12 @@ function SourceCard({ s, src, res, onPick }: { s: GameState; src: Source; res: R
           <span className="gout">{out.icon}</span>
         </div>
         <div className="gmeta">Recolección{src.extra ? ` (${src.extra})` : ""} · {zonesLabel(src.zones) || "—"}</div>
+        {NODE_UPGRADES[src.node] && (
+          <div className="gmeta">
+            🌱 Mejorable a {NODE_UPGRADES[src.node]!.name} (×{config[NODE_UPGRADES[src.node]!.regen]}) tocándolo en el mapa
+            {s.techs[NODE_UPGRADE_TECH] ? "" : ` · con ${TECH_BY_ID[NODE_UPGRADE_TECH].name}`}
+          </div>
+        )}
         <Lock s={s} tech={src.tech} />
       </div>
     );

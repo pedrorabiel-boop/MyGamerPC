@@ -49,7 +49,9 @@ export type Task =
   | { kind: "toBuilding"; bId: number }
   | { kind: "work"; bId: number; t: number }
   | { kind: "toSite"; bId: number }
-  | { kind: "build"; bId: number };
+  | { kind: "build"; bId: number }
+  | { kind: "toImprove"; nId: number } // yendo a mejorar un recurso natural
+  | { kind: "improve"; nId: number };
 
 export interface Villager {
   id: number;
@@ -80,6 +82,8 @@ export interface ResNode {
   x: number;
   y: number;
   stock: Partial<Record<ResId, number>>;
+  improved?: boolean; // mejorado con N12 (Barrero, Cantera…)
+  improving?: number; // obra de mejora encargada: segundos de trabajo acumulados
 }
 
 export interface Building {
