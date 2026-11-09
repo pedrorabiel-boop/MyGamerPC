@@ -41,7 +41,12 @@ export const TECH_BY_ID: Record<string, Tech> = Object.fromEntries(TECHS.map((t)
 /** Eras que el prototipo implementa de verdad. Las demás se ven en el Libro, pero sus efectos no existen todavía. */
 export const IMPLEMENTED_ERAS = 3;
 
+/** Tecnologías con costo fijo (perilla propia en config), fuera de la fórmula. */
+const COST_OVERRIDES: Record<string, keyof typeof config> = { P11: "COSTO_ARTE_Y_RITOS" };
+
 export function techCost(t: Tech): number {
+  const override = COST_OVERRIDES[t.id];
+  if (override) return Math.round(config[override]);
   const eraFactor = t.era === 1 ? config.FACTOR_ERA_1 : 1;
   return Math.round(config.C0 * Math.pow(config.R, t.era - 1) * Math.pow(config.G, t.order) * eraFactor);
 }

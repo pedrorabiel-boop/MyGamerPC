@@ -15,6 +15,7 @@ export const config = {
   R: 4, // crecimiento entre eras
   G: 1.6, // crecimiento exponencial dentro de la era (Playtest 2: antes era lineal)
   FACTOR_ERA_1: 0.8, // la Era 1 cuesta 20% menos: antes del chamán todo sale de tocar el Libro (Playtest 3)
+  COSTO_ARTE_Y_RITOS: 200, // P11 (chamán) con costo fijo: era ~420 toques antes de automatizar la Comprensión (Playtest 4)
   TOQUE_BASE: 1,
   COMPRENSION_ANCIANO: 1.5, // por segundo, por anciano (requiere Lenguaje). Playtest 1: ×10, el toque era demasiado fuerte en comparación
 

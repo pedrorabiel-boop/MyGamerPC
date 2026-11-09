@@ -133,3 +133,6 @@ abajo y se vuelve a probar.
 
 ### Playtest 3 (2026-11-09)
 - **La Era 1 es casi puro tocar el Libro** hasta que aparece el chamán → la Era 1 cuesta **20% menos** (`FACTOR_ERA_1` = 0,8). Costos de la Era 1: 40, 64, 102, 164, 262, 419 (≈ 1.050 en total, antes ≈ 1.310).
+
+### Playtest 4 (2026-11-10)
+- **Llegar al chamán costaba ≈ 420 toques** antes de poder automatizar la Comprensión → *Arte y ritos* (P11) pasa a **costo fijo de 200** (`COSTO_ARTE_Y_RITOS`), fuera de la fórmula. El resto de la Era 1 no cambia.

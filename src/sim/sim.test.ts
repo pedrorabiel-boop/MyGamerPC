@@ -31,8 +31,12 @@ describe("contenido", () => {
   });
 
   it("los costos crecen de forma exponencial dentro de la era", () => {
-    const era1 = TECHS.filter((t) => t.era === 1).sort((a, b) => a.order - b.order).map(techCost);
-    for (let i = 1; i < era1.length; i++) expect(era1[i] / era1[i - 1]).toBeCloseTo(config.G, 1);
+    const era2 = TECHS.filter((t) => t.era === 2).sort((a, b) => a.order - b.order).map(techCost);
+    for (let i = 1; i < era2.length; i++) expect(era2[i] / era2[i - 1]).toBeCloseTo(config.G, 1);
+  });
+
+  it("Arte y ritos (el chamán) tiene costo fijo", () => {
+    expect(techCost(TECH_BY_ID.P11)).toBe(config.COSTO_ARTE_Y_RITOS);
   });
 });
 
