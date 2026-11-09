@@ -1,6 +1,8 @@
+import { useState } from "react";
+import { config } from "../config";
 import { BUILDING_BY_ID, RES_BY_ID, type ResId } from "../content";
 import { engine, useEngine } from "../engine";
-import { changeSpecialists } from "../sim/actions";
+import { changeSpecialists, demolish } from "../sim/actions";
 import { staffCount } from "../sim/economy";
 
 const fmtCost = (c: Partial<Record<ResId, number>>) =>
@@ -8,6 +10,7 @@ const fmtCost = (c: Partial<Record<ResId, number>>) =>
 
 export function BuildingCard() {
   const { s, ui } = useEngine();
+  const [confirm, setConfirm] = useState<number | null>(null);
   const b = s.buildings.find((x) => x.id === ui.selectedBuilding);
   if (!b) return null;
   const def = BUILDING_BY_ID[b.type];
@@ -51,6 +54,23 @@ export function BuildingCard() {
             </div>
           )}
           {workers.length > 0 && <div className="muted">Trabajan aquí: {workers.map((w) => w.name).join(", ")}</div>}
+        </div>
+      )}
+      {def.unlockedBy && (
+        <div className="demolish">
+          {confirm === b.id ? (
+            <>
+              <span className="muted">
+                {b.built
+                  ? `¿Demoler? Recuperas ${Math.round(config.DEVOLUCION_DEMOLER * 100)}% de los materiales (${fmtCost(Object.fromEntries(Object.entries(def.cost).map(([r, n]) => [r, Math.floor((n ?? 0) * config.DEVOLUCION_DEMOLER)])))}).`
+                  : "¿Cancelar la obra? Se devuelven todos los materiales."}
+              </span>
+              <button className="danger" onClick={() => { demolish(s, b.id); engine.ui.selectedBuilding = null; setConfirm(null); engine.notify(); }}>Sí</button>
+              <button onClick={() => setConfirm(null)}>No</button>
+            </>
+          ) : (
+            <button className="danger" onClick={() => setConfirm(b.id)}>{b.built ? "🗑️ Demoler" : "✖ Cancelar obra"}</button>
+          )}
         </div>
       )}
     </div>

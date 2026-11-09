@@ -64,6 +64,23 @@ export function place(s: GameState, type: string, x: number, y: number): string 
   return null;
 }
 
+/** Demuele un edificio (o cancela una obra). Libera a sus trabajadores y devuelve materiales. */
+export function demolish(s: GameState, buildingId: number): string | null {
+  const b = s.buildings.find((x) => x.id === buildingId);
+  if (!b) return null;
+  const def = BUILDING_BY_ID[b.type];
+  if (!def.unlockedBy) return "Eso no se puede demoler.";
+  const refund = b.built ? config.DEVOLUCION_DEMOLER : 1;
+  for (const [r, n] of Object.entries(def.cost)) add(s, r as ResId, Math.floor((n ?? 0) * refund));
+  for (const v of s.villagers) {
+    if (v.workplace === b.id) v.workplace = null;
+    if ("bId" in v.task && v.task.bId === b.id) v.task = { kind: "idle", t: 0 };
+  }
+  s.buildings.splice(s.buildings.indexOf(b), 1);
+  log(s, b.built ? `🗑️ Demolido: ${def.name}. Se recuperó parte de los materiales.` : `Obra cancelada: ${def.name}. Se devolvieron los materiales.`);
+  return null;
+}
+
 // ---------- Aldeanos ----------
 
 /** "Señalar": un solo viaje de recolección hacia un nodo. */

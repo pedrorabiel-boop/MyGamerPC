@@ -42,5 +42,6 @@ export const TECH_BY_ID: Record<string, Tech> = Object.fromEntries(TECHS.map((t)
 export const IMPLEMENTED_ERAS = 2;
 
 export function techCost(t: Tech): number {
-  return Math.round(config.C0 * Math.pow(config.R, t.era - 1) * Math.pow(config.G, t.order));
+  const eraFactor = t.era === 1 ? config.FACTOR_ERA_1 : 1;
+  return Math.round(config.C0 * Math.pow(config.R, t.era - 1) * Math.pow(config.G, t.order) * eraFactor);
 }

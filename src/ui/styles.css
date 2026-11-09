@@ -170,3 +170,7 @@ h4 { margin: 16px 0 6px; font-size: 13px; color: var(--muted); text-transform: u
 .dot.off { border: 2px solid #ff5a4a; background: rgba(0,0,0,.3); }
 .modal-box.intro ul { padding-left: 18px; margin: 8px 0 14px; display: flex; flex-direction: column; gap: 6px; font-size: 14px; }
 .intro-kicker { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: .05em; }
+
+.demolish { display: flex; align-items: center; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
+.demolish button { background: var(--panel-2); border: 1px solid var(--line); border-radius: 8px; padding: 4px 10px; font-size: 12px; }
+.demolish button.danger { border-color: var(--danger); color: #ffb0a8; }

@@ -3,7 +3,7 @@ import { config } from "../config";
 import { BUILDINGS, MATERIALS, ROLES, TECH_INTRO } from "../content";
 import { TECHS, TECH_BY_ID, techCost } from "../data/tree";
 import {
-  changeRoleCount, changeSpecialists, debugAddVillagers, debugToggleInfinite, place, study, tapBook, techStatus,
+  changeRoleCount, changeSpecialists, debugAddVillagers, demolish, debugToggleInfinite, place, study, tapBook, techStatus,
 } from "./actions";
 import { isTribeLost, pay, staffCount, stageOf } from "./economy";
 import { simulateOffline } from "./save";
@@ -110,6 +110,25 @@ describe("categorías", () => {
     expect(place(s, "choza", 3, 3)).toBeNull();
     run(s, 60);
     expect(s.buildings.find((b) => b.type === "choza")?.built).toBe(true);
+  });
+
+  it("demoler libera a los especialistas y devuelve la mitad; cancelar una obra devuelve todo", () => {
+    const s = createState(13);
+    s.techs.P01 = s.techs.P11 = true;
+    const c = addBuilding(s, "circulo", 3, 3);
+    changeSpecialists(s, c.id, 1);
+    s.inv.piedra = 0;
+    expect(demolish(s, c.id)).toBeNull();
+    expect(s.buildings.includes(c)).toBe(false);
+    expect(s.villagers.some((v) => v.workplace === c.id)).toBe(false);
+    expect(s.inv.piedra).toBe(Math.floor(10 * config.DEVOLUCION_DEMOLER));
+
+    s.inv.piedra = 20;
+    expect(place(s, "circulo", 4, 4)).toBeNull();
+    const obra = s.buildings[s.buildings.length - 1];
+    demolish(s, obra.id);
+    expect(s.inv.piedra).toBe(20);
+    expect(demolish(s, s.buildings.find((b) => b.type === "pila")!.id)).not.toBeNull(); // la pila no se demuele
   });
 
   it("con ∞ los pagos no descuentan", () => {

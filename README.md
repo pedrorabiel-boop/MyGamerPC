@@ -58,6 +58,8 @@ En desarrollo, el motor también queda en la consola del navegador como `window.
 - **Especialistas** (chamán, alfarero, tejedor, pastor, curandero) se asignan tocando su
   edificio; el mapa muestra los puestos ocupados (verde) y vacíos (rojo, con "!").
 - Construcción con planos: los aldeanos libres ayudan; los constructores van más rápido.
+  Tocando un edificio se puede **demoler** (recuperas 50% de los materiales) o cancelar
+  una obra (se devuelve todo).
 - 12 tecnologías (6 por era, consolidadas tras el playtest 2) con **tarjeta de novedad**
   al estudiarlas, costos exponenciales, 14 edificios, almacenamiento con límite, Ánimo,
   cuotas automáticas (Aldea organizada), la interfaz "pocos/muchos" antes del Conteo y

@@ -14,6 +14,7 @@ export const config = {
   C0: 50, // Playtest 2: antes 10
   R: 4, // crecimiento entre eras
   G: 1.6, // crecimiento exponencial dentro de la era (Playtest 2: antes era lineal)
+  FACTOR_ERA_1: 0.8, // la Era 1 cuesta 20% menos: antes del chamán todo sale de tocar el Libro (Playtest 3)
   TOQUE_BASE: 1,
   COMPRENSION_ANCIANO: 1.5, // por segundo, por anciano (requiere Lenguaje). Playtest 1: ×10, el toque era demasiado fuerte en comparación
 
@@ -32,6 +33,7 @@ export const config = {
   BONO_HERRAMIENTAS: 1.5, // P02 Piedra tallada
   BONO_CESTA: 2, // P02 Herramientas de piedra (cesta)
   FACTOR_AYUDA_CONSTRUCCION: 0.5, // aldeano sin oficio que ayuda a construir
+  DEVOLUCION_DEMOLER: 0.5, // fracción de los materiales que se recupera al demoler (una obra sin terminar devuelve todo)
 
   // Almacenamiento
   ALMACEN_BASE: 60,

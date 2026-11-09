@@ -130,3 +130,6 @@ abajo y se vuelve a probar.
 - **Demasiadas tecnologías, muy chicas:** se tocaba todo sin leer y no se entendía el camino → Eras 1–2 consolidadas (12 → 6 cada una) y tarjeta de novedad.
 - **Demasiados oficios sueltos** → oficios por categoría y especialistas asignados desde su edificio.
 - **Al volver de estar offline había Comprensión de sobra para comprar todo** → costos exponenciales dentro de la era (`G` = 1,6), `C0` 10 → 50, y la Comprensión offline rinde solo 20% de lo normal offline (`COMPRENSION_OFFLINE` = 0,2).
+
+### Playtest 3 (2026-11-09)
+- **La Era 1 es casi puro tocar el Libro** hasta que aparece el chamán → la Era 1 cuesta **20% menos** (`FACTOR_ERA_1` = 0,8). Costos de la Era 1: 40, 64, 102, 164, 262, 419 (≈ 1.050 en total, antes ≈ 1.310).
