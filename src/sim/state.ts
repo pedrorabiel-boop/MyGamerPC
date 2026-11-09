@@ -1,5 +1,5 @@
 import { config } from "../config";
-import { NODE_DEFS, RESOURCES, VILLAGER_NAMES, type NodeType, type ResId } from "../content";
+import { NODE_DEFS, RESOURCES, VILLAGER_NAMES, type NodeType, type ResId, type Role } from "../content";
 
 export type Tile = "pasto" | "rio" | "orilla" | "cueva";
 
@@ -17,8 +17,9 @@ export interface Villager {
   name: string;
   age: number; // años
   lifespan: number; // años
-  job: string | null;
-  parentJob: string | null;
+  role: Role | null; // categoría de oficio
+  workplace: number | null; // id del edificio si es especialista
+  parentRole: Role | null; // se hereda al llegar a adulto
   wasAdult: boolean;
   x: number; // posición libre, en casillas
   y: number;
@@ -45,12 +46,13 @@ export interface Building {
   y: number;
   progress: number; // segundos de construcción acumulados
   built: boolean;
+  wanted: number; // especialistas pedidos (cuota, con N11 Aldea organizada)
 }
 
 export interface LogEntry { at: number; msg: string }
 
 export interface GameState {
-  version: 1;
+  version: 2;
   rng: number;
   time: number; // segundos de juego
   w: number;
@@ -63,12 +65,13 @@ export interface GameState {
   inv: Record<ResId, number>;
   techs: Record<string, true>;
   erasOpen: number;
-  quotas: Record<string, number>;
+  quotas: Partial<Record<Role, number>>; // cantidad por categoría
   animo: number;
   stats: { births: number; deaths: number };
   log: LogEntry[];
   debug: { infinite: Partial<Record<ResId, boolean>>; unlockOnTap: boolean };
   resolved: Partial<Record<ResId, boolean>>; // recursos resueltos por infraestructura
+  introQueue: string[]; // tarjetas de novedad pendientes (ids de tecnología)
   prototypeEnded: boolean;
   lostDismissed?: boolean; // el jugador eligió seguir mirando tras perder
   birthAcc: number;
@@ -89,15 +92,16 @@ export function log(s: GameState, msg: string) {
   if (s.log.length > 60) s.log.splice(0, s.log.length - 60);
 }
 
-export function newVillager(s: GameState, age: number, x: number, y: number, parentJob: string | null = null): Villager {
+export function newVillager(s: GameState, age: number, x: number, y: number, parentRole: Role | null = null): Villager {
   const name = VILLAGER_NAMES[Math.floor(rand(s) * VILLAGER_NAMES.length)];
   const v: Villager = {
     id: s.nextId++,
     name,
     age,
     lifespan: config.ESPERANZA_VIDA + (rand(s) * 2 - 1) * config.VARIACION_VIDA,
-    job: null,
-    parentJob,
+    role: null,
+    workplace: null,
+    parentRole,
     wasAdult: age >= config.EDAD_ADULTO,
     x, y, tx: x, ty: y,
     task: { kind: "idle", t: 0 },
@@ -137,7 +141,7 @@ export function createState(seed = Date.now() % 100000): GameState {
   inv.comida = config.COMIDA_INICIAL;
 
   const s: GameState = {
-    version: 1,
+    version: 2,
     rng: seed | 0,
     time: 0,
     w: W,
@@ -156,6 +160,7 @@ export function createState(seed = Date.now() % 100000): GameState {
     log: [],
     debug: { infinite: {}, unlockOnTap: false },
     resolved: {},
+    introQueue: [],
     prototypeEnded: false,
     birthAcc: 0,
     savedAt: Date.now(),
@@ -171,7 +176,7 @@ export function createState(seed = Date.now() % 100000): GameState {
     s.nodes.push({ id: s.nextId++, type, x, y, stock });
   }
 
-  s.buildings.push({ id: s.nextId++, type: "pila", x: 3, y: 6, progress: 0, built: true });
+  s.buildings.push({ id: s.nextId++, type: "pila", x: 3, y: 6, progress: 0, built: true, wanted: 0 });
 
   for (const age of [19, 22, 31, 13, 6]) {
     newVillager(s, age, 3.5 + (rand(s) - 0.5) * 2, 6.5 + (rand(s) - 0.5) * 2);

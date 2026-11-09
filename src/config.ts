@@ -11,9 +11,9 @@ export const config = {
   FRACCION_ANCIANO: 0.2, // último 20% de la vida
 
   // Comprensión
-  C0: 10,
-  R: 4,
-  COSTO_POR_POSICION: 0.15,
+  C0: 50, // Playtest 2: antes 10
+  R: 4, // crecimiento entre eras
+  G: 1.6, // crecimiento exponencial dentro de la era (Playtest 2: antes era lineal)
   TOQUE_BASE: 1,
   COMPRENSION_ANCIANO: 1.5, // por segundo, por anciano (requiere Lenguaje). Playtest 1: ×10, el toque era demasiado fuerte en comparación
 
@@ -30,7 +30,7 @@ export const config = {
   TIEMPO_RECOLECTAR: 2, // segundos por viaje
   CARGA_BASE: 2,
   BONO_HERRAMIENTAS: 1.5, // P02 Piedra tallada
-  BONO_CESTA: 2, // P08 Cestería
+  BONO_CESTA: 2, // P02 Herramientas de piedra (cesta)
   FACTOR_AYUDA_CONSTRUCCION: 0.5, // aldeano sin oficio que ayuda a construir
 
   // Almacenamiento
@@ -40,6 +40,7 @@ export const config = {
 
   // Offline
   EFICIENCIA_OFFLINE: 0.5,
+  COMPRENSION_OFFLINE: 0.2, // factor extra para la Comprensión offline (Playtest 2: volvía con Comprensión de sobra)
   OFFLINE_MAX_HORAS: 24,
 };
 

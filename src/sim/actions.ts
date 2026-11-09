@@ -1,9 +1,9 @@
 // Acciones del jugador y del modo debug. Todas mutan el estado directamente.
 import { config } from "../config";
-import { BUILDING_BY_ID, JOBS, NODE_DEFS, UNLOCK_MESSAGES, type ResId } from "../content";
+import { BUILDING_BY_ID, NODE_DEFS, ROLES, TECH_INTRO, type ResId, type Role } from "../content";
 import { TECHS, TECH_BY_ID, techCost } from "../data/tree";
-import { add, canAfford, has, pay, stageOf } from "./economy";
-import { jobUnlocked } from "./step";
+import { add, canAfford, has, isFree, pay, staffCount, stageOf } from "./economy";
+import { roleUnlocked } from "./step";
 import { log, newVillager, type GameState } from "./state";
 
 // ---------- Libro ----------
@@ -26,15 +26,20 @@ export function tapBook(s: GameState) {
 export function study(s: GameState, id: string): boolean {
   if (techStatus(s, id) !== "estudiable") return false;
   if (!pay(s, { comprension: techCost(TECH_BY_ID[id]) })) return false;
-  unlock(s, id);
+  unlock(s, id, true);
   return true;
 }
 
-export function unlock(s: GameState, id: string) {
+/** Desbloquea una tecnología. Con `intro`, encola la tarjeta que explica qué cambió. */
+export function unlock(s: GameState, id: string, intro = false) {
   if (s.techs[id]) return;
   s.techs[id] = true;
   log(s, `📖 Comprendido: ${TECH_BY_ID[id].name}.`);
-  if (UNLOCK_MESSAGES[id]) log(s, UNLOCK_MESSAGES[id]);
+  if (intro && TECH_INTRO[id]) s.introQueue.push(id);
+}
+
+export function dismissIntro(s: GameState) {
+  s.introQueue.shift();
 }
 
 // ---------- Construcción ----------
@@ -54,7 +59,7 @@ export function place(s: GameState, type: string, x: number, y: number): string 
   if (!canPlace(s, type, x, y)) return def.place === "orilla" ? "Tiene que ir en la orilla del río, en una casilla libre." : "Esa casilla no está libre.";
   if (!canAfford(s, def.cost)) return "No alcanzan los materiales.";
   pay(s, def.cost);
-  s.buildings.push({ id: s.nextId++, type, x, y, progress: 0, built: false });
+  s.buildings.push({ id: s.nextId++, type, x, y, progress: 0, built: false, wanted: 0 });
   log(s, `Plano colocado: ${def.name}. Los aldeanos lo van a construir.`);
   return null;
 }
@@ -74,32 +79,55 @@ export function orderGather(s: GameState, villagerId: number, nodeId: number): s
   return null;
 }
 
-export function setJob(s: GameState, villagerId: number, jobId: string | null) {
+/** Asigna un aldeano a una categoría (o lo deja libre). Lo saca de su puesto de especialista. */
+export function setRole(s: GameState, villagerId: number, role: Role | null) {
   const v = s.villagers.find((x) => x.id === villagerId);
   if (!v || stageOf(v) !== "adult") return;
-  if (jobId && !jobUnlocked(s, jobId)) return;
-  v.job = jobId;
+  if (role && !roleUnlocked(s, role)) return;
+  v.role = role;
+  v.workplace = null;
   v.order = null;
   v.task = { kind: "idle", t: 0 };
   syncQuotas(s);
 }
 
-/** +1 / −1 aldeano en un oficio. Con Jefatura, además queda como cuota. */
-export function changeJobCount(s: GameState, jobId: string, delta: 1 | -1) {
-  if (!jobUnlocked(s, jobId)) return;
-  const adults = s.villagers.filter((v) => stageOf(v) === "adult");
+/** +1 / −1 aldeano en una categoría. Con Aldea organizada, además queda como cuota. */
+export function changeRoleCount(s: GameState, role: Role, delta: 1 | -1) {
+  if (!roleUnlocked(s, role)) return;
   if (delta === 1) {
-    const free = adults.find((v) => v.job === null);
-    if (free) { free.job = jobId; free.order = null; free.task = { kind: "idle", t: 0 }; }
+    const free = s.villagers.find(isFree);
+    if (free) { free.role = role; free.order = null; free.task = { kind: "idle", t: 0 }; }
   } else {
-    const holder = adults.find((v) => v.job === jobId);
-    if (holder) { holder.job = null; holder.task = { kind: "idle", t: 0 }; }
+    const holder = s.villagers.find((v) => v.role === role && stageOf(v) === "adult");
+    if (holder) { holder.role = null; holder.task = { kind: "idle", t: 0 }; }
   }
   syncQuotas(s);
 }
 
+/** +1 / −1 especialista en un edificio. Toma aldeanos libres. */
+export function changeSpecialists(s: GameState, buildingId: number, delta: 1 | -1): string | null {
+  const b = s.buildings.find((x) => x.id === buildingId);
+  const staff = b ? BUILDING_BY_ID[b.type].staff : undefined;
+  if (!b || !staff || staff.by !== "especialista") return null;
+  if (!b.built) return "Primero hay que terminar de construirlo.";
+  if (delta === 1) {
+    if (staffCount(s, b) >= staff.slots) return "Ya no hay puestos libres.";
+    const free = s.villagers.find(isFree);
+    if (!free) return "No hay aldeanos libres: quita a alguien de una categoría en 👥 Aldeanos.";
+    free.workplace = b.id;
+    free.order = null;
+    free.task = { kind: "idle", t: 0 };
+    b.wanted = staffCount(s, b);
+  } else {
+    const worker = s.villagers.find((v) => v.workplace === b.id);
+    if (worker) { worker.workplace = null; worker.task = { kind: "idle", t: 0 }; }
+    b.wanted = staffCount(s, b);
+  }
+  return null;
+}
+
 function syncQuotas(s: GameState) {
-  for (const j of JOBS) s.quotas[j.id] = s.villagers.filter((v) => v.job === j.id && stageOf(v) === "adult").length;
+  for (const r of ROLES) s.quotas[r.id] = s.villagers.filter((v) => v.role === r.id && stageOf(v) === "adult").length;
 }
 
 // ---------- Debug ----------

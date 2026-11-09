@@ -158,8 +158,8 @@ for (const line of section(/^### Avances parciales/)) {
 for (const t of techs) {
   // "las 13 piezas" → conexiones reales con las tecnologías que completan cada pieza.
   if (t.requiresAllPcPieces) t.requires = pcPieces.map((p) => p.completedBy).filter(Boolean);
-  const zone = zones.find((z) => z.unlockedBy === t.id);
-  if (zone) t.unlocksZone = zone.name;
+  const opened = zones.filter((z) => z.unlockedBy === t.id).map((z) => z.name);
+  if (opened.length) t.unlocksZone = opened.join(", ");
   const completes = pcPieces.find((p) => p.completedBy === t.id);
   if (completes) t.completesPcPiece = completes.name;
   const advances = pcPieces.filter((p) => p.partials.includes(t.id)).map((p) => p.name);

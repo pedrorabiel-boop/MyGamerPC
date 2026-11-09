@@ -156,3 +156,17 @@ h4 { margin: 16px 0 6px; font-size: 13px; color: var(--muted); text-transform: u
 .res-table tr.changed td { color: var(--warn); }
 .mono { font-family: ui-monospace, Consolas, monospace; font-size: 11px; }
 .debug textarea { width: 100%; margin-top: 6px; font-family: ui-monospace, Consolas, monospace; font-size: 11px; }
+
+/* Categorías, especialistas y tarjeta de novedad */
+.row small.method { color: #e8c98a; }
+.count.warn, .warn { color: var(--danger); }
+.okc { color: var(--ok); }
+.staff { margin-top: 8px; display: flex; flex-direction: column; gap: 4px; }
+.staff-row { display: flex; align-items: center; gap: 8px; }
+.staff-row > span:first-child { flex: 1; }
+.dots { display: inline-flex; gap: 4px; }
+.dot { width: 11px; height: 11px; border-radius: 50%; display: inline-block; }
+.dot.on { background: #7fe07a; border: 1px solid #1a1a1a; }
+.dot.off { border: 2px solid #ff5a4a; background: rgba(0,0,0,.3); }
+.modal-box.intro ul { padding-left: 18px; margin: 8px 0 14px; display: flex; flex-direction: column; gap: 6px; font-size: 14px; }
+.intro-kicker { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: .05em; }

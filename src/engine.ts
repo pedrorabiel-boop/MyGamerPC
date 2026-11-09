@@ -15,7 +15,12 @@ export const DEBUG_ENABLED =
 class Engine {
   s: GameState;
   speed = 1;
-  ui = { selected: null as number | null, placing: null as string | null, toast: null as { msg: string; at: number } | null };
+  ui = {
+    selected: null as number | null, // aldeano
+    selectedBuilding: null as number | null,
+    placing: null as string | null,
+    toast: null as { msg: string; at: number } | null,
+  };
   offlineSummary: OfflineSummary | null = null;
   private listeners = new Set<() => void>();
   private last = 0;
@@ -60,6 +65,7 @@ class Engine {
     this.s = s;
     this.offlineSummary = null;
     this.ui.selected = null;
+    this.ui.selectedBuilding = null;
     this.ui.placing = null;
     save(s);
     this.notify();

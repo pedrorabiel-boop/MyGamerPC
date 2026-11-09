@@ -1,11 +1,13 @@
 import { useState } from "react";
 import { config } from "../config";
-import { RES_BY_ID, type ResId } from "../content";
+import { RES_BY_ID, TECH_INTRO, type ResId } from "../content";
+import { TECH_BY_ID } from "../data/tree";
 import { DEBUG_ENABLED, engine, useEngine } from "../engine";
 import { MapView } from "../render/MapView";
-import { tapBook } from "../sim/actions";
+import { dismissIntro, tapBook } from "../sim/actions";
 import { isTribeLost } from "../sim/economy";
 import { BookPanel } from "./BookPanel";
+import { BuildingCard } from "./BuildingCard";
 import { BuildPanel } from "./BuildPanel";
 import { DebugPanel } from "./DebugPanel";
 import { formatNumber } from "./format";
@@ -38,6 +40,7 @@ export function App() {
         <MapView />
 
         {tab === "mapa" && <VillagerCard />}
+        {tab === "mapa" && <BuildingCard />}
 
         {engine.ui.placing && (
           <div className="placing">
@@ -78,6 +81,21 @@ export function App() {
               <p>Tu tribu llegó a la <b>Edad de Bronce</b>. Hasta aquí llega esta versión.</p>
               <p className="muted">Años: {Math.floor(s.time / config.TIEMPO_POR_AÑO)} · Nacimientos: {s.stats.births} · Muertes: {s.stats.deaths}</p>
               <button className="primary" onClick={() => { s.prototypeEnded = false; engine.notify(); }}>Seguir jugando</button>
+            </div>
+          </div>
+        )}
+
+        {s.introQueue.length > 0 && !isTribeLost(s) && !offlineSummary && (
+          <div className="modal">
+            <div className="modal-box intro">
+              <div className="intro-kicker">📖 Nueva página comprendida</div>
+              <h2>{TECH_BY_ID[s.introQueue[0]]?.name}</h2>
+              <ul>
+                {(TECH_INTRO[s.introQueue[0]] ?? []).map((line, i) => <li key={i}>{line}</li>)}
+              </ul>
+              <button className="primary" onClick={() => { dismissIntro(s); engine.notify(); }}>
+                Entendido{s.introQueue.length > 1 ? ` (${s.introQueue.length - 1} más)` : ""}
+              </button>
             </div>
           </div>
         )}

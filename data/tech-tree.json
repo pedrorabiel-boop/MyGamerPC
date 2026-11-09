@@ -1,6 +1,6 @@
 {
   "generatedFrom": "docs/01-arbol-tecnologico.md",
-  "version": "1.0 (árbol revisado completo)",
+  "version": "2.0 (borrador: Eras 1–2 consolidadas)",
   "manifestationTypes": {
     "knowledge": "📖",
     "building": "🏗",
@@ -171,13 +171,13 @@
     },
     {
       "name": "Cueva",
-      "unlockedBy": "N12",
+      "unlockedBy": "N10",
       "contents": "Vetas de cobre (se explotan con B01 Minería), pedernal, ocre. Murciélagos"
     },
     {
       "name": "Costa",
       "unlockedBy": "N10",
-      "contents": "Pesca. Opcional"
+      "contents": "Pesca"
     },
     {
       "name": "Montañas",
@@ -356,11 +356,11 @@
           "name": "Anciano"
         }
       ],
-      "effect": "**Primera automatización**: aparecen los oficios y cada aldeano repite su tarea en bucle. Los ancianos generan Comprensión. *\"¿Cómo le explico 'leñador' a alguien que solo dice ugh?\"*"
+      "effect": "**Primera automatización**: aparecen los **oficios por categoría** (🍖 Comida, 🧱 Materiales) y cada aldeano repite su tarea en bucle. Los ancianos generan Comprensión. *\"¿Cómo le explico 'leñador' a alguien que solo dice ugh?\"*"
     },
     {
       "id": "P02",
-      "name": "Piedra tallada",
+      "name": "Herramientas de piedra",
       "era": 1,
       "order": 1,
       "optional": false,
@@ -369,40 +369,20 @@
       "manifestations": [
         {
           "type": "tool",
-          "name": "Lasca"
-        },
-        {
-          "type": "job",
-          "name": "Tallador"
+          "name": "Lasca, hacha, cesta"
         },
         {
           "type": "resource",
-          "name": "Herram. de piedra"
+          "name": "Madera"
         }
       ],
-      "effect": "Primera herramienta. Más recolección"
-    },
-    {
-      "id": "P03",
-      "name": "Cuerda y fibras",
-      "era": 1,
-      "order": 2,
-      "optional": false,
-      "requires": [],
-      "requiresPopulation": null,
-      "manifestations": [
-        {
-          "type": "resource",
-          "name": "Cuerda"
-        }
-      ],
-      "effect": "Base de todo lo que se amarra"
+      "effect": "*(Piedra tallada + Cuerda + Hacha + Cestería)*. **Todos recolectan más rápido y cargan el doble.** La gente de Materiales empieza a juntar **madera**"
     },
     {
       "id": "P04",
       "name": "Fuego",
       "era": 1,
-      "order": 3,
+      "order": 2,
       "optional": false,
       "requires": [
         "P02"
@@ -414,17 +394,16 @@
           "name": "Fogata"
         }
       ],
-      "effect": "Punto de reunión: felicidad y natalidad ↑, los ancianos enseñan junto al fuego (Comprensión ↑). **Nv2 = Cocina**: la comida rinde ×1,5"
+      "effect": "Punto de reunión: Ánimo y natalidad ↑, los ancianos se juntan alrededor. **Nv2 = Cocina**: la comida rinde ×1,5"
     },
     {
       "id": "P05",
-      "name": "Lanza",
+      "name": "Caza",
       "era": 1,
-      "order": 4,
+      "order": 3,
       "optional": false,
       "requires": [
-        "P02",
-        "P03"
+        "P02"
       ],
       "requiresPopulation": null,
       "manifestations": [
@@ -433,29 +412,24 @@
           "name": "Lanza"
         },
         {
-          "type": "job",
-          "name": "Cazador"
-        },
-        {
-          "type": "resource",
-          "name": "Carne"
+          "type": "building",
+          "name": "Trampa"
         },
         {
           "type": "resource",
           "name": "Pieles"
         }
       ],
-      "effect": "Caza"
+      "effect": "*(Lanza + Trampas + Abrigo de pieles)*. **La gente de Comida empieza a cazar** en la manada (más comida, y pieles). **Trampa**: comida pasiva, sin nadie. Abrigo: mortalidad ↓ y Ánimo ↑"
     },
     {
       "id": "P06",
       "name": "Refugio",
       "era": 1,
-      "order": 5,
+      "order": 4,
       "optional": false,
       "requires": [
-        "P02",
-        "P03"
+        "P02"
       ],
       "requiresPopulation": null,
       "manifestations": [
@@ -468,108 +442,27 @@
           "name": "Constructor"
         }
       ],
-      "effect": "Capacidad de población. **Oficio Constructor**: levanta edificios mucho más rápido"
-    },
-    {
-      "id": "P07",
-      "name": "Hacha enmangada",
-      "era": 1,
-      "order": 6,
-      "optional": false,
-      "requires": [
-        "P02",
-        "P03"
-      ],
-      "requiresPopulation": null,
-      "manifestations": [
-        {
-          "type": "tool",
-          "name": "Hacha"
-        },
-        {
-          "type": "job",
-          "name": "Leñador"
-        },
-        {
-          "type": "resource",
-          "name": "Madera"
-        }
-      ],
-      "effect": "Madera de verdad"
-    },
-    {
-      "id": "P08",
-      "name": "Cestería",
-      "era": 1,
-      "order": 7,
-      "optional": false,
-      "requires": [
-        "P03"
-      ],
-      "requiresPopulation": null,
-      "manifestations": [
-        {
-          "type": "tool",
-          "name": "Cesta"
-        }
-      ],
-      "effect": "Los recolectores cargan más por viaje"
-    },
-    {
-      "id": "P09",
-      "name": "Trampas",
-      "era": 1,
-      "order": 8,
-      "optional": true,
-      "requires": [
-        "P02",
-        "P03"
-      ],
-      "requiresPopulation": null,
-      "manifestations": [
-        {
-          "type": "building",
-          "name": "Trampa"
-        },
-        {
-          "type": "automation",
-          "name": null
-        }
-      ],
-      "effect": "**Primer generador pasivo del mapa**: produce carne de a poco, sin que nadie la atienda"
-    },
-    {
-      "id": "P10",
-      "name": "Abrigo de pieles",
-      "era": 1,
-      "order": 9,
-      "optional": true,
-      "requires": [
-        "P05"
-      ],
-      "requiresPopulation": null,
-      "manifestations": [
-        {
-          "type": "tool",
-          "name": "(atuendo)"
-        }
-      ],
-      "effect": "Ya tenían taparrabos; esto es abrigo de verdad. Mortalidad ↓ y felicidad ↑"
+      "effect": "Capacidad de población. Aparece la categoría **🔨 Construcción**: levanta edificios mucho más rápido"
     },
     {
       "id": "P11",
-      "name": "Pigmentos y arte rupestre",
+      "name": "Arte y ritos",
       "era": 1,
-      "order": 10,
+      "order": 5,
       "optional": false,
       "requires": [
+        "P01",
         "P04"
       ],
       "requiresPopulation": null,
       "manifestations": [
         {
           "type": "building",
-          "name": "Pared pintada"
+          "name": "Pared pintada, Círculo de piedras"
+        },
+        {
+          "type": "job",
+          "name": "Chamán"
         },
         {
           "type": "resource",
@@ -580,34 +473,11 @@
           "name": "(contorno del PC)"
         }
       ],
-      "effect": "Ánimo ↑. **El niño dibuja el contorno del PC** en la pared: la silueta aparece en pantalla. *\"El primer RGB de la historia.\"*",
+      "effect": "*(Pigmentos + Chamanismo)*. Ánimo ↑. **Chamán** (especialista del Círculo): mucha Comprensión. Materiales junta pigmento. **El niño dibuja el contorno del PC** en la pared. *\"El primer RGB de la historia.\"*",
       "advancesPcPieces": [
         "RGB",
         "Juego"
       ]
-    },
-    {
-      "id": "P12",
-      "name": "Chamanismo",
-      "era": 1,
-      "order": 11,
-      "optional": true,
-      "requires": [
-        "P01",
-        "P04"
-      ],
-      "requiresPopulation": null,
-      "manifestations": [
-        {
-          "type": "job",
-          "name": "Chamán"
-        },
-        {
-          "type": "building",
-          "name": "Círculo de piedras"
-        }
-      ],
-      "effect": "Comprensión + curación básica"
     },
     {
       "id": "N01",
@@ -616,45 +486,39 @@
       "order": 0,
       "optional": false,
       "requires": [
-        "P07",
-        "P08"
+        "P02"
       ],
       "requiresPopulation": null,
       "manifestations": [
         {
           "type": "building",
-          "name": "Parcela"
-        },
-        {
-          "type": "job",
-          "name": "Agricultor"
+          "name": "Parcela, Granero"
         },
         {
           "type": "resource",
           "name": "Grano"
         }
       ],
-      "effect": "**Rompe el techo natural** de población. **Nv2 = Pan** (✋ Mortero): el grano rinde más"
+      "effect": "*(Agricultura + Granero)*. **Rompe el techo natural**: la gente de Comida trabaja las parcelas. Granero: almacenamiento ↑ y punto de entrega. **Nv2 = Pan**"
     },
     {
       "id": "N02",
-      "name": "Domesticación",
+      "name": "Ganadería y tejido",
       "era": 2,
       "order": 1,
       "optional": false,
       "requires": [
-        "P05",
-        "P03"
+        "P05"
       ],
       "requiresPopulation": null,
       "manifestations": [
         {
           "type": "building",
-          "name": "Corral"
+          "name": "Corral, Telar"
         },
         {
           "type": "job",
-          "name": "Pastor"
+          "name": "Pastor, Tejedor"
         },
         {
           "type": "resource",
@@ -662,10 +526,10 @@
         },
         {
           "type": "resource",
-          "name": "Leche"
+          "name": "Tela"
         }
       ],
-      "effect": "Animales que caminan dentro de los corrales (más adelante, tracción animal)"
+      "effect": "*(Domesticación + Tejido)*. Especialistas: **pastor** (comida y lana) y **tejedor** (lana → tela). Raíz lejana de las tarjetas perforadas"
     },
     {
       "id": "N03",
@@ -674,17 +538,22 @@
       "order": 2,
       "optional": false,
       "requires": [
-        "P04"
+        "P04",
+        "P06"
       ],
       "requiresPopulation": null,
       "manifestations": [
         {
           "type": "building",
-          "name": "Horno de barro"
+          "name": "Horno de barro, Casa de adobe"
         },
         {
           "type": "job",
           "name": "Alfarero"
+        },
+        {
+          "type": "resource",
+          "name": "Arcilla"
         },
         {
           "type": "resource",
@@ -695,128 +564,17 @@
           "name": "Vasija"
         }
       ],
-      "effect": "**Primer aumento del almacenamiento** + **primer horno** (camino al metal). **Nv2 = Torno de alfarero**: cerámica ↑"
+      "effect": "*(Alfarería + Adobe)*. **Vasijas: almacenamiento ↑.** Materiales junta **arcilla** en la orilla. **Alfarero** (especialista del horno). Casa de adobe: +6 de capacidad. **Nv2 = Torno**"
     },
     {
-      "id": "N04",
-      "name": "Tradición oral",
+      "id": "N09",
+      "name": "Conteo y tradición oral",
       "era": 2,
       "order": 3,
       "optional": false,
       "requires": [
         "P01",
-        "P04"
-      ],
-      "requiresPopulation": null,
-      "manifestations": [
-        {
-          "type": "knowledge",
-          "name": null
-        },
-        {
-          "type": "automation",
-          "name": null
-        }
-      ],
-      "effect": "Se pierde **menos** maestría cuando muere un maestro. Los ancianos cuentan historias junto a la fogata. Requisito de la Escritura"
-    },
-    {
-      "id": "N05",
-      "name": "Tejido",
-      "era": 2,
-      "order": 4,
-      "optional": false,
-      "requires": [
-        "P03",
-        "N02"
-      ],
-      "requiresPopulation": null,
-      "manifestations": [
-        {
-          "type": "building",
-          "name": "Telar manual"
-        },
-        {
-          "type": "job",
-          "name": "Tejedor"
-        },
-        {
-          "type": "resource",
-          "name": "Tela"
-        }
-      ],
-      "effect": "Ropa, velas. Raíz lejana de las tarjetas perforadas"
-    },
-    {
-      "id": "N06",
-      "name": "Adobe",
-      "era": 2,
-      "order": 5,
-      "optional": false,
-      "requires": [
-        "N03",
-        "P06"
-      ],
-      "requiresPopulation": null,
-      "manifestations": [
-        {
-          "type": "building",
-          "name": "Casa de adobe"
-        }
-      ],
-      "effect": "Más población por casilla. Usa arcilla del río"
-    },
-    {
-      "id": "N07",
-      "name": "Granero",
-      "era": 2,
-      "order": 6,
-      "optional": false,
-      "requires": [
-        "N01",
-        "N03"
-      ],
-      "requiresPopulation": null,
-      "manifestations": [
-        {
-          "type": "building",
-          "name": "Granero"
-        }
-      ],
-      "effect": "**Segundo aumento del almacenamiento**"
-    },
-    {
-      "id": "N08",
-      "name": "Herbolaria",
-      "era": 2,
-      "order": 7,
-      "optional": true,
-      "requires": [
-        "P12",
         "N01"
-      ],
-      "requiresPopulation": null,
-      "manifestations": [
-        {
-          "type": "job",
-          "name": "Curandero"
-        },
-        {
-          "type": "building",
-          "name": "Huerto medicinal"
-        }
-      ],
-      "effect": "Mortalidad ↓"
-    },
-    {
-      "id": "N09",
-      "name": "Conteo",
-      "era": 2,
-      "order": 8,
-      "optional": false,
-      "requires": [
-        "P01",
-        "N07"
       ],
       "requiresPopulation": null,
       "manifestations": [
@@ -829,23 +587,27 @@
           "name": null
         }
       ],
-      "effect": "**Números exactos en la interfaz** (antes: \"pocos / muchos\"). Raíz de toda la matemática. *\"Contar el grano antes de que alguien se lo coma.\"*",
+      "effect": "*(Conteo + Tradición oral)*. **Números exactos en la interfaz** (antes: \"pocos / muchos\") y se pierde menos maestría al morir un maestro. Raíz de la matemática y de la Escritura. *\"Contar el grano antes de que alguien se lo coma.\"*",
       "advancesPcPieces": [
         "RAM"
       ]
     },
     {
       "id": "N10",
-      "name": "Balsa y pesca",
+      "name": "Exploración",
       "era": 2,
-      "order": 9,
-      "optional": true,
+      "order": 4,
+      "optional": false,
       "requires": [
-        "P07",
-        "P03"
+        "P02",
+        "P04"
       ],
       "requiresPopulation": null,
       "manifestations": [
+        {
+          "type": "tool",
+          "name": "Antorcha"
+        },
         {
           "type": "building",
           "name": "Muelle"
@@ -853,23 +615,20 @@
         {
           "type": "job",
           "name": "Pescador"
-        },
-        {
-          "type": "resource",
-          "name": "Pescado"
         }
       ],
-      "effect": "Comida desde el agua. **Abre la zona Costa**",
-      "unlocksZone": "Costa"
+      "effect": "*(Antorcha + Balsa y pesca)*. **Abre la Cueva y la Costa.** Muelle: la gente de Comida pesca. *\"Ahora podemos ver a los murciélagos. No sé si eso es mejor.\"*",
+      "unlocksZone": "Cueva, Costa"
     },
     {
       "id": "N11",
-      "name": "Jefatura",
+      "name": "Aldea organizada",
       "era": 2,
-      "order": 10,
+      "order": 5,
       "optional": false,
       "requires": [
-        "P01"
+        "P11",
+        "N01"
       ],
       "requiresPopulation": 15,
       "manifestations": [
@@ -880,29 +639,17 @@
         {
           "type": "automation",
           "name": null
-        }
-      ],
-      "effect": "**Cuotas por oficio**: la tribu se reorganiza sola cuando muere alguien"
-    },
-    {
-      "id": "N12",
-      "name": "Antorcha",
-      "era": 2,
-      "order": 11,
-      "optional": false,
-      "requires": [
-        "P04",
-        "P07"
-      ],
-      "requiresPopulation": null,
-      "manifestations": [
+        },
         {
-          "type": "tool",
-          "name": "Antorcha"
+          "type": "building",
+          "name": "Huerto medicinal"
+        },
+        {
+          "type": "job",
+          "name": "Curandero"
         }
       ],
-      "effect": "**Abre la zona Cueva** (cobre, estaño, pedernal, ocre). *\"Ahora podemos ver a los murciélagos. No sé si eso es mejor.\"*",
-      "unlocksZone": "Cueva"
+      "effect": "*(Jefatura + Herbolaria)*. **Cuotas automáticas**: la tribu repone sola sus categorías y especialistas cuando muere alguien. **Curandero** (especialista del huerto): enfermedad ↓"
     },
     {
       "id": "B01",
@@ -911,8 +658,8 @@
       "order": 0,
       "optional": false,
       "requires": [
-        "P07",
-        "N12"
+        "P02",
+        "N10"
       ],
       "requiresPopulation": null,
       "manifestations": [
@@ -996,7 +743,7 @@
       "order": 3,
       "optional": false,
       "requires": [
-        "P07",
+        "P02",
         "N02"
       ],
       "requiresPopulation": null,
@@ -1021,7 +768,7 @@
       "optional": false,
       "requires": [
         "P04",
-        "P07"
+        "P02"
       ],
       "requiresPopulation": null,
       "manifestations": [
@@ -1048,8 +795,7 @@
       "optional": false,
       "requires": [
         "N09",
-        "P11",
-        "N04"
+        "P11"
       ],
       "requiresPopulation": null,
       "manifestations": [
@@ -1076,7 +822,7 @@
       "order": 6,
       "optional": false,
       "requires": [
-        "N06",
+        "N03",
         "B02"
       ],
       "requiresPopulation": null,
@@ -1440,7 +1186,7 @@
       "order": 9,
       "optional": true,
       "requires": [
-        "N08",
+        "N11",
         "H05"
       ],
       "requiresPopulation": null,
@@ -1460,7 +1206,7 @@
       "optional": false,
       "requires": [
         "H02",
-        "P03"
+        "P02"
       ],
       "requiresPopulation": null,
       "manifestations": [
@@ -1568,7 +1314,7 @@
       "order": 2,
       "optional": false,
       "requires": [
-        "N05",
+        "N02",
         "M01"
       ],
       "requiresPopulation": null,
@@ -2158,7 +1904,7 @@
       "order": 5,
       "optional": false,
       "requires": [
-        "N05",
+        "N02",
         "I03",
         "R07"
       ],

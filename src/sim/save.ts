@@ -1,5 +1,6 @@
 import { config } from "../config";
 import { RESOURCES } from "../content";
+import { setComprensionScale } from "./economy";
 import { step } from "./step";
 import { createState, type GameState } from "./state";
 
@@ -18,11 +19,13 @@ export function exportSave(s: GameState): string {
 export function parseSave(text: string): GameState | null {
   try {
     const s = JSON.parse(text) as GameState;
-    if (s?.version !== 1 || !Array.isArray(s.villagers)) return null;
+    // v1 (oficios sueltos) no es compatible con v2 (categorías): se empieza de nuevo.
+    if (s?.version !== 2 || !Array.isArray(s.villagers)) return null;
     // Recursos agregados después de que se creó la partida.
     for (const r of RESOURCES) s.inv[r.id] ??= 0;
     s.debug ??= { infinite: {}, unlockOnTap: false };
     s.resolved ??= {};
+    s.introQueue ??= [];
     return s;
   } catch {
     return null;
@@ -53,7 +56,12 @@ export function simulateOffline(s: GameState, realSeconds: number): OfflineSumma
   const before = { ...s.inv };
   const b0 = s.stats.births, d0 = s.stats.deaths;
   const STEP = 0.5;
-  for (let t = 0; t < simSeconds; t += STEP) step(s, Math.min(STEP, simSeconds - t));
+  setComprensionScale(config.COMPRENSION_OFFLINE);
+  try {
+    for (let t = 0; t < simSeconds; t += STEP) step(s, Math.min(STEP, simSeconds - t));
+  } finally {
+    setComprensionScale(1);
+  }
   const gained: Record<string, number> = {};
   for (const r of RESOURCES) {
     const diff = s.inv[r.id] - before[r.id];

@@ -45,12 +45,17 @@ enganchar, y después se pasa a sesiones cortas de revisión.
 Una sola fórmula simple, para tener números desde el primer prototipo:
 
 ```
-costo_comprension(nodo) = C0 × R^(era - 1) × (1 + 0,15 × posición_en_la_era)
+costo_comprension(nodo) = C0 × R^(era - 1) × G^(posición_en_la_era)
 ```
 
-- `C0`: costo base (por ejemplo, 10).
-- `R`: factor de crecimiento entre eras (por ejemplo, 4).
-- `posición_en_la_era`: de 0 a ~13, según el orden aproximado dentro de la era.
+- `C0`: costo base (hoy 50; antes 10).
+- `R`: factor de crecimiento entre eras (4).
+- `G`: crecimiento **exponencial** dentro de la era (1,6). Antes era lineal (+15% por
+  posición) y las últimas páginas salían casi gratis.
+- `posición_en_la_era`: de 0 a ~6, según el orden dentro de la era.
+
+Con estos valores, la Era 1 cuesta en total ≈ 1.000 de Comprensión (de 50 a 525 por
+página) y la Era 2 ≈ 4.000 (de 200 a 2.100).
 
 Los costos en recursos de edificios y proyectos siguen la misma idea: un valor base por
 era multiplicado por el tamaño del edificio. **Nada de esto se afina en papel**: se
@@ -63,13 +68,14 @@ ajusta en los playtests.
 | Perilla | Qué controla |
 |---|---|
 | `TIEMPO_POR_AÑO` | Segundos reales por año de juego (hoy: 6 s) |
-| `C0`, `R` | Costo de Comprensión (ver la fórmula) |
+| `C0`, `R`, `G` | Costo de Comprensión (ver la fórmula) |
 | `PRODUCCION_BASE[oficio]` | Cuánto produce cada oficio por segundo |
 | `BONO_MAESTRIA[nivel]` | Multiplicador de producción por nivel de maestría |
 | `TOQUE_BASE` | Comprensión que da cada toque del Libro |
 | `NATALIDAD`, `ESPERANZA_VIDA` | Crecimiento de la población |
 | `TECHO_NATURAL` | Personas que alimenta la naturaleza sin agricultura (≈ 12–15) |
 | `EFICIENCIA_OFFLINE` | 0,5 → 1,0 |
+| `COMPRENSION_OFFLINE` | Factor extra para la Comprensión offline (0,2: offline rinde 10% de Comprensión) |
 | `EFICIENCIA_TRANSPORTE[medio]` | 0,4 / 0,6 / 1,0 |
 | `POBLACION_HITO[era]` | Población requerida para cada hito de era |
 | `BONO_PRESTIGIO` | ×1,5 |
@@ -119,3 +125,8 @@ abajo y se vuelve a probar.
 - **Se murieron todos los aldeanos.** Perder está bien, pero no había cómo reiniciar → se agregó la pantalla de derrota (1 aldeano o ninguno).
 - **Tocar el Libro era demasiado fuerte** comparado con los ancianos (≈ 8 toques por segundo contra 0,15/s por anciano) → `COMPRENSION_ANCIANO` ×10 (0,15 → 1,5). El chamán también ×10 (1 → 10 por ciclo, ≈ 4/s) para que siga por encima del anciano.
 - Antes del playtest: `COMIDA_INICIAL` 20 → 40 (sin recolectar, la comida se acababa en ≈ 50 s).
+
+### Playtest 2 (2026-11-09, celular)
+- **Demasiadas tecnologías, muy chicas:** se tocaba todo sin leer y no se entendía el camino → Eras 1–2 consolidadas (12 → 6 cada una) y tarjeta de novedad.
+- **Demasiados oficios sueltos** → oficios por categoría y especialistas asignados desde su edificio.
+- **Al volver de estar offline había Comprensión de sobra para comprar todo** → costos exponenciales dentro de la era (`G` = 1,6), `C0` 10 → 50, y la Comprensión offline rinde solo 20% de lo normal offline (`COMPRENSION_OFFLINE` = 0,2).

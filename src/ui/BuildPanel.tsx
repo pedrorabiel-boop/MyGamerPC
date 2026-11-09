@@ -1,4 +1,4 @@
-import { BUILDINGS, BUILDING_BY_ID, JOB_BY_ID, RESOLUTIONS, RES_BY_ID, type ResId } from "../content";
+import { BUILDINGS, BUILDING_BY_ID, RESOLUTIONS, RES_BY_ID, type ResId } from "../content";
 import { TECH_BY_ID } from "../data/tree";
 import { engine, useEngine } from "../engine";
 import { canAfford, has, resolutionProgress } from "../sim/economy";
@@ -49,7 +49,7 @@ function Autosuficiencia({ s }: { s: GameState }) {
     <>
       <h4>✅ Autosuficiencia</h4>
       <p className="hint">
-        Con estos edificios y aldeanos asignados, el recurso queda <b>resuelto</b>: deja de tener cantidad y nunca falta.
+        Con estos edificios y sus puestos ocupados, el recurso queda <b>resuelto</b>: deja de tener cantidad y nunca falta.
       </p>
       <div className="list">
         {RESOLUTIONS.map((def) => {
@@ -66,9 +66,9 @@ function Autosuficiencia({ s }: { s: GameState }) {
                     {BUILDING_BY_ID[b.type].icon} {BUILDING_BY_ID[b.type].name}: {b.have}/{b.need}
                   </li>
                 ))}
-                {p.workers.map((w) => (
-                  <li key={w.job} className={w.have >= w.need ? "ok" : "no"}>
-                    {JOB_BY_ID[w.job].icon} {JOB_BY_ID[w.job].name}: {w.have}/{w.need}
+                {p.staffed.map((w) => (
+                  <li key={w.type} className={w.have >= w.need ? "ok" : "no"}>
+                    {BUILDING_BY_ID[w.type].staff?.icon} Puestos ocupados en {BUILDING_BY_ID[w.type].name.toLowerCase()}s: {w.have}/{w.need}
                   </li>
                 ))}
               </ul>

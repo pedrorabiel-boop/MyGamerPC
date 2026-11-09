@@ -10,7 +10,7 @@ Este documento es la **columna vertebral** del juego. Cada tecnología es un nod
 oficio, recurso, etc. Primero fijamos el árbol completo; después diseñamos cada nodo
 en detalle.
 
-**Versión:** 1.0 (árbol revisado completo) · 11 eras · 136 tecnologías · 13 piezas de PC
+**Versión:** 2.0 (borrador: Eras 1–2 consolidadas) · 11 eras · 124 tecnologías · 13 piezas de PC
 (ver el [historial de cambios](#9-historial-de-cambios) al final)
 
 ---
@@ -39,7 +39,7 @@ en detalle.
 
 ### Fuentes de Comprensión por era (escalera de pensadores)
 
-**El niño (tocar el Libro)** → Anciano (P01) → Chamán (P12) → Escriba (B06) →
+**El niño (tocar el Libro)** → Anciano (P01) → Chamán (P11) → Escriba (B06) →
 Filósofo (H05) → Profesor (M04) → Científico (R02) → Ingeniero (I03) →
 Investigador (X02) → Programador (X10)
 
@@ -63,7 +63,7 @@ porque ahora toda la tribu lee a la vez.
   | R11 Higiene y vacunas | 70 años | 7 min |
   | I13 Alcantarillado | 80 años | 8 min |
 
-  Herbolaria (N08) no alarga la vida: solo reduce las muertes por enfermedad.
+  El curandero (N11 Aldea organizada) no alarga la vida: solo reduce las muertes por enfermedad.
 - **Etapas de la vida:**
   - **Niño:** 0–12 años (72 s). No trabaja.
   - **Adulto:** trabaja en su oficio.
@@ -91,7 +91,7 @@ pierde parte de la maestría de su oficio. Cada hito posterior mejora la transmi
 
 | Tecnología | Efecto sobre la transmisión |
 |---|---|
-| N04 Tradición oral | Se pierde **menos** maestría cuando muere un maestro (los ancianos la cuentan junto al fuego) |
+| N09 Conteo y tradición oral | Se pierde **menos** maestría cuando muere un maestro (los ancianos la cuentan junto al fuego) |
 | B06 Escritura | La maestría deja de perderse con la muerte (queda en el Archivo) |
 | M05 Gremios | Desbloquean la maestría **Nv4–5** (hasta entonces el techo es Nv3) |
 | R01 Imprenta | Todos los aldeanos aprenden oficios más rápido |
@@ -105,8 +105,8 @@ oficios a mano a ese ritmo sería un castigo, así que:
 
 - **Desde P01 Lenguaje**, los jóvenes **heredan el oficio** de su padre o su madre al
   llegar a adultos (oficios familiares).
-- **Desde N11 Jefatura** se pueden fijar **cuotas** por oficio ("mantener 4
-  agricultores y 2 alfareros"), y la tribu se reorganiza sola.
+- **Desde N11 Aldea organizada** las cantidades de cada categoría y los especialistas
+  de cada edificio quedan como **cuotas**, y la tribu se reorganiza sola.
 - **Cambio de oficio:** cuando un aldeano cambia de oficio pasa por un período de
   **aprendizaje** con productividad reducida. **R01 Imprenta** lo acorta mucho (hay
   manuales para todo), así que desde ahí redistribuir a la tribu entre oficios es
@@ -140,6 +140,35 @@ El jugador **ve el juego como lo ve su civilización**:
 Esto se suma a la idea de que el estilo visual de la interfaz cambie por era (tablilla
 → pergamino → papel → CRT → interfaz gamer).
 
+### Oficios por categoría (playtest 2)
+
+Tener muchos oficios sueltos confundía: no se sabía qué hacía cada uno ni cuándo había
+aparecido. Ahora los aldeanos se asignan a **pocas categorías amplias**, y las
+tecnologías **mejoran cómo trabaja cada categoría**, sin reasignar a nadie (*"el Libro
+dice qué, la gente aprende cómo"*).
+
+| Categoría | Qué hace | Cómo mejora con las tecnologías |
+|---|---|---|
+| 🍖 **Comida** | Consigue comida con el **mejor método disponible** | bayas → caza (P05) → pesca en el muelle (N10) → parcelas (N01) |
+| 🧱 **Materiales** | Junta **el material que más falta** | ramas, piedra y fibras → madera (P02) → pigmento (P11) → arcilla (N03) |
+| 🔨 **Construcción** | Levanta los planos | aparece con P06 Refugio |
+| *(futuro)* 💡 Saber, 🏭 Producción… | | |
+
+- **Especialistas:** los edificios que necesitan a alguien (círculo del chamán, horno,
+  telar, corral, huerto) tienen **puestos**. Se asignan **tocando el edificio**. En el
+  mapa cada edificio muestra sus puestos como puntos: **llenos = ocupados, vacíos =
+  falta gente**. Así, mirando el mapa se entiende en qué está cada persona.
+- Las parcelas y el muelle también muestran sus puestos, pero los ocupa sola la gente
+  de Comida.
+- **Sin categoría:** ayudan a construir a media velocidad, o dan vueltas.
+
+**Regla de diseño:** cada tecnología tiene que producir un **cambio que se vea** (en el
+mapa, en la barra o en lo que hace una categoría). Por eso las Eras 1 y 2 pasaron de 12
+a 6 tecnologías cada una, y el resto de las eras se consolidará igual (unas 5–7 por era).
+
+**Tarjeta de novedad:** al estudiar una tecnología aparece una tarjeta corta que dice
+qué cambió y qué hacer con eso (*"¡Caza! Tu gente de Comida ahora va a la manada…"*).
+
 ### Ánimo (único valor global de felicidad y orden)
 
 - **Multiplica** la productividad y la natalidad.
@@ -170,7 +199,7 @@ tecnologías nuevas. Por eso cada recurso básico tiene un **nivel máximo**: qu
   población**.
 - La infraestructura es **fija**, no proporcional a la población.
 - Los aldeanos asignados **siguen ocupados** en esa infraestructura (es su costo
-  permanente). La Jefatura mantiene la cuota sola.
+  permanente). La Aldea organizada (N11) mantiene la cuota sola.
 - Si falta un edificio o un aldeano asignado, el recurso **deja de estar resuelto** (con
   aviso) y vuelve a tener la cantidad que tenía.
 - **💡 Comprensión nunca se resuelve:** es la moneda central del juego.
@@ -190,7 +219,7 @@ tecnologías nuevas. Por eso cada recurso básico tiene un **nivel máximo**: qu
 | Cobre, estaño, bronce, hierro | I03 Fábrica + I05 Ferrocarril | Fábricas + estación | por definir | 7 |
 
 > **En el prototipo (Eras 1–2):** como la Era 3 todavía no existe, la comida se resuelve
-> con **N07 Granero** + 4 parcelas + 1 granero + 8 agricultores, para poder probarlo.
+> con **N01 Granero** + 4 parcelas + 1 granero + 8 agricultores, para poder probarlo.
 
 ### Arco de energía
 
@@ -303,7 +332,7 @@ carga) abre zonas lejanas como las Montañas. La orientación (Brújula) abre la
 lejanas. Y así sucesivamente.
 
 - **Ejemplo:** en el Valle inicial se ve la **entrada de una cueva** con un brillo verde
-  adentro. Con **N12 Antorcha** la tribu puede entrar. La cueva es una zona
+  adentro. Con **N10 Exploración** (la antorcha) la tribu puede entrar. La cueva es una zona
   completamente nueva y, mientras la miras, **no ves lo que pasa afuera**: estás dentro
   de ese mundo.
 - **Rendimiento:** solo la zona que se está mirando dibuja aldeanos caminando y
@@ -332,8 +361,8 @@ lejanas. Y así sucesivamente.
 | Zona | Se desbloquea con | Qué tiene |
 |---|---|---|
 | **Valle** (inicio) | — | Río (arcilla y arena en la orilla), árboles, rocas, bayas, animales, entrada de la cueva |
-| **Cueva** | N12 Antorcha (Era 2) | Vetas de cobre (se explotan con B01 Minería), pedernal, ocre. Murciélagos |
-| **Costa** | N10 Balsa y pesca (Era 2) | Pesca. Opcional |
+| **Cueva** | N10 Exploración (Era 2) | Vetas de cobre (se explotan con B01 Minería), pedernal, ocre. Murciélagos |
+| **Costa** | N10 Exploración (Era 2) | Pesca |
 | **Montañas** | B04 Rueda (Era 3) | **Estaño** (necesario para el Bronce). **Rocas rojas** que todavía no se pueden usar (hierro, Era 4), como pista. Magnetita |
 | **Tierras lejanas** | M09 Brújula (Era 5) | Carbón, petróleo, cuarzo de alta pureza |
 | **La Fab** (sala limpia) | X07 Sala limpia (Era 9) | Mundo interior, blanco y luminoso, con aldeanos en traje de conejo. **Único lugar donde se pueden construir fotolitógrafos** |
@@ -341,14 +370,14 @@ lejanas. Y así sucesivamente.
 ### Ramas de soporte
 
 Al calcular el cierre de prerrequisitos de las 13 piezas del PC sale un dato
-importante: **115 de 136 nodos son obligatorios**. El árbol está muy entrelazado. Varias
+importante: **108 de 124 nodos son obligatorios**. El árbol está muy entrelazado. Varias
 cosas "sociales" resultan ser prerrequisitos indirectos del PC:
 
-- **N11 Jefatura → B13 Leyes → M04 Universidad / M05 Gremios → … → CPU**
+- **N11 Aldea organizada → B13 Leyes → M04 Universidad / M05 Gremios → … → CPU**
 - **N01 Agricultura → B09 Irrigación → M01 Molino → M03 Papel → R01 Imprenta**
 - **R11 Higiene → X07 Sala limpia** (*"Bañarse ahora es obligatorio."*)
 
-Solo **21 nodos 🌿 son opcionales**: medicina, silvicultura, catedral, escuelas, alcantarillado,
+Solo **16 nodos 🌿 son opcionales**: medicina, silvicultura, catedral, escuelas, alcantarillado,
 TV, etc. No bloquean el PC directamente, pero sin ellos cuesta alcanzar la población
 de los hitos (mortalidad, hambre, desorden). Es la tensión cómica del juego:
 *"¿por qué tengo que inventar el alcantarillado para tener una GPU?"*
@@ -371,25 +400,22 @@ de los hitos (mortalidad, hambre, desorden). Es la tensión cómica del juego:
 - Tienen solo **manos y ropa** (taparrabos).
 - **Mapa:** grilla pequeña en vertical (≈ 8×12) con río, árboles, rocas y arbustos de
   bayas. Hay una **cueva oscura con un brillo verde adentro**, como pista de lo que
-  viene (*"¿y esa piedra verde?"*). No se puede entrar hasta tener N12 Antorcha.
+  viene (*"¿y esa piedra verde?"*). No se puede entrar hasta tener N10 Exploración.
 - **Acciones a mano, sin tecnología:** recolectar bayas, ramas y piedras sueltas.
 - **Antes del Lenguaje solo se puede señalar:** tocas un aldeano, tocas un objetivo, y
   hace **un solo viaje**. Nada se repite solo.
 
+Las 12 tecnologías originales se fusionaron en **6**, para que cada página del Libro
+produzca un cambio que se note (ver *Oficios por categoría*).
+
 | ID | Tecnología | Requiere | Se manifiesta como | Qué aporta |
 |---|---|---|---|---|
-| P01 | Lenguaje | — | ⚙️ · 📖 · 👤 Anciano | **Primera automatización**: aparecen los oficios y cada aldeano repite su tarea en bucle. Los ancianos generan Comprensión. *"¿Cómo le explico 'leñador' a alguien que solo dice ugh?"* |
-| P02 | Piedra tallada | — | ✋ Lasca · 👤 Tallador · 📦 Herram. de piedra | Primera herramienta. Más recolección |
-| P03 | Cuerda y fibras | — | 📦 Cuerda | Base de todo lo que se amarra |
-| P04 | Fuego | P02 | 🏗️ Fogata | Punto de reunión: felicidad y natalidad ↑, los ancianos enseñan junto al fuego (Comprensión ↑). **Nv2 = Cocina**: la comida rinde ×1,5 |
-| P05 | Lanza | P02, P03 | ✋ Lanza · 👤 Cazador · 📦 Carne, Pieles | Caza |
-| P06 | Refugio | P02, P03 | 🏗️ Choza de ramas · 👤 Constructor | Capacidad de población. **Oficio Constructor**: levanta edificios mucho más rápido |
-| P07 | Hacha enmangada | P02, P03 | ✋ Hacha · 👤 Leñador · 📦 Madera | Madera de verdad |
-| P08 | Cestería | P03 | ✋ Cesta | Los recolectores cargan más por viaje |
-| P09 | Trampas 🌿 | P02, P03 | 🏗️ Trampa · ⚙️ | **Primer generador pasivo del mapa**: produce carne de a poco, sin que nadie la atienda |
-| P10 | Abrigo de pieles 🌿 | P05 | ✋ (atuendo) | Ya tenían taparrabos; esto es abrigo de verdad. Mortalidad ↓ y felicidad ↑ |
-| P11 | Pigmentos y arte rupestre | P04 | 🏗️ Pared pintada · 📦 Pigmento · 🖥️ (contorno del PC) | Ánimo ↑. **El niño dibuja el contorno del PC** en la pared: la silueta aparece en pantalla. *"El primer RGB de la historia."* |
-| P12 | Chamanismo 🌿 | P01, P04 | 👤 Chamán · 🏗️ Círculo de piedras | Comprensión + curación básica |
+| P01 | Lenguaje | — | ⚙️ · 📖 · 👤 Anciano | **Primera automatización**: aparecen los **oficios por categoría** (🍖 Comida, 🧱 Materiales) y cada aldeano repite su tarea en bucle. Los ancianos generan Comprensión. *"¿Cómo le explico 'leñador' a alguien que solo dice ugh?"* |
+| P02 | Herramientas de piedra | — | ✋ Lasca, hacha, cesta · 📦 Madera | *(Piedra tallada + Cuerda + Hacha + Cestería)*. **Todos recolectan más rápido y cargan el doble.** La gente de Materiales empieza a juntar **madera** |
+| P04 | Fuego | P02 | 🏗️ Fogata | Punto de reunión: Ánimo y natalidad ↑, los ancianos se juntan alrededor. **Nv2 = Cocina**: la comida rinde ×1,5 |
+| P05 | Caza | P02 | ✋ Lanza · 🏗️ Trampa · 📦 Pieles | *(Lanza + Trampas + Abrigo de pieles)*. **La gente de Comida empieza a cazar** en la manada (más comida, y pieles). **Trampa**: comida pasiva, sin nadie. Abrigo: mortalidad ↓ y Ánimo ↑ |
+| P06 | Refugio | P02 | 🏗️ Choza de ramas · 👤 Constructor | Capacidad de población. Aparece la categoría **🔨 Construcción**: levanta edificios mucho más rápido |
+| P11 | Arte y ritos | P01, P04 | 🏗️ Pared pintada, Círculo de piedras · 👤 Chamán · 📦 Pigmento · 🖥️ (contorno del PC) | *(Pigmentos + Chamanismo)*. Ánimo ↑. **Chamán** (especialista del Círculo): mucha Comprensión. Materiales junta pigmento. **El niño dibuja el contorno del PC** en la pared. *"El primer RGB de la historia."* |
 
 #### Primer trato con el diablo (tutorial)
 
@@ -406,9 +432,9 @@ chiste fuerte.
 2. Cinco personas que gruñen. Tocas el Libro y sube la Comprensión.
 3. Señalas aldeanos para recolectar a mano, viaje por viaje.
 4. **Lenguaje**: aparecen los oficios y los aldeanos trabajan solos. Primer "¡ahh!".
-5. Piedra tallada, Hacha, Cuerda: los aldeanos empiezan a llevar herramientas en la mano.
+5. Herramientas de piedra: los aldeanos empiezan a llevar herramientas en la mano.
 6. **Fuego**: colocas la Fogata y la tribu se reúne alrededor.
-7. Trampas, Refugio, nace el primer bebé.
+7. Caza, Refugio, nace el primer bebé.
 8. Muere el primer aldeano (el adulto, a los ~5 minutos) y se nota la pérdida de saber.
 9. Aparece el diablo con su primer trato.
 10. Hito "Asentamiento": se abre el capítulo del Neolítico.
@@ -425,25 +451,21 @@ La tribu **deja de vagar y se instala**. Es la era de pasar de *recolectar* a *p
   regeneran lento**. La naturaleza del Valle alimenta como máximo a unas **12–15
   personas**. La Agricultura rompe ese techo, y por eso el hito de la Era 3 pide 30.
 - **Almacenamiento con límite:** pila en el suelo (poco) → **vasijas** (N03 Alfarería)
-  → **Granero** (N07). Sin descomposición de comida.
+  → **Granero** (N01). Sin descomposición de comida.
 - **Arcilla:** se recolecta en la **orilla del río** del Valle. La posición del río
   importa para decidir dónde construir.
-- **Primera zona nueva:** la **Cueva**, con N12 Antorcha (ver *Zonas del mapa*).
+- **Primera zona nueva:** la **Cueva** y la **Costa**, con N10 Exploración (ver *Zonas del mapa*).
+
+Las 12 tecnologías originales se fusionaron en **6**.
 
 | ID | Tecnología | Requiere | Se manifiesta como | Qué aporta |
 |---|---|---|---|---|
-| N01 | Agricultura | P07, P08 | 🏗️ Parcela · 👤 Agricultor · 📦 Grano | **Rompe el techo natural** de población. **Nv2 = Pan** (✋ Mortero): el grano rinde más |
-| N02 | Domesticación | P05, P03 | 🏗️ Corral · 👤 Pastor · 📦 Lana, Leche | Animales que caminan dentro de los corrales (más adelante, tracción animal) |
-| N03 | Alfarería | P04 | 🏗️ Horno de barro · 👤 Alfarero · 📦 Cerámica · ✋ Vasija | **Primer aumento del almacenamiento** + **primer horno** (camino al metal). **Nv2 = Torno de alfarero**: cerámica ↑ |
-| N04 | Tradición oral | P01, P04 | 📖 · ⚙️ | Se pierde **menos** maestría cuando muere un maestro. Los ancianos cuentan historias junto a la fogata. Requisito de la Escritura |
-| N05 | Tejido | P03, N02 | 🏗️ Telar manual · 👤 Tejedor · 📦 Tela | Ropa, velas. Raíz lejana de las tarjetas perforadas |
-| N06 | Adobe | N03, P06 | 🏗️ Casa de adobe | Más población por casilla. Usa arcilla del río |
-| N07 | Granero | N01, N03 | 🏗️ Granero | **Segundo aumento del almacenamiento** |
-| N08 | Herbolaria 🌿 | P12, N01 | 👤 Curandero · 🏗️ Huerto medicinal | Mortalidad ↓ |
-| N09 | Conteo | P01, N07 | ✋ Palitos de conteo · 📖 | **Números exactos en la interfaz** (antes: "pocos / muchos"). Raíz de toda la matemática. *"Contar el grano antes de que alguien se lo coma."* |
-| N10 | Balsa y pesca 🌿 | P07, P03 | 🏗️ Muelle · 👤 Pescador · 📦 Pescado | Comida desde el agua. **Abre la zona Costa** |
-| N11 | Jefatura | P01 + pob. 15 | 🏛️ · ⚙️ | **Cuotas por oficio**: la tribu se reorganiza sola cuando muere alguien |
-| N12 | Antorcha | P04, P07 | ✋ Antorcha | **Abre la zona Cueva** (cobre, estaño, pedernal, ocre). *"Ahora podemos ver a los murciélagos. No sé si eso es mejor."* |
+| N01 | Agricultura | P02 | 🏗️ Parcela, Granero · 📦 Grano | *(Agricultura + Granero)*. **Rompe el techo natural**: la gente de Comida trabaja las parcelas. Granero: almacenamiento ↑ y punto de entrega. **Nv2 = Pan** |
+| N02 | Ganadería y tejido | P05 | 🏗️ Corral, Telar · 👤 Pastor, Tejedor · 📦 Lana, Tela | *(Domesticación + Tejido)*. Especialistas: **pastor** (comida y lana) y **tejedor** (lana → tela). Raíz lejana de las tarjetas perforadas |
+| N03 | Alfarería | P04, P06 | 🏗️ Horno de barro, Casa de adobe · 👤 Alfarero · 📦 Arcilla, Cerámica · ✋ Vasija | *(Alfarería + Adobe)*. **Vasijas: almacenamiento ↑.** Materiales junta **arcilla** en la orilla. **Alfarero** (especialista del horno). Casa de adobe: +6 de capacidad. **Nv2 = Torno** |
+| N09 | Conteo y tradición oral | P01, N01 | ✋ Palitos de conteo · 📖 | *(Conteo + Tradición oral)*. **Números exactos en la interfaz** (antes: "pocos / muchos") y se pierde menos maestría al morir un maestro. Raíz de la matemática y de la Escritura. *"Contar el grano antes de que alguien se lo coma."* |
+| N10 | Exploración | P02, P04 | ✋ Antorcha · 🏗️ Muelle · 👤 Pescador | *(Antorcha + Balsa y pesca)*. **Abre la Cueva y la Costa.** Muelle: la gente de Comida pesca. *"Ahora podemos ver a los murciélagos. No sé si eso es mejor."* |
+| N11 | Aldea organizada | P11, N01 + pob. 15 | 🏛️ · ⚙️ · 🏗️ Huerto medicinal · 👤 Curandero | *(Jefatura + Herbolaria)*. **Cuotas automáticas**: la tribu repone sola sus categorías y especialistas cuando muere alguien. **Curandero** (especialista del huerto): enfermedad ↓ |
 
 ### Era 3 — Bronce
 *Recursos nuevos: Carbón vegetal, Mineral de cobre, Estaño, Cobre, Bronce, Arena, Vidrio, Ladrillo*
@@ -467,13 +489,13 @@ La tribu **deja de vagar y se instala**. Es la era de pasar de *recolectar* a *p
 
 | ID | Tecnología | Requiere | Se manifiesta como | Qué aporta |
 |---|---|---|---|---|
-| B01 | Minería | P07, N12 | 🏗️ Mina (sobre vetas de la Cueva o de las Montañas) · 👤 Minero · ✋ Pico | Acceso a minerales |
+| B01 | Minería | P02, N10 | 🏗️ Mina (sobre vetas de la Cueva o de las Montañas) · 👤 Minero · ✋ Pico | Acceso a minerales |
 | B02 | Fundición de cobre | N03, B01, B05 | 🏗️ Horno de fundición · 👤 Fundidor · 📦 Cobre | **Cobre: el metal del PC.** Consume carbón vegetal |
 | B03 | Bronce | B02, B04 | 👤 Herrero · 📦 Bronce · ✋ Herram. de bronce | Mejora todas las herramientas. Necesita el estaño de las Montañas |
-| B04 | Rueda | P07, N02 | ✋ Carretilla · ⚙️ | Los aldeanos cargan más y caminan más rápido con carga. **Abre la zona Montañas** |
-| B05 | Carbón vegetal | P04, P07 | 🏗️ Carbonera · 👤 Carbonero · 📦 Carbón vegetal | Combustible para los hornos. *"Quemar árboles para hacer piedras brillantes. Tiene lógica."* |
-| B06 | Escritura | N09, P11, N04 | 👤 Escriba · 🏗️ Archivo de tablillas | **El saber ya no muere con los maestros.** Abre **La Crónica** |
-| B07 | Ladrillo cocido | N06, B02 | 🏗️ Edificios de ladrillo · 📦 Ladrillo | Mejora edificios y hornos más calientes |
+| B04 | Rueda | P02, N02 | ✋ Carretilla · ⚙️ | Los aldeanos cargan más y caminan más rápido con carga. **Abre la zona Montañas** |
+| B05 | Carbón vegetal | P04, P02 | 🏗️ Carbonera · 👤 Carbonero · 📦 Carbón vegetal | Combustible para los hornos. *"Quemar árboles para hacer piedras brillantes. Tiene lógica."* |
+| B06 | Escritura | N09, P11 | 👤 Escriba · 🏗️ Archivo de tablillas | **El saber ya no muere con los maestros.** Abre **La Crónica** |
+| B07 | Ladrillo cocido | N03, B02 | 🏗️ Edificios de ladrillo · 📦 Ladrillo | Mejora edificios y hornos más calientes |
 | B08 | Arado 🌿 | N01, N02, B03 | ✋ Arado con bueyes | Comida ↑↑ |
 | B09 | Irrigación | N01, B01 | 🏗️ Canal (casilla por casilla desde el río) | **Bono por adyacencia**: las parcelas junto a un canal producen más. Agua para máquinas futuras |
 | B10 | Comercio | B04, N09 | 🏗️ Tienda del diablo | **Abre la Tienda del diablo**: trueque de excedentes por lo que falta, a una tasa mala. *"Atendemos 24/7. Literalmente para siempre."* |
@@ -509,8 +531,8 @@ La aldea pasa a ser **ciudad**: hierro, filosofía, dinero y edificios grandes.
 | H07 | Moneda | B10, B03 | 📦 Monedas · 🏛️ | La Tienda del diablo pasa a funcionar con **Monedas**. Se pueden **comprar pactos** |
 | H08 | Vidrio soplado | B11, H01 | 🏗️ Vidriería · 👤 Vidriero · 📦 Vidrio claro | Lentes, tubos, matraces y (mucho después) pantallas |
 | H09 | Magnetita | B01, H05 | ✋ Piedra imán · 📦 Magnetita | Los aldeanos juegan con ella y eso da un poco de Comprensión. Raíz del magnetismo y la electricidad |
-| H10 | Medicina clásica 🌿 | N08, H05 | 🏗️ Casa de salud | **+10 años de vida** (50 → 60) |
-| H11 | Palanca y polea | H02, P03 | 🏗️ Grúa | **Acelera las construcciones** a su alrededor (adyacencia) |
+| H10 | Medicina clásica 🌿 | N11, H05 | 🏗️ Casa de salud | **+10 años de vida** (50 → 60) |
+| H11 | Palanca y polea | H02, P02 | 🏗️ Grúa | **Acelera las construcciones** a su alrededor (adyacencia) |
 | H12 | Silvicultura 🌿 | H01, N01 | 🏗️ Bosque plantado | **Rompe el techo natural de la madera.** *"Plantar árboles para quemarlos. El ciclo de la vida."* |
 | H13 | Engranajes | H11, B03 | 🏗️ Noria · 📦 Engranajes | **Noria**: bono de adyacencia fuerte a parcelas y canales. Primera máquina con engranajes; adelanta al Molino |
 
@@ -535,7 +557,7 @@ saber (universidad, gremios).
 |---|---|---|---|---|
 | M01 | Molino de agua | H13, B09 | 🏗️ Molino (junto a un río o canal) · ⚙️ | **Da energía a los edificios vecinos** (aserradero, forja, batán): trabajan más rápido y con menos aldeanos |
 | M02 | Molino de viento 🌿 | H13 | 🏗️ Molino de viento · ⚙️ | Igual que el de agua, pero **más débil**. Se pone en cualquier parte, incluidas las Montañas |
-| M03 | Papel | N05, M01 | 🏗️ Papelera · 📦 Papel | La escritura escala |
+| M03 | Papel | N02, M01 | 🏗️ Papelera · 📦 Papel | La escritura escala |
 | M04 | Universidad | H05, M03, B13 | 🏗️ Universidad · 👤 Profesor | Comprensión ↑↑ y especialización más rápida |
 | M05 | Gremios | H07, B13 | 🏛️ | **Desbloquean la maestría Nv4–5** (hasta ahora el techo era Nv3) |
 | M06 | Reloj mecánico | H13, H01 | 🏗️ Torre del reloj · 👤 Relojero | **Bono de productividad en un radio**: los edificios cercanos "trabajan con horario". *"Primer reloj de CPU: 1 Hz."* |
@@ -603,7 +625,7 @@ Cambia la **escala**: miles de habitantes, energía de vapor y fábricas.
 | I03 | Fábrica | I02, M05 | 👤 Obrero / Ingeniero · ⚙️ | **Mejora los edificios artesanales a su versión fábrica**: consumen vapor, producen varias veces más y necesitan menos aldeanos |
 | I04 | Acero industrial | I02, R03, M10 | 🏗️ Acería · 📦 Acero | Acero barato (gabinete) |
 | I05 | Ferrocarril 🌿 | I02, I04 | 🏗️ Vías y estación · ⚙️ | **Lo producido en zonas lejanas llega al 100%** (a pie, 40%; con Rueda, 60%) |
-| I06 | Telar de tarjetas | N05, I03, R07 | 🏗️ Telar programable · 📦 Tarjetas perforadas, Tela de lujo | **Tela de lujo** que se vende cara en la Tienda del diablo. *"Primer programa de la historia: un estampado de flores."* |
+| I06 | Telar de tarjetas | N02, I03, R07 | 🏗️ Telar programable · 📦 Tarjetas perforadas, Tela de lujo | **Tela de lujo** que se vende cara en la Tienda del diablo. *"Primer programa de la historia: un estampado de flores."* |
 | I07 | Máquina analítica | I06, R07, R12 | 🏗️ Máquina analítica · ⚙️ | **Cuotas automáticas óptimas**: el juego calcula las cuotas de cada oficio según la demanda. *"En la realidad nunca se terminó. Aquí sí. Tarda 3 días. Se equivoca."* |
 | I08 | Pila voltaica | R08, R03 | ✋ Pila · 📦 Baterías | Primera electricidad continua (prerrequisito) |
 | I09 | Electromagnetismo | I08, H09, R05 | 📖 | La electricidad mueve cosas (prerrequisito) |
@@ -769,7 +791,7 @@ en la Era 10) y **el Juego**, que consume muchísimo Código.
 | G04 | Disipador y cooler | E13, X12, G03 | 🖥️ **Refrigeración** | Proyecto rápido en la Planta de electrónica |
 | G05 | RGB | D08, D04 | 🖥️ **RGB** | Proyecto rápido en la Planta de electrónica. *"+0% de rendimiento. Obligatorio por contrato (cláusula 66.6)."* |
 | G06 | El Juego | D12, D09 | 🖥️ **Juego** | **El último proyecto grande**, en la Oficina de software. **Cuesta muchísimo Código.** Descarga un parche de 80 GB el primer día |
-| G07 | Ensamblaje | las 13 piezas | 🏗️ Mesa de ensamblaje | **Minijuego de arrastrar y soltar en el que no se puede perder** |
+| G07 | Ensamblaje |  las 13 piezas | 🏗️ Mesa de ensamblaje | **Minijuego de arrastrar y soltar en el que no se puede perder** |
 | G08 | **ENCENDER** | G07 | — | **Informe final del pacto → final recursivo → modo libre** |
 | G09 | Refrigeración líquida 🌿 | G04 | — | **Guiño escondido**, sin sistema de logros: tubos con agua de colores burbujeando en el PC. *"Innecesario. Precioso."* |
 
@@ -858,12 +880,11 @@ plástico, código) desemboca en el PC.
 
 ```mermaid
 flowchart LR
-  P02[Piedra tallada] --> P04[Fuego] --> N03[Alfarería] --> B02[Fundición de cobre]
-  P11[Pigmentos] --> B06[Escritura]
+  P02[Herramientas de piedra] --> P04[Fuego] --> N03[Alfarería] --> B02[Fundición de cobre]
+  P11[Arte y ritos] --> B06[Escritura]
   N09[Conteo] --> B06
-  N04[Tradición oral] --> B06
-  N12[Antorcha] --> B01[Minería] --> B02
-  P07[Hacha] --> B05[Carbón vegetal] --> B02
+  N10[Exploración] --> B01[Minería] --> B02
+  P02 --> B05[Carbón vegetal] --> B02
   B04[Rueda] --> B03
   B02 --> B03[Bronce] --> H01[Hierro] --> M10[Acero de crisol]
   B02 --> B11[Vidrio] --> H08[Vidrio soplado] --> M07[Lentes]
@@ -900,8 +921,8 @@ flowchart LR
 
 | Era | Nodos | Opcionales 🌿 | Nuevos oficios |
 |---|---|---|---|
-| Piedra | 12 | 3 | Anciano, Tallador, Constructor, Cazador, Leñador, Chamán |
-| Neolítico | 12 | 2 | Agricultor, Pastor, Alfarero, Tejedor, Curandero, Pescador |
+| Piedra | 6 | 0 | Categorías 🍖 Comida, 🧱 Materiales, 🔨 Construcción · Anciano · Chamán |
+| Neolítico | 6 | 0 | Pastor, Tejedor, Alfarero, Curandero (especialistas) |
 | Bronce | 13 | 1 | Minero, Carbonero, Fundidor, Herrero, Escriba |
 | Hierro | 13 | 4 | Vidriero, Filósofo |
 | Medieval | 11 | 2 | Relojero, Profesor, Alquimista |
@@ -911,7 +932,7 @@ flowchart LR
 | Electrónica | 14 | 1 | Investigador, Programador |
 | Digital | 13 | 0 | Desarrollador de juegos |
 | Gamer | 9 | 1 | — |
-| **Total** | **136** | **21** | **~30** |
+| **Total** | **124** | **16** | — |
 
 Los nodos opcionales se concentran en las primeras eras: al principio se construye la
 sociedad y al final se construye el PC.
@@ -936,6 +957,13 @@ sociedad y al final se construye el PC.
 ---
 
 ## 9. Historial de cambios
+
+### v2.0 (borrador) — Playtest 2: menos tecnologías, oficios por categoría
+- **Eras 1 y 2 consolidadas** de 12 a 6 tecnologías cada una (total: 124). Fusiones: P02 ← P03, P07, P08 · P05 ← P09, P10 · P11 ← P12 · N01 ← N07 · N02 ← N05 · N03 ← N06 · N09 ← N04 · N10 ← N12 · N11 ← N08. Las referencias de las demás eras se actualizaron.
+- **Oficios por categoría** (🍖 Comida, 🧱 Materiales, 🔨 Construcción) y **especialistas** asignados desde su edificio, con puestos visibles en el mapa.
+- **Regla de diseño**: cada tecnología debe producir un cambio visible.
+- **Tarjeta de novedad** al estudiar una tecnología.
+- **Pendiente**: consolidar las Eras 3 a 11 (5–7 tecnologías por era).
 
 ### v1.0 — Revisión de la Era 11 (árbol revisado completo)
 - La Era 11 es una **cascada rápida de piezas**, con el Juego como último proyecto grande.

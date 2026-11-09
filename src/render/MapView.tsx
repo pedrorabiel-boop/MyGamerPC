@@ -1,10 +1,10 @@
 // Mapa de la zona con PixiJS. Solo dibuja: el estado vive en la simulación.
 import { Application, Container, Graphics, Text } from "pixi.js";
 import { useEffect, useRef } from "react";
-import { BUILDING_BY_ID, JOB_BY_ID, NODE_DEFS, type ResId } from "../content";
+import { BUILDING_BY_ID, NODE_DEFS, ROLE_BY_ID, SPECIALIST_COLOR, type ResId } from "../content";
 import { engine } from "../engine";
 import { canPlace, orderGather, place } from "../sim/actions";
-import { stageOf } from "../sim/economy";
+import { staffCount, stageOf } from "../sim/economy";
 
 const TILE_COLORS = { pasto: 0x557a35, rio: 0x2f6fb5, orilla: 0x8a7a50, cueva: 0x1a1a1a } as const;
 
@@ -122,8 +122,35 @@ export function MapView() {
             labelById.set(b.id, lbl);
           }
           lbl.x = x + ts / 2;
-          lbl.y = y + ts / 2;
+          lbl.y = y + ts / 2 - (def.staff ? ts * 0.08 : 0);
           lbl.alpha = b.built ? 1 : 0.5;
+
+          // Puestos de trabajo: llenos = ocupados (verde), vacíos = falta gente (rojo).
+          if (def.staff && b.built) {
+            const n = def.staff.slots;
+            const have = staffCount(s, b);
+            const r = Math.max(4, ts * 0.11);
+            const gap = r * 2.5;
+            const startX = x + ts / 2 - ((n - 1) * gap) / 2;
+            const cy = y + ts - r * 0.4;
+            // Píldora oscura detrás de los puntos, para que se lean sobre cualquier fondo.
+            buildingsG.roundRect(startX - r * 1.5, cy - r * 1.4, (n - 1) * gap + r * 3, r * 2.8, r * 1.4).fill({ color: 0x111111, alpha: 0.85 });
+            for (let i = 0; i < n; i++) {
+              const cx = startX + i * gap;
+              if (i < have) buildingsG.circle(cx, cy, r).fill(0x7fe07a);
+              else buildingsG.circle(cx, cy, r * 0.8).stroke({ width: 2, color: 0xff5a4a });
+            }
+            // Marca "!" si le falta gente.
+            if (have < n) {
+              const bx = x + ts - r * 0.9, by = y + r * 0.9;
+              buildingsG.circle(bx, by, r * 1.1).fill(0xe0453a).stroke({ width: 1.5, color: 0xffffff });
+              buildingsG.rect(bx - r * 0.18, by - r * 0.65, r * 0.36, r * 0.75).fill(0xffffff);
+              buildingsG.circle(bx, by + r * 0.45, r * 0.2).fill(0xffffff);
+            }
+          }
+          if (engine.ui.selectedBuilding === b.id) {
+            buildingsG.roundRect(x, y, ts, ts, ts * 0.15).stroke({ width: 2, color: 0xffffff });
+          }
         }
         for (const [id, lbl] of labelById) if (!seen.has(id)) { lbl.destroy(); labelById.delete(id); }
 
@@ -142,7 +169,7 @@ export function MapView() {
           const r = ts * (stage === "child" ? 0.11 : 0.16);
           const cx = v.x * ts, cy = v.y * ts;
           const body = stage === "elder" ? 0xcfc8b8 : 0xf2c28e;
-          const ring = v.job ? JOB_BY_ID[v.job]?.color ?? 0xffffff : 0x333333;
+          const ring = v.workplace != null ? SPECIALIST_COLOR : v.role ? ROLE_BY_ID[v.role].color : 0x333333;
           if (engine.ui.selected === v.id) villagersG.circle(cx, cy, r + 5).stroke({ width: 2, color: 0xffffff });
           villagersG.circle(cx, cy, r).fill(body).stroke({ width: 2.5, color: ring });
           if (v.carry) villagersG.rect(cx + r * 0.6, cy - r * 1.2, r * 0.8, r * 0.8).fill(0xffd166);
@@ -174,7 +201,7 @@ export function MapView() {
           const d = Math.hypot(v.x - fx, v.y - fy);
           if (d < bd) { bd = d; best = v.id; }
         }
-        if (best != null) { engine.ui.selected = best; engine.notify(); return; }
+        if (best != null) { engine.ui.selected = best; engine.ui.selectedBuilding = null; engine.notify(); return; }
 
         // Con un aldeano seleccionado, tocar un recurso = señalar.
         const node = s.nodes.find((n) => n.x === tx && n.y === ty);
@@ -186,9 +213,10 @@ export function MapView() {
         }
         if (node) { engine.toast(`${NODE_DEFS[node.type].name}. Selecciona un aldeano y toca aquí para que recolecte.`); return; }
         const b = s.buildings.find((x) => x.x === tx && x.y === ty);
-        if (b) { engine.toast(`${BUILDING_BY_ID[b.type].icon} ${BUILDING_BY_ID[b.type].name}${b.built ? "" : " (en construcción)"}: ${BUILDING_BY_ID[b.type].desc}`); return; }
+        if (b) { engine.ui.selectedBuilding = b.id; engine.ui.selected = null; engine.notify(); return; }
         if (s.tiles[ty]?.[tx] === "cueva") { engine.toast("Una cueva oscura. Algo brilla en verde adentro… Hace falta una antorcha."); return; }
         engine.ui.selected = null;
+        engine.ui.selectedBuilding = null;
         engine.notify();
       });
     })();

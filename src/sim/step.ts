@@ -1,7 +1,12 @@
 import { config } from "../config";
-import { BUILDING_BY_ID, JOB_BY_ID, NODE_DEFS, RES_BY_ID, RESOLUTIONS, type JobDef, type ResId } from "../content";
+import {
+  BUILDING_BY_ID, FOOD_GATHER, MATERIALS, NODE_DEFS, RES_BY_ID, RESOLUTIONS, ROLE_BY_ID,
+  type NodeType, type ResId, type Role,
+} from "../content";
 import { ERAS } from "../data/tree";
-import { add, canAfford, countBuilt, has, housing, isResolutionMet, pay, stageOf, unlimited } from "./economy";
+import {
+  add, canAfford, countBuilt, has, housing, isFree, isResolutionMet, pay, staffCount, stageOf, storageCap, unlimited,
+} from "./economy";
 import { log, newVillager, rand, type Building, type GameState, type ResNode, type Villager } from "./state";
 
 /** Avanza la simulación `dt` segundos de juego. Usar pasos pequeños (≤ 0,5 s). */
@@ -23,7 +28,7 @@ export function step(s: GameState, dt: number) {
 
 // ---------- mundo ----------
 
-/** Un recurso queda resuelto mientras existan sus edificios y aldeanos asignados. */
+/** Un recurso queda resuelto mientras existan sus edificios y estén ocupados sus puestos. */
 function updateResolutions(s: GameState) {
   for (const def of RESOLUTIONS) {
     const met = isResolutionMet(s, def);
@@ -32,7 +37,7 @@ function updateResolutions(s: GameState) {
     const name = RES_BY_ID[def.res].name;
     log(s, met
       ? `✅ ¡${name} resuelta! Mientras mantengas esta infraestructura, nunca va a faltar.`
-      : `⚠️ ${name} dejó de estar resuelta: falta infraestructura o aldeanos asignados.`);
+      : `⚠️ ${name} dejó de estar resuelta: falta infraestructura o gente en sus puestos.`);
   }
 }
 
@@ -56,7 +61,7 @@ function updateAnimo(s: GameState) {
   let a = 1;
   a += Math.min(countBuilt(s, "fogata"), 2) * (BUILDING_BY_ID.fogata.animo ?? 0);
   a += Math.min(countBuilt(s, "pared"), 3) * (BUILDING_BY_ID.pared.animo ?? 0);
-  if (has(s, "P10")) a += 0.05;
+  if (has(s, "P05")) a += 0.05; // abrigo de pieles
   if (s.villagers.length > housing(s)) a -= 0.2;
   if (s.inv.comida <= 0 && !unlimited(s, "comida")) a -= 0.3;
   s.animo = Math.max(0.4, Math.min(1.6, a));
@@ -69,15 +74,17 @@ function eat(s: GameState, dt: number) {
 function ageAndDie(s: GameState, dt: number) {
   const years = dt / config.TIEMPO_POR_AÑO;
   const hungry = s.inv.comida <= 0 && !unlimited(s, "comida");
-  const healer = s.villagers.some((v) => v.job === "curandero" && v.task.kind === "work");
-  const illness = config.MORTALIDAD_ENFERMEDAD * (healer ? 0.5 : 1) * (has(s, "P10") ? 0.8 : 1);
+  const healer = s.villagers.some((v) => v.workplace != null && s.buildings.find((b) => b.id === v.workplace)?.type === "huerto" && v.task.kind === "work");
+  const illness = config.MORTALIDAD_ENFERMEDAD * (healer ? 0.5 : 1) * (has(s, "P05") ? 0.8 : 1);
   const dead: Villager[] = [];
   for (const v of s.villagers) {
     v.age += years;
     if (!v.wasAdult && v.age >= config.EDAD_ADULTO) {
       v.wasAdult = true;
-      if (has(s, "P01") && v.parentJob && jobUnlocked(s, v.parentJob)) v.job = v.parentJob;
+      if (has(s, "P01") && v.parentRole && roleUnlocked(s, v.parentRole)) v.role = v.parentRole;
     }
+    // Al volverse anciano deja su puesto de especialista (el edificio queda con un puesto vacío).
+    if (v.workplace != null && stageOf(v) === "elder") { v.workplace = null; v.task = { kind: "idle", t: 0 }; }
     let p = illness * years;
     if (hungry) p += config.MORTALIDAD_HAMBRE * years;
     if (v.age >= v.lifespan || rand(s) < p) dead.push(v);
@@ -102,7 +109,7 @@ function births(s: GameState, dt: number) {
     s.birthAcc -= 1;
     const parent = adults[Math.floor(rand(s) * adults.length)];
     const pila = s.buildings.find((b) => b.type === "pila")!;
-    const baby = newVillager(s, 0, pila.x + 0.5 + (rand(s) - 0.5), pila.y + 0.5 + (rand(s) - 0.5), parent.job);
+    const baby = newVillager(s, 0, pila.x + 0.5 + (rand(s) - 0.5), pila.y + 0.5 + (rand(s) - 0.5), parent.role);
     add(s, "comida", -2);
     s.stats.births++;
     log(s, `Nació ${baby.name}, de la familia de ${parent.name}.`);
@@ -126,22 +133,30 @@ function checkEras(s: GameState) {
   if (next.id >= 3) s.prototypeEnded = true;
 }
 
-// ---------- oficios y cuotas ----------
+// ---------- categorías, especialistas y cuotas ----------
 
-export function jobUnlocked(s: GameState, jobId: string) {
-  const j = JOB_BY_ID[jobId];
-  return !!j && has(s, j.unlockedBy);
-}
+export const roleUnlocked = (s: GameState, role: Role) => has(s, ROLE_BY_ID[role].unlockedBy);
 
+/** Con N11 Aldea organizada, la tribu repone sola categorías y especialistas. */
 export function applyQuotas(s: GameState) {
-  for (const [jobId, quota] of Object.entries(s.quotas)) {
-    if (!jobUnlocked(s, jobId)) continue;
-    const holders = s.villagers.filter((v) => v.job === jobId && stageOf(v) === "adult");
+  for (const [role, quota] of Object.entries(s.quotas) as [Role, number][]) {
+    if (!roleUnlocked(s, role)) continue;
+    const holders = s.villagers.filter((v) => v.role === role && stageOf(v) === "adult");
     if (holders.length < quota) {
-      const free = s.villagers.filter((v) => v.job === null && stageOf(v) === "adult");
-      for (const v of free.slice(0, quota - holders.length)) v.job = jobId;
+      for (const v of s.villagers.filter(isFree).slice(0, quota - holders.length)) { v.role = role; v.task = { kind: "idle", t: 0 }; }
     } else if (holders.length > quota) {
-      for (const v of holders.slice(quota)) { v.job = null; v.task = { kind: "idle", t: 0 }; }
+      for (const v of holders.slice(quota)) { v.role = null; v.task = { kind: "idle", t: 0 }; }
+    }
+  }
+  for (const b of s.buildings) {
+    if (!b.built || !b.wanted || BUILDING_BY_ID[b.type]?.staff?.by !== "especialista") continue;
+    let missing = b.wanted - staffCount(s, b);
+    for (const v of s.villagers) {
+      if (missing <= 0) break;
+      if (!isFree(v)) continue;
+      v.workplace = b.id;
+      v.task = { kind: "idle", t: 0 };
+      missing--;
     }
   }
 }
@@ -198,7 +213,7 @@ function nearestStore(s: GameState, v: Villager): Building {
   return best!;
 }
 
-function nearestNode(s: GameState, v: Villager, type: string, res: ResId): ResNode | null {
+function nearestNode(s: GameState, v: Villager, type: NodeType, res: ResId): ResNode | null {
   let best: ResNode | null = null, bd = Infinity;
   for (const n of s.nodes) {
     if (n.type !== type || (n.stock[res] ?? 0) < 1) continue;
@@ -208,28 +223,93 @@ function nearestNode(s: GameState, v: Villager, type: string, res: ResId): ResNo
   return best;
 }
 
+const busyGathering = (v: Villager) => !!v.carry || v.task.kind === "toNode" || v.task.kind === "gather";
+
 function updateVillager(s: GameState, v: Villager, dt: number, occ: Map<number, number>) {
   const stage = stageOf(v);
   const a = anchor(s);
   if (stage === "child") return wander(s, v, dt, a.x + 0.5, a.y + 0.5, 1.5);
   if (stage === "elder") return wander(s, v, dt, a.x + 0.5, a.y + 0.5, 0.8);
 
-  if (v.order) return gather(s, v, dt, v.order.res, null, v.order.nodeId);
-  const job = v.job ? JOB_BY_ID[v.job] : null;
-  if (!job || !jobUnlocked(s, job.id)) {
-    // Sin oficio: ayuda a construir si hay obras; si no, deambula.
-    if (buildWork(s, v, dt, config.FACTOR_AYUDA_CONSTRUCCION)) return;
-    return wander(s, v, dt, a.x + 0.5, a.y + 0.5, 2);
+  // "Señalar": un solo viaje, tiene prioridad.
+  if (v.order) {
+    const n = s.nodes.find((x) => x.id === v.order!.nodeId);
+    return gather(s, v, dt, n ? { node: n.type, res: v.order.res, carryMult: 1 } : null, v.order.nodeId);
   }
-  if (job.kind === "gather") return gather(s, v, dt, job.res!, job, null);
-  if (job.kind === "build") {
-    if (!buildWork(s, v, dt, 1)) wander(s, v, dt, a.x + 0.5, a.y + 0.5, 2);
-    return;
+
+  // Especialista: trabaja en su edificio.
+  if (v.workplace != null) {
+    const b = s.buildings.find((x) => x.id === v.workplace && x.built);
+    if (!b) { v.workplace = null; v.task = { kind: "idle", t: 0 }; }
+    else return workAt(s, v, dt, b);
   }
-  if (!work(s, v, dt, job, occ)) wander(s, v, dt, a.x + 0.5, a.y + 0.5, 2);
+
+  if (v.role && roleUnlocked(s, v.role)) {
+    if (v.role === "comida") return foodWork(s, v, dt, occ);
+    if (v.role === "materiales") return materialsWork(s, v, dt);
+    if (v.role === "construccion") {
+      if (!buildWork(s, v, dt, 1)) wander(s, v, dt, a.x + 0.5, a.y + 0.5, 2);
+      return;
+    }
+  }
+  // Libre: ayuda a construir si hay obras; si no, deambula.
+  if (buildWork(s, v, dt, config.FACTOR_AYUDA_CONSTRUCCION)) return;
+  wander(s, v, dt, a.x + 0.5, a.y + 0.5, 2);
 }
 
-function gather(s: GameState, v: Villager, dt: number, res: ResId, job: JobDef | null, fixedNode: number | null) {
+/** Comida: el mejor método disponible. Primero edificios (parcelas, muelle), después caza, después bayas. */
+function foodWork(s: GameState, v: Villager, dt: number, occ: Map<number, number>) {
+  if (busyGathering(v)) return gather(s, v, dt, currentGatherSpec(s, v), null);
+  if (v.task.kind === "toBuilding" || v.task.kind === "work") {
+    const id = v.task.bId;
+    const b = s.buildings.find((x) => x.id === id && x.built);
+    if (b) return workAt(s, v, dt, b);
+  }
+  let best: Building | null = null, bd = Infinity;
+  for (const b of s.buildings) {
+    const staff = b.built ? BUILDING_BY_ID[b.type]?.staff : undefined;
+    if (!staff || staff.by !== "comida" || (occ.get(b.id) ?? 0) >= staff.slots) continue;
+    const d = dist(v.x, v.y, b.x + 0.5, b.y + 0.5);
+    if (d < bd) { bd = d; best = b; }
+  }
+  if (best) {
+    occ.set(best.id, (occ.get(best.id) ?? 0) + 1);
+    v.task = { kind: "toBuilding", bId: best.id };
+    return workAt(s, v, dt, best);
+  }
+  for (const m of FOOD_GATHER) {
+    if (!has(s, m.tech) || !nearestNode(s, v, m.node, "comida")) continue;
+    return gather(s, v, dt, { node: m.node, res: "comida", carryMult: m.carryMult, bonus: m.bonus }, null);
+  }
+  wander(s, v, dt, v.x, v.y, 1);
+}
+
+/** Materiales: junta el material que más falta (en proporción a su límite de almacenamiento). */
+function materialsWork(s: GameState, v: Villager, dt: number) {
+  if (busyGathering(v)) return gather(s, v, dt, currentGatherSpec(s, v), null);
+  let pick: (typeof MATERIALS)[number] | null = null, low = Infinity;
+  for (const m of MATERIALS) {
+    if (!has(s, m.tech) || unlimited(s, m.res) || !nearestNode(s, v, m.node, m.res)) continue;
+    const ratio = s.inv[m.res] / storageCap(s, m.res) + rand(s) * 0.05; // un poco de azar para repartir
+    if (ratio < low) { low = ratio; pick = m; }
+  }
+  if (!pick) return wander(s, v, dt, v.x, v.y, 1);
+  gather(s, v, dt, { node: pick.node, res: pick.res, carryMult: 1 }, null);
+}
+
+/** Qué está recolectando ahora (para continuar el viaje en curso). */
+function currentGatherSpec(s: GameState, v: Villager): GatherSpec | null {
+  const res = v.carry?.res ?? (v.task.kind === "toNode" || v.task.kind === "gather" ? v.task.res : null);
+  if (!res) return null;
+  const nodeId = v.task.kind === "toNode" || v.task.kind === "gather" ? v.task.nodeId : null;
+  const node = nodeId != null ? s.nodes.find((n) => n.id === nodeId) : null;
+  const food = node ? FOOD_GATHER.find((m) => m.node === node.type) : undefined;
+  return { node: node?.type ?? "arbusto", res, carryMult: food?.carryMult ?? 1, bonus: food?.bonus };
+}
+
+interface GatherSpec { node: NodeType; res: ResId; carryMult: number; bonus?: { res: ResId; amt: number } }
+
+function gather(s: GameState, v: Villager, dt: number, spec: GatherSpec | null, fixedNode: number | null) {
   if (v.carry) {
     const store = nearestStore(s, v);
     if (moveTo(v, store.x + 0.5, store.y + 0.5, dt)) {
@@ -240,33 +320,33 @@ function gather(s: GameState, v: Villager, dt: number, res: ResId, job: JobDef |
     }
     return;
   }
+  if (!spec) { v.task = { kind: "idle", t: 0 }; return; }
   if (v.task.kind !== "toNode" && v.task.kind !== "gather") {
-    const node = fixedNode != null ? s.nodes.find((n) => n.id === fixedNode) : nearestNode(s, v, job!.node!, res);
-    if (!node || (node.stock[res] ?? 0) < 0.5) {
+    const node = fixedNode != null ? s.nodes.find((n) => n.id === fixedNode) : nearestNode(s, v, spec.node, spec.res);
+    if (!node || (node.stock[spec.res] ?? 0) < 0.5) {
       if (v.order) v.order = null;
       return wander(s, v, dt, v.x, v.y, 1);
     }
-    v.task = { kind: "toNode", nodeId: node.id, res };
+    v.task = { kind: "toNode", nodeId: node.id, res: spec.res };
   }
   const task = v.task;
   const node = s.nodes.find((n) => n.id === task.nodeId);
   if (!node) { v.task = { kind: "idle", t: 0 }; return; }
   if (task.kind === "toNode") {
-    if (moveTo(v, node.x + 0.5, node.y + 0.5, dt)) v.task = { kind: "gather", nodeId: node.id, res, t: 0 };
+    if (moveTo(v, node.x + 0.5, node.y + 0.5, dt)) v.task = { kind: "gather", nodeId: node.id, res: task.res, t: 0 };
     return;
   }
-  // gather
   const speed = (has(s, "P02") ? config.BONO_HERRAMIENTAS : 1) * s.animo;
   task.t += dt * speed;
   if (task.t >= config.TIEMPO_RECOLECTAR) {
-    const capacity = config.CARGA_BASE * (has(s, "P08") ? config.BONO_CESTA : 1);
-    const take = Math.min(node.stock[res] ?? 0, capacity);
-    node.stock[res] = (node.stock[res] ?? 0) - take;
-    v.carry = { res, amt: take };
-    if (job?.bonus) {
-      const extra = Math.min(node.stock[job.bonus.res] ?? 0, job.bonus.amt);
-      node.stock[job.bonus.res] = (node.stock[job.bonus.res] ?? 0) - extra;
-      add(s, job.bonus.res, extra);
+    const capacity = config.CARGA_BASE * (has(s, "P02") ? config.BONO_CESTA : 1) * spec.carryMult;
+    const take = Math.min(node.stock[task.res] ?? 0, capacity);
+    node.stock[task.res] = (node.stock[task.res] ?? 0) - take;
+    v.carry = { res: task.res, amt: take };
+    if (spec.bonus) {
+      const extra = Math.min(node.stock[spec.bonus.res] ?? 0, spec.bonus.amt);
+      node.stock[spec.bonus.res] = (node.stock[spec.bonus.res] ?? 0) - extra;
+      add(s, spec.bonus.res, extra);
     }
     v.task = { kind: "idle", t: 0 };
   }
@@ -296,41 +376,29 @@ function buildWork(s: GameState, v: Villager, dt: number, rate: number): boolean
   const def = BUILDING_BY_ID[site.type];
   if (site.progress >= def.buildTime) {
     site.built = true;
-    log(s, `Se terminó de construir: ${def.name}.`);
+    log(s, def.staff?.by === "especialista"
+      ? `Se terminó de construir: ${def.name}. Necesita un ${def.staff.title.toLowerCase()}: tócalo para asignarlo.`
+      : `Se terminó de construir: ${def.name}.`);
     v.task = { kind: "idle", t: 0 };
   }
   return true;
 }
 
-function work(s: GameState, v: Villager, dt: number, job: JobDef, occ: Map<number, number>): boolean {
-  let b: Building | undefined;
-  if (v.task.kind === "toBuilding" || v.task.kind === "work") {
-    const id = v.task.bId;
-    b = s.buildings.find((x) => x.id === id && x.built && x.type === job.building);
-  }
-  if (!b) {
-    const slots = BUILDING_BY_ID[job.building!].slots ?? 1;
-    let bd = Infinity;
-    for (const x of s.buildings) {
-      if (!x.built || x.type !== job.building || (occ.get(x.id) ?? 0) >= slots) continue;
-      const d = dist(v.x, v.y, x.x + 0.5, x.y + 0.5);
-      if (d < bd) { bd = d; b = x; }
-    }
-    if (!b) return false;
-    occ.set(b.id, (occ.get(b.id) ?? 0) + 1);
-    v.task = { kind: "toBuilding", bId: b.id };
-  }
+/** Trabajar en un edificio con puestos: camina hasta él y produce en ciclos. */
+function workAt(s: GameState, v: Villager, dt: number, b: Building) {
+  const staff = BUILDING_BY_ID[b.type].staff;
+  if (!staff) { v.task = { kind: "idle", t: 0 }; return; }
+  if (v.task.kind !== "toBuilding" && v.task.kind !== "work") v.task = { kind: "toBuilding", bId: b.id };
   if (v.task.kind === "toBuilding") {
     if (moveTo(v, b.x + 0.5, b.y + 0.5, dt)) v.task = { kind: "work", bId: b.id, t: 0 };
-    return true;
+    return;
   }
-  if (v.task.kind !== "work") return true;
-  if (job.inputs && !canAfford(s, job.inputs)) return true; // espera materiales
+  if (v.task.kind !== "work") return;
+  if (staff.inputs && !canAfford(s, staff.inputs)) return; // espera materiales
   v.task.t += dt * s.animo;
-  if (v.task.t >= (job.cycle ?? 1)) {
+  if (v.task.t >= staff.cycle) {
     v.task.t = 0;
-    if (job.inputs) pay(s, job.inputs);
-    for (const [r, amt] of Object.entries(job.outputs ?? {})) add(s, r as ResId, amt ?? 0);
+    if (staff.inputs) pay(s, staff.inputs);
+    for (const [r, amt] of Object.entries(staff.outputs ?? {})) add(s, r as ResId, amt ?? 0);
   }
-  return true;
 }
