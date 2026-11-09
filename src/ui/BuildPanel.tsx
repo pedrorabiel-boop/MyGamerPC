@@ -1,23 +1,27 @@
 import { BUILDINGS, BUILDING_BY_ID, RESOLUTIONS, RES_BY_ID, type ResId } from "../content";
 import { TECH_BY_ID } from "../data/tree";
 import { engine, useEngine } from "../engine";
+import { placeableIn } from "../sim/actions";
 import { canAfford, has, resolutionProgress } from "../sim/economy";
+import { ZONE_BY_ID } from "../sim/state";
 import type { GameState } from "../sim/state";
 
 export function BuildPanel({ onPick }: { onPick: () => void }) {
-  const { s } = useEngine();
+  const { s, ui } = useEngine();
   const available = BUILDINGS.filter((b) => b.unlockedBy && has(s, b.unlockedBy));
+  const here = (id: string) => placeableIn(s, id, ui.zone);
   return (
     <div>
       {!available.length && <p className="hint">Todavía no sabes construir nada. Estudia el Libro (Fuego, Refugio…).</p>}
       <div className="list">
         {available.map((b) => {
-          const ok = canAfford(s, b.cost);
+          const ok = canAfford(s, b.cost) && here(b.id);
           return (
             <button
               key={b.id}
               className={"row" + (ok ? "" : " disabled")}
               onClick={() => {
+                if (!here(b.id)) { engine.toast(`Eso no se puede construir en ${ZONE_BY_ID[ui.zone].label}.`); return; }
                 if (!ok) { engine.toast("No alcanzan los materiales."); return; }
                 engine.ui.placing = b.id;
                 engine.toast(`Toca una casilla marcada para colocar: ${b.name}.`);
@@ -28,6 +32,7 @@ export function BuildPanel({ onPick }: { onPick: () => void }) {
               <span className="grow">
                 <b>{b.name}</b>
                 <small>{b.desc}</small>
+                {!here(b.id) && <small className="warn">No se puede en {ZONE_BY_ID[ui.zone].label}</small>}
               </span>
               <span className="cost">
                 {Object.entries(b.cost).map(([r, a]) => (

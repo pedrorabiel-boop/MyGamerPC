@@ -4,9 +4,9 @@
 // 3. Nadie va a donde no hay trabajo.
 // Los aldeanos con tarea manual quedan fuera hasta que el jugador los devuelve.
 import { config } from "../config";
-import { BUILDINGS, BUILDING_BY_ID, MATERIALS, type Role } from "../content";
+import { BUILDINGS, BUILDING_BY_ID, FOOD_GATHER, MATERIALS, type Role } from "../content";
 import { has, roleUnlocked, staffCount, stageOf, storageCap, unlimited } from "./economy";
-import type { Building, GameState, Villager } from "./state";
+import type { Building, GameState, Villager, ZoneId } from "./state";
 
 export const JEFATURA_TECH = "N11";
 export const hasJefatura = (s: GameState) => has(s, JEFATURA_TECH);
@@ -38,20 +38,23 @@ export function specialtyTarget(s: GameState, type: string): number {
   return c.full ? slots : Math.min(c.n, slots);
 }
 
-/** Cuánta gente puede aprovechar cada categoría ahora (0 = no hay trabajo). */
-export function roleCap(s: GameState, role: Role): number {
+/** Cuánta gente puede aprovechar cada categoría en una zona (0 = no hay trabajo ahí). */
+export function roleCap(s: GameState, role: Role, zone: ZoneId = "valle"): number {
   if (!roleUnlocked(s, role)) return 0;
+  const nodeHere = (type: string) => s.nodes.some((n) => n.zone === zone && n.type === type);
   if (role === "comida") {
-    if (!s.resolved.comida) return Infinity;
-    // Con la comida resuelta, solo hacen falta los puestos de parcelas y muelle.
-    return s.buildings.filter((b) => b.built && BUILDING_BY_ID[b.type].staff?.by === "comida")
+    const posts = s.buildings.filter((b) => b.built && b.zone === zone && BUILDING_BY_ID[b.type].staff?.by === "comida")
       .reduce((acc, b) => acc + (BUILDING_BY_ID[b.type].staff?.slots ?? 0), 0);
+    // Con la comida resuelta, solo hacen falta los puestos de parcelas y muelle.
+    if (s.resolved.comida) return posts;
+    const wild = FOOD_GATHER.some((m) => has(s, m.tech) && nodeHere(m.node));
+    return wild || posts > 0 ? Infinity : 0;
   }
   if (role === "materiales") {
-    const needed = MATERIALS.some((m) => has(s, m.tech) && !unlimited(s, m.res) && s.inv[m.res] < storageCap(s, m.res) - 1);
+    const needed = MATERIALS.some((m) => has(s, m.tech) && nodeHere(m.node) && !unlimited(s, m.res) && s.inv[m.res] < storageCap(s, m.res) - 1);
     return needed ? Infinity : 0;
   }
-  return s.buildings.some((b) => !b.built) ? Infinity : 0; // construcción: solo si hay planos
+  return s.buildings.some((b) => !b.built && b.zone === zone) ? Infinity : 0; // construcción: solo si hay planos ahí
 }
 
 /**
@@ -59,14 +62,15 @@ export function roleCap(s: GameState, role: Role): number {
  * según el orden de prioridad, respetando el tope de cada una. Usa el método de D'Hondt,
  * que da enteros y proporciones justas.
  */
-export function zipfTargets(s: GameState, total: number): Map<Role, number> {
-  const active = s.jefatura.priorities.filter((r) => roleCap(s, r) > 0);
+export function zipfTargets(s: GameState, total: number, zone: ZoneId = "valle"): Map<Role, number> {
+  const caps = new Map(s.jefatura.priorities.map((r) => [r, roleCap(s, r, zone)]));
+  const active = s.jefatura.priorities.filter((r) => caps.get(r)! > 0);
   const out = new Map<Role, number>(s.jefatura.priorities.map((r) => [r, 0]));
   for (let k = 0; k < total; k++) {
     let best: Role | null = null, bestScore = -1;
     active.forEach((r, i) => {
       const n = out.get(r)!;
-      if (n >= roleCap(s, r)) return;
+      if (n >= caps.get(r)!) return;
       const score = (1 / (i + 1)) / (n + 1);
       if (score > bestScore) { bestScore = score; best = r; }
     });
@@ -94,7 +98,7 @@ export function runJefatura(s: GameState, dt: number) {
     const inType = (x: Villager) => x.workplace != null && s.buildings.find((b) => b.id === x.workplace)?.type === type;
     if (staffed < target) {
       const b = s.buildings.find((x) => x.built && x.type === type && staffCount(s, x) < (BUILDING_BY_ID[type].staff?.slots ?? 0));
-      const v = pickDonor(s, type);
+      const v = pickDonor(s, type, b?.zone ?? "valle");
       if (b && v) { v.workplace = b.id; v.role = null; reset(v); }
     } else if (staffed > target) {
       // Se libera primero a un adulto (los ancianos se quedan en su puesto si pueden).
@@ -108,9 +112,18 @@ export function runJefatura(s: GameState, dt: number) {
     }
   }
 
-  // 2. Categorías (Zipf)
-  const pool = s.villagers.filter((v) => managed(v) && v.workplace == null);
-  const targets = zipfTargets(s, pool.length);
+  // 2. Categorías (Zipf), en cada zona con la gente que está ahí.
+  for (const zone of Object.keys(s.zones) as ZoneId[]) rebalanceZone(s, zone);
+}
+
+/** Gente de la Jefatura que está en una zona y no es especialista: la que se reparte por Zipf. */
+export const zonePool = (s: GameState, zone: ZoneId) =>
+  s.villagers.filter((v) => managed(v) && v.workplace == null && v.zone === zone && !v.transit);
+
+function rebalanceZone(s: GameState, zone: ZoneId) {
+  const pool = zonePool(s, zone);
+  if (!pool.length) return;
+  const targets = zipfTargets(s, pool.length, zone);
   const count = (r: Role) => pool.filter((v) => v.role === r).length;
   const under = s.jefatura.priorities.filter((r) => count(r) < (targets.get(r) ?? 0));
   if (!under.length) return;
@@ -128,12 +141,14 @@ export function runJefatura(s: GameState, dt: number) {
 const isFreeElder = (v: Villager) => stageOf(v) === "elder" && v.workplace == null && !v.manual;
 
 /** Alguien para un puesto de especialista: un anciano libre (si el puesto lo admite), un libre, o de la categoría que más gente tiene. */
-function pickDonor(s: GameState, type: string): Villager | null {
+function pickDonor(s: GameState, type: string, zone: ZoneId): Villager | null {
   if (BUILDING_BY_ID[type].staff?.elders) {
     const elder = s.villagers.find(isFreeElder);
     if (elder) return elder;
   }
-  const pool = s.villagers.filter((v) => movable(v) && v.workplace == null);
+  // Preferir a alguien que ya esté en la zona del edificio.
+  const all = s.villagers.filter((v) => movable(v) && v.workplace == null && !v.transit);
+  const pool = all.some((v) => v.zone === zone) ? all.filter((v) => v.zone === zone) : all;
   const free = pool.find((v) => v.role === null);
   if (free) return free;
   const counts = new Map<Role, number>();

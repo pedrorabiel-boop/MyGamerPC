@@ -8,7 +8,7 @@ import {
   add, canAfford, countBuilt, has, housing, isResolutionMet, pay, roleUnlocked, stageOf, storageCap, unlimited,
 } from "./economy";
 import { hasJefatura, runJefatura } from "./jefatura";
-import { log, newVillager, rand, type Building, type GameState, type ResNode, type Villager } from "./state";
+import { log, newVillager, rand, type Building, type GameState, type ResNode, type Villager, type ZoneId } from "./state";
 
 /** Avanza la simulación `dt` segundos de juego. Usar pasos pequeños (≤ 0,5 s). */
 export function step(s: GameState, dt: number) {
@@ -61,7 +61,9 @@ function passiveBuildings(s: GameState, dt: number) {
 function updateAnimo(s: GameState) {
   let a = 1;
   a += Math.min(countBuilt(s, "fogata"), 2) * (BUILDING_BY_ID.fogata.animo ?? 0);
-  a += Math.min(countBuilt(s, "pared"), 3) * (BUILDING_BY_ID.pared.animo ?? 0);
+  // Paredes pintadas: en la Cueva valen el doble (pinturas rupestres de verdad). Tope: 3 paredes del Valle.
+  const paredes = s.buildings.filter((b) => b.built && b.type === "pared").reduce((acc, b) => acc + (b.zone === "cueva" ? 2 : 1), 0);
+  a += Math.min(paredes, 3) * (BUILDING_BY_ID.pared.animo ?? 0);
   if (has(s, "P05")) a += 0.05; // abrigo de pieles
   if (s.villagers.length > housing(s)) a -= 0.2;
   if (s.inv.comida <= 0 && !unlimited(s, "comida")) a -= 0.3;
@@ -107,7 +109,7 @@ function births(s: GameState, dt: number) {
   while (s.birthAcc >= 1) {
     s.birthAcc -= 1;
     const parent = adults[Math.floor(rand(s) * adults.length)];
-    const pila = s.buildings.find((b) => b.type === "pila")!;
+    const pila = s.buildings.find((b) => b.type === "pila" && b.zone === "valle")!;
     const baby = newVillager(s, 0, pila.x + 0.5 + (rand(s) - 0.5), pila.y + 0.5 + (rand(s) - 0.5));
     add(s, "comida", -2);
     s.stats.births++;
@@ -162,8 +164,9 @@ function wander(s: GameState, v: Villager, dt: number, ax: number, ay: number, r
   if (v.task.kind !== "idle") v.task = { kind: "idle", t: 0 };
   v.task.t -= dt;
   if (v.task.t <= 0) {
-    v.tx = Math.max(0.3, Math.min(s.w - 0.3, ax + (rand(s) * 2 - 1) * radius));
-    v.ty = Math.max(0.3, Math.min(s.h - 0.3, ay + (rand(s) * 2 - 1) * radius));
+    const z = s.zones[v.zone];
+    v.tx = Math.max(0.3, Math.min(z.w - 0.3, ax + (rand(s) * 2 - 1) * radius));
+    v.ty = Math.max(0.3, Math.min(z.h - 0.3, ay + (rand(s) * 2 - 1) * radius));
     v.task.t = 2 + rand(s) * 3;
   }
   const d = dist(v.x, v.y, v.tx, v.ty);
@@ -171,14 +174,28 @@ function wander(s: GameState, v: Villager, dt: number, ax: number, ay: number, r
   if (d > stepLen) { v.x += ((v.tx - v.x) / d) * stepLen; v.y += ((v.ty - v.y) / d) * stepLen; }
 }
 
-function anchor(s: GameState): Building {
-  return s.buildings.find((b) => b.built && b.type === "fogata") ?? s.buildings.find((b) => b.type === "pila")!;
+/** Punto de reunión de una zona: la fogata (si hay) o la pila. */
+function anchor(s: GameState, zone: ZoneId): Building {
+  return s.buildings.find((b) => b.built && b.zone === zone && b.type === "fogata") ?? s.buildings.find((b) => b.zone === zone && b.type === "pila")!;
+}
+
+/** Camina hasta la entrada de su zona y aparece en la otra. */
+function travel(s: GameState, v: Villager, dt: number) {
+  const from = s.zones[v.zone];
+  if (moveTo(v, from.entrance.x + 0.5, from.entrance.y + 0.5, dt)) {
+    const to = s.zones[v.transit!];
+    v.zone = v.transit!;
+    v.transit = null;
+    v.x = to.entrance.x + 0.5;
+    v.y = to.entrance.y + 0.5;
+    v.task = { kind: "idle", t: 0 };
+  }
 }
 
 function nearestStore(s: GameState, v: Villager): Building {
   let best: Building | null = null, bd = Infinity;
   for (const b of s.buildings) {
-    if (!b.built || !BUILDING_BY_ID[b.type]?.storage) continue;
+    if (!b.built || b.zone !== v.zone || !BUILDING_BY_ID[b.type]?.storage) continue;
     const d = dist(v.x, v.y, b.x + 0.5, b.y + 0.5);
     if (d < bd) { bd = d; best = b; }
   }
@@ -188,7 +205,7 @@ function nearestStore(s: GameState, v: Villager): Building {
 function nearestNode(s: GameState, v: Villager, type: NodeType, res: ResId): ResNode | null {
   let best: ResNode | null = null, bd = Infinity;
   for (const n of s.nodes) {
-    if (n.type !== type || (n.stock[res] ?? 0) < 1) continue;
+    if (n.type !== type || n.zone !== v.zone || (n.stock[res] ?? 0) < 1) continue;
     const d = dist(v.x, v.y, n.x + 0.5, n.y + 0.5);
     if (d < bd) { bd = d; best = n; }
   }
@@ -198,11 +215,18 @@ function nearestNode(s: GameState, v: Villager, type: NodeType, res: ResId): Res
 const busyGathering = (v: Villager) => !!v.carry || v.task.kind === "toNode" || v.task.kind === "gather";
 
 function updateVillager(s: GameState, v: Villager, dt: number, occ: Map<number, number>) {
+  if (v.transit) return travel(s, v, dt);
   const stage = stageOf(v);
-  const a = anchor(s);
+  // Los niños y los ancianos viven en el Valle (salvo un anciano chamán, que va a su Círculo).
+  const workplaceB = v.workplace != null ? s.buildings.find((x) => x.id === v.workplace && x.built) : undefined;
+  const home: ZoneId = workplaceB?.zone ?? "valle";
+  if (stage !== "adult" && v.zone !== home) { v.transit = home; return; }
+  // Un especialista cuyo edificio está en otra zona, va para allá.
+  if (stage === "adult" && workplaceB && workplaceB.zone !== v.zone && !v.carry) { v.transit = workplaceB.zone; return; }
+  const a = anchor(s, v.zone);
   if (stage === "child") return wander(s, v, dt, a.x + 0.5, a.y + 0.5, 1.5);
   if (stage === "elder") {
-    const b = v.workplace != null ? s.buildings.find((x) => x.id === v.workplace && x.built) : undefined;
+    const b = workplaceB;
     if (b && elderCanWork(s, b.id)) return workAt(s, v, dt, b);
     if (v.workplace != null) v.workplace = null;
     return wander(s, v, dt, a.x + 0.5, a.y + 0.5, 0.8);
@@ -244,7 +268,7 @@ function foodWork(s: GameState, v: Villager, dt: number, occ: Map<number, number
   }
   let best: Building | null = null, bd = Infinity;
   for (const b of s.buildings) {
-    const staff = b.built ? BUILDING_BY_ID[b.type]?.staff : undefined;
+    const staff = b.built && b.zone === v.zone ? BUILDING_BY_ID[b.type]?.staff : undefined;
     if (!staff || staff.by !== "comida" || (occ.get(b.id) ?? 0) >= staff.slots) continue;
     const d = dist(v.x, v.y, b.x + 0.5, b.y + 0.5);
     if (d < bd) { bd = d; best = b; }
@@ -338,7 +362,7 @@ function buildWork(s: GameState, v: Villager, dt: number, rate: number): boolean
   if (!site) {
     let bd = Infinity;
     for (const b of s.buildings) {
-      if (b.built) continue;
+      if (b.built || b.zone !== v.zone) continue;
       const d = dist(v.x, v.y, b.x + 0.5, b.y + 0.5);
       if (d < bd) { bd = d; site = b; }
     }

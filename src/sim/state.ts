@@ -1,7 +1,23 @@
 import { config } from "../config";
 import { NODE_DEFS, RESOURCES, VILLAGER_NAMES, type NodeType, type ResId, type Role } from "../content";
 
-export type Tile = "pasto" | "rio" | "orilla" | "cueva";
+export type Tile = "pasto" | "rio" | "orilla" | "cueva" | "suelo" | "pared" | "salida";
+
+/** Zonas del mundo: cada una es su propia grilla. Ver docs/01-arbol-tecnologico.md, "Zonas del mapa". */
+export type ZoneId = "valle" | "cueva";
+
+export interface ZoneMap {
+  w: number;
+  h: number;
+  tiles: Tile[][]; // [y][x]
+  entrance: { x: number; y: number }; // casilla que conecta con la otra zona
+}
+
+export const ZONES: { id: ZoneId; name: string; label: string; icon: string; unlockedBy: string | null }[] = [
+  { id: "valle", name: "Valle", label: "el Valle", icon: "🏞️", unlockedBy: null },
+  { id: "cueva", name: "Cueva", label: "la Cueva", icon: "🕳️", unlockedBy: "N10" },
+];
+export const ZONE_BY_ID = Object.fromEntries(ZONES.map((z) => [z.id, z])) as Record<ZoneId, (typeof ZONES)[number]>;
 
 /** La Jefatura (N11): especialidades elegidas y prioridades de las categorías. */
 export interface JefaturaState {
@@ -29,6 +45,8 @@ export interface Villager {
   workplace: number | null; // id del edificio si es especialista
   manual: boolean; // tarea asignada a mano: queda fuera de la Jefatura
   wasAdult: boolean;
+  zone: ZoneId;
+  transit: ZoneId | null; // camino a otra zona
   x: number; // posición libre, en casillas
   y: number;
   tx: number; // destino al deambular
@@ -42,6 +60,7 @@ export interface Villager {
 export interface ResNode {
   id: number;
   type: NodeType;
+  zone: ZoneId;
   x: number;
   y: number;
   stock: Partial<Record<ResId, number>>;
@@ -50,6 +69,7 @@ export interface ResNode {
 export interface Building {
   id: number;
   type: string;
+  zone: ZoneId;
   x: number;
   y: number;
   progress: number; // segundos de construcción acumulados
@@ -62,9 +82,7 @@ export interface GameState {
   version: 2;
   rng: number;
   time: number; // segundos de juego
-  w: number;
-  h: number;
-  tiles: Tile[][]; // [y][x]
+  zones: Record<ZoneId, ZoneMap>;
   nodes: ResNode[];
   buildings: Building[];
   villagers: Villager[];
@@ -99,6 +117,7 @@ export function log(s: GameState, msg: string) {
   if (s.log.length > 60) s.log.splice(0, s.log.length - 60);
 }
 
+/** Los aldeanos nacen (o aparecen) en el Valle. */
 export function newVillager(s: GameState, age: number, x: number, y: number): Villager {
   const name = VILLAGER_NAMES[Math.floor(rand(s) * VILLAGER_NAMES.length)];
   const v: Villager = {
@@ -110,6 +129,8 @@ export function newVillager(s: GameState, age: number, x: number, y: number): Vi
     workplace: null,
     manual: false,
     wasAdult: age >= config.EDAD_ADULTO,
+    zone: "valle",
+    transit: null,
     x, y, tx: x, ty: y,
     task: { kind: "idle", t: 0 },
     carry: null,
@@ -120,11 +141,15 @@ export function newVillager(s: GameState, age: number, x: number, y: number): Vi
   return v;
 }
 
-// ---------- Mapa inicial: el Valle (8×12, vertical) ----------
+function addNode(s: GameState, zone: ZoneId, type: NodeType, x: number, y: number) {
+  const stock: Partial<Record<ResId, number>> = {};
+  for (const [res, def] of Object.entries(NODE_DEFS[type].stocks)) stock[res as ResId] = def!.max;
+  s.nodes.push({ id: s.nextId++, type, zone, x, y, stock });
+}
 
-const W = 8;
-const H = 12;
-const NODE_LAYOUT: [NodeType, number, number][] = [
+// ---------- El Valle (8×12, vertical) ----------
+
+const VALLE_NODES: [NodeType, number, number][] = [
   ["arbusto", 1, 4], ["arbusto", 2, 2], ["arbusto", 4, 3], ["arbusto", 5, 8],
   ["arbusto", 2, 9], ["arbusto", 1, 7], ["arbusto", 4, 10], ["arbusto", 5, 5],
   ["arbol", 0, 2], ["arbol", 0, 3], ["arbol", 1, 1], ["arbol", 5, 1], ["arbol", 4, 1],
@@ -135,15 +160,52 @@ const NODE_LAYOUT: [NodeType, number, number][] = [
   ["arcilla", 6, 2], ["arcilla", 6, 5], ["arcilla", 6, 9],
 ];
 
-export function createState(seed = Date.now() % 100000): GameState {
+function valleMap(): ZoneMap {
+  const w = 8, h = 12;
   const tiles: Tile[][] = [];
-  for (let y = 0; y < H; y++) {
+  for (let y = 0; y < h; y++) {
     const row: Tile[] = [];
-    for (let x = 0; x < W; x++) row.push(x === 7 ? "rio" : x === 6 ? "orilla" : "pasto");
+    for (let x = 0; x < w; x++) row.push(x === 7 ? "rio" : x === 6 ? "orilla" : "pasto");
     tiles.push(row);
   }
   tiles[0][0] = "cueva";
+  return { w, h, tiles, entrance: { x: 0, y: 0 } };
+}
 
+// ---------- La Cueva (8×10): se entra con N10 Exploración ----------
+
+const CUEVA_ROWS = [
+  "PPPPPPPP",
+  "PsssssPP",
+  "PssssssP",
+  "PPssssPP",
+  "PssssssP",
+  "PssssssP",
+  "PPssssPP",
+  "PssssssP",
+  "PssssssP",
+  "PPPSPPPP",
+];
+const CUEVA_NODES: [NodeType, number, number][] = [
+  ["ocre", 1, 1], ["ocre", 5, 2], ["ocre", 2, 5], ["ocre", 6, 7],
+  ["roca", 4, 1], ["roca", 1, 4], ["roca", 5, 5], ["roca", 2, 8],
+  ["veta", 2, 2], ["veta", 6, 4], ["veta", 1, 7], ["veta", 5, 8],
+];
+
+function cuevaMap(): ZoneMap {
+  const code: Record<string, Tile> = { P: "pared", s: "suelo", S: "salida" };
+  const tiles = CUEVA_ROWS.map((row) => [...row].map((c) => code[c]));
+  return { w: 8, h: tiles.length, tiles, entrance: { x: 3, y: 9 } };
+}
+
+/** Agrega la Cueva a una partida (nueva o de una versión anterior). */
+export function addCave(s: GameState) {
+  s.zones.cueva = cuevaMap();
+  for (const [type, x, y] of CUEVA_NODES) addNode(s, "cueva", type, x, y);
+  s.buildings.push({ id: s.nextId++, type: "pila", zone: "cueva", x: 3, y: 8, progress: 0, built: true });
+}
+
+export function createState(seed = Date.now() % 100000): GameState {
   const inv = Object.fromEntries(RESOURCES.map((r) => [r.id, 0])) as Record<ResId, number>;
   inv.comida = config.COMIDA_INICIAL;
 
@@ -151,9 +213,7 @@ export function createState(seed = Date.now() % 100000): GameState {
     version: 2,
     rng: seed | 0,
     time: 0,
-    w: W,
-    h: H,
-    tiles,
+    zones: { valle: valleMap(), cueva: cuevaMap() },
     nodes: [],
     buildings: [],
     villagers: [],
@@ -173,21 +233,24 @@ export function createState(seed = Date.now() % 100000): GameState {
     savedAt: Date.now(),
   };
 
-  const used = new Set<string>(["0,0"]);
-  for (const [type, x, y] of NODE_LAYOUT) {
-    const key = `${x},${y}`;
-    if (used.has(key)) continue;
-    used.add(key);
-    const stock: Partial<Record<ResId, number>> = {};
-    for (const [res, def] of Object.entries(NODE_DEFS[type].stocks)) stock[res as ResId] = def!.max;
-    s.nodes.push({ id: s.nextId++, type, x, y, stock });
-  }
-
-  s.buildings.push({ id: s.nextId++, type: "pila", x: 3, y: 6, progress: 0, built: true });
+  for (const [type, x, y] of VALLE_NODES) addNode(s, "valle", type, x, y);
+  s.buildings.push({ id: s.nextId++, type: "pila", zone: "valle", x: 3, y: 6, progress: 0, built: true });
+  addCave(s);
 
   for (const age of [19, 22, 31, 13, 6]) {
     newVillager(s, age, 3.5 + (rand(s) - 0.5) * 2, 6.5 + (rand(s) - 0.5) * 2);
   }
   log(s, "Despiertas frente a cinco personas que gruñen. Toca el Libro.");
   return s;
+}
+
+/** Partidas guardadas antes de las zonas: todo pasa al Valle y se agrega la Cueva. */
+export function migrateToZones(s: GameState & { w?: number; h?: number; tiles?: Tile[][] }) {
+  if (s.zones) return;
+  s.zones = { valle: { w: s.w ?? 8, h: s.h ?? 12, tiles: s.tiles ?? valleMap().tiles, entrance: { x: 0, y: 0 } } } as GameState["zones"];
+  delete s.w; delete s.h; delete s.tiles;
+  for (const v of s.villagers) { v.zone ??= "valle"; v.transit ??= null; }
+  for (const n of s.nodes) n.zone ??= "valle";
+  for (const b of s.buildings) b.zone ??= "valle";
+  addCave(s);
 }

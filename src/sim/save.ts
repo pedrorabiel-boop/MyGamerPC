@@ -2,7 +2,7 @@ import { config } from "../config";
 import { RESOURCES } from "../content";
 import { setComprensionScale } from "./economy";
 import { step } from "./step";
-import { createState, defaultJefatura, type GameState } from "./state";
+import { createState, defaultJefatura, migrateToZones, type GameState } from "./state";
 
 const KEY = "mygamerpc-save-v1";
 
@@ -27,6 +27,7 @@ export function parseSave(text: string): GameState | null {
     s.resolved ??= {};
     s.introQueue ??= [];
     s.jefatura ??= defaultJefatura();
+    migrateToZones(s);
     for (const v of s.villagers) v.manual ??= false;
     return s;
   } catch {

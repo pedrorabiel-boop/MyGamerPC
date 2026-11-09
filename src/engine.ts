@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { loadOrCreate, save, simulateOffline, type OfflineSummary } from "./sim/save";
 import { isTribeLost } from "./sim/economy";
 import { step } from "./sim/step";
-import { createState, type GameState } from "./sim/state";
+import { createState, type GameState, type ZoneId } from "./sim/state";
 
 const MAX_SUBSTEP = 0.1; // segundos de juego por sub-paso
 const UI_INTERVAL_MS = 200;
@@ -19,6 +19,8 @@ class Engine {
     selected: null as number | null, // aldeano
     selectedBuilding: null as number | null,
     placing: null as string | null,
+    zone: "valle" as ZoneId, // zona que se está mirando
+    zoneModal: null as ZoneId | null, // ventana de traslado abierta
     toast: null as { msg: string; at: number } | null,
   };
   offlineSummary: OfflineSummary | null = null;
@@ -67,6 +69,8 @@ class Engine {
     this.ui.selected = null;
     this.ui.selectedBuilding = null;
     this.ui.placing = null;
+    this.ui.zone = "valle";
+    this.ui.zoneModal = null;
     save(s);
     this.notify();
   }

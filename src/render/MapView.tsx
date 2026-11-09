@@ -3,10 +3,10 @@ import { Application, Container, Graphics, Text } from "pixi.js";
 import { useEffect, useRef } from "react";
 import { BUILDING_BY_ID, NODE_DEFS, ROLE_BY_ID, SPECIALIST_COLOR, type ResId } from "../content";
 import { engine } from "../engine";
-import { canPlace, orderGather, place } from "../sim/actions";
+import { canPlace, orderGather, place, zoneUnlocked } from "../sim/actions";
 import { staffCount, stageOf } from "../sim/economy";
 
-const TILE_COLORS = { pasto: 0x557a35, rio: 0x2f6fb5, orilla: 0x8a7a50, cueva: 0x1a1a1a } as const;
+const TILE_COLORS = { pasto: 0x557a35, rio: 0x2f6fb5, orilla: 0x8a7a50, cueva: 0x1a1a1a, suelo: 0x4a4038, pared: 0x1f1b18, salida: 0x8a7a5a } as const;
 
 export function MapView() {
   const host = useRef<HTMLDivElement>(null);
@@ -45,24 +45,36 @@ export function MapView() {
 
       const layout = () => {
         const s = engine.s;
+        const zone = engine.ui.zone;
+        const z = s.zones[zone];
         const sw = app.screen.width, sh = app.screen.height;
-        const key = `${sw}x${sh}`;
+        const key = `${sw}x${sh}:${zone}`;
         if (key === lastLayout) return;
         lastLayout = key;
-        ts = Math.floor(Math.min(sw / s.w, sh / s.h));
-        world.x = Math.floor((sw - ts * s.w) / 2);
-        world.y = Math.floor((sh - ts * s.h) / 2);
+        ts = Math.floor(Math.min(sw / z.w, sh / z.h));
+        world.x = Math.floor((sw - ts * z.w) / 2);
+        world.y = Math.floor((sh - ts * z.h) / 2);
         tilesG.clear();
-        for (let y = 0; y < s.h; y++) {
-          for (let x = 0; x < s.w; x++) {
-            const t = s.tiles[y][x];
+        for (let y = 0; y < z.h; y++) {
+          for (let x = 0; x < z.w; x++) {
+            const t = z.tiles[y][x];
             tilesG.rect(x * ts, y * ts, ts, ts).fill(TILE_COLORS[t]);
-            tilesG.rect(x * ts, y * ts, ts, ts).stroke({ width: 1, color: 0x000000, alpha: 0.12 });
+            tilesG.rect(x * ts, y * ts, ts, ts).stroke({ width: 1, color: 0x000000, alpha: t === "pared" ? 0 : 0.12 });
+            if (t === "cueva") {
+              // Entrada de la cueva con brillo verde.
+              tilesG.circle((x + 0.5) * ts, (y + 0.62) * ts, ts * 0.3).fill(0x000000);
+              tilesG.circle((x + 0.5) * ts, (y + 0.66) * ts, ts * 0.08).fill({ color: 0x3fe07a, alpha: 0.8 });
+            } else if (t === "salida") {
+              // Salida al Valle: luz que entra.
+              tilesG.circle((x + 0.5) * ts, (y + 0.7) * ts, ts * 0.38).fill({ color: 0xf6e3a0, alpha: 0.55 });
+              tilesG.circle((x + 0.5) * ts, (y + 0.75) * ts, ts * 0.2).fill({ color: 0xfff6d0, alpha: 0.8 });
+            } else if (t === "pared" && (x * 7 + y * 3) % 5 === 0) {
+              // Murciélagos colgando, de adorno.
+              const cx = (x + 0.5) * ts, cy = (y + 0.75) * ts;
+              tilesG.moveTo(cx - ts * 0.18, cy - ts * 0.05).lineTo(cx, cy + ts * 0.06).lineTo(cx + ts * 0.18, cy - ts * 0.05).stroke({ width: 2, color: 0x000000, alpha: 0.7 });
+            }
           }
         }
-        // Entrada de la cueva con brillo verde.
-        tilesG.circle(0.5 * ts, 0.62 * ts, ts * 0.3).fill(0x000000);
-        tilesG.circle(0.5 * ts, 0.66 * ts, ts * 0.08).fill({ color: 0x3fe07a, alpha: 0.8 });
         for (const lbl of labelById.values()) lbl.style.fontSize = ts * 0.55;
       };
 
@@ -70,11 +82,16 @@ export function MapView() {
         const s = engine.s;
         layout();
 
+        const zone = engine.ui.zone;
+        const z = s.zones[zone];
+
         // Nodos de recursos
         nodesG.clear();
         for (const n of s.nodes) {
+          if (n.zone !== zone) continue;
           const def = NODE_DEFS[n.type];
-          const fullness = Object.entries(def.stocks).reduce((acc, [r, d]) => acc + (n.stock[r as ResId] ?? 0) / d!.max, 0) / Object.keys(def.stocks).length;
+          const nStocks = Object.keys(def.stocks).length;
+          const fullness = nStocks ? Object.entries(def.stocks).reduce((acc, [r, d]) => acc + (n.stock[r as ResId] ?? 0) / d!.max, 0) / nStocks : 1;
           const cx = (n.x + 0.5) * ts, cy = (n.y + 0.5) * ts;
           const alpha = 0.35 + 0.65 * fullness;
           if (n.type === "arbol") {
@@ -96,6 +113,14 @@ export function MapView() {
             for (let i = 0; i < 3; i++) nodesG.ellipse(cx + (i - 1) * ts * 0.22, cy + (i % 2) * ts * 0.12, ts * 0.13, ts * 0.09).fill({ color: def.color, alpha });
           } else if (n.type === "arcilla") {
             nodesG.ellipse(cx, cy, ts * 0.32, ts * 0.2).fill({ color: def.color, alpha });
+          } else if (n.type === "ocre") {
+            nodesG.roundRect(cx - ts * 0.32, cy - ts * 0.22, ts * 0.64, ts * 0.46, ts * 0.12).fill({ color: def.color, alpha });
+            nodesG.rect(cx - ts * 0.22, cy - ts * 0.06, ts * 0.44, ts * 0.05).fill({ color: 0xffb070, alpha: alpha * 0.8 });
+          } else if (n.type === "veta") {
+            nodesG.roundRect(cx - ts * 0.34, cy - ts * 0.24, ts * 0.68, ts * 0.48, ts * 0.12).fill(0x2e2a26);
+            for (const [dx, dy] of [[-0.15, -0.08], [0.1, 0.05], [0.2, -0.12], [-0.05, 0.12]]) {
+              nodesG.circle(cx + dx * ts, cy + dy * ts, ts * 0.05).fill({ color: def.color, alpha: 0.9 });
+            }
           }
         }
 
@@ -103,6 +128,7 @@ export function MapView() {
         buildingsG.clear();
         const seen = new Set<number>();
         for (const b of s.buildings) {
+          if (b.zone !== zone) continue;
           const def = BUILDING_BY_ID[b.type];
           const x = b.x * ts, y = b.y * ts;
           seen.add(b.id);
@@ -157,14 +183,15 @@ export function MapView() {
         // Modo colocar: marca las casillas válidas
         overlayG.clear();
         if (engine.ui.placing) {
-          for (let y = 0; y < s.h; y++) for (let x = 0; x < s.w; x++) {
-            if (canPlace(s, engine.ui.placing, x, y)) overlayG.rect(x * ts + 3, y * ts + 3, ts - 6, ts - 6).stroke({ width: 2, color: 0xffe08a, alpha: 0.8 });
+          for (let y = 0; y < z.h; y++) for (let x = 0; x < z.w; x++) {
+            if (canPlace(s, engine.ui.placing, x, y, zone)) overlayG.rect(x * ts + 3, y * ts + 3, ts - 6, ts - 6).stroke({ width: 2, color: 0xffe08a, alpha: 0.8 });
           }
         }
 
         // Aldeanos
         villagersG.clear();
         for (const v of s.villagers) {
+          if (v.zone !== zone) continue;
           const stage = stageOf(v);
           const r = ts * (stage === "child" ? 0.11 : 0.16);
           const cx = v.x * ts, cy = v.y * ts;
@@ -186,9 +213,11 @@ export function MapView() {
         const fx = p.x / ts, fy = p.y / ts;
         const tx = Math.floor(fx), ty = Math.floor(fy);
         const s = engine.s;
+        const zone = engine.ui.zone;
+        const tile = s.zones[zone].tiles[ty]?.[tx];
 
         if (engine.ui.placing) {
-          const err = place(s, engine.ui.placing, tx, ty);
+          const err = place(s, engine.ui.placing, tx, ty, zone);
           if (err) engine.toast(err);
           else engine.ui.placing = null;
           engine.notify();
@@ -198,13 +227,15 @@ export function MapView() {
         // ¿Tocó un aldeano?
         let best: number | null = null, bd = 0.45;
         for (const v of s.villagers) {
+          if (v.zone !== zone) continue;
           const d = Math.hypot(v.x - fx, v.y - fy);
           if (d < bd) { bd = d; best = v.id; }
         }
         if (best != null) { engine.ui.selected = best; engine.ui.selectedBuilding = null; engine.notify(); return; }
 
         // Con un aldeano seleccionado, tocar un recurso = señalar.
-        const node = s.nodes.find((n) => n.x === tx && n.y === ty);
+        const node = s.nodes.find((n) => n.zone === zone && n.x === tx && n.y === ty);
+        if (node?.type === "veta") { engine.toast("Vetas de cobre: brillan, pero todavía no sabemos sacarlas. Hace falta Minería (Edad de Bronce)."); return; }
         if (engine.ui.selected != null && node) {
           const err = orderGather(s, engine.ui.selected, node.id);
           if (err) engine.toast(err);
@@ -212,9 +243,15 @@ export function MapView() {
           return;
         }
         if (node) { engine.toast(`${NODE_DEFS[node.type].name}. Selecciona un aldeano y toca aquí para que recolecte.`); return; }
-        const b = s.buildings.find((x) => x.x === tx && x.y === ty);
+        const b = s.buildings.find((x) => x.zone === zone && x.x === tx && x.y === ty);
         if (b) { engine.ui.selectedBuilding = b.id; engine.ui.selected = null; engine.notify(); return; }
-        if (s.tiles[ty]?.[tx] === "cueva") { engine.toast("Una cueva oscura. Algo brilla en verde adentro… Hace falta una antorcha."); return; }
+        // Entrada de la cueva (en el Valle) o salida (en la Cueva): ventana de traslado.
+        if (tile === "cueva" || tile === "salida") {
+          if (!zoneUnlocked(s, "cueva")) { engine.toast("Una cueva oscura. Algo brilla en verde adentro… Hace falta una antorcha (Exploración)."); return; }
+          engine.ui.zoneModal = "cueva";
+          engine.notify();
+          return;
+        }
         engine.ui.selected = null;
         engine.ui.selectedBuilding = null;
         engine.notify();

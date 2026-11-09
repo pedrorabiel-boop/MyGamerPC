@@ -14,6 +14,7 @@ import { formatNumber } from "./format";
 import { TopBar } from "./TopBar";
 import { VillagerCard } from "./VillagerCard";
 import { VillagersPanel } from "./VillagersPanel";
+import { ZoneBar, ZoneModal } from "./ZoneUI";
 
 type Tab = "mapa" | "libro" | "construir" | "aldeanos" | "debug";
 
@@ -38,6 +39,8 @@ export function App() {
       <TopBar />
       <main className="stage">
         <MapView />
+        <ZoneBar />
+        <ZoneModal />
 
         {tab === "mapa" && <VillagerCard />}
         {tab === "mapa" && <BuildingCard />}

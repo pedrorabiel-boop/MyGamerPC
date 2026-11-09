@@ -4,7 +4,7 @@ import { BUILDING_BY_ID, NODE_DEFS, TECH_INTRO, type ResId, type Role } from "..
 import { TECHS, TECH_BY_ID, techCost } from "../data/tree";
 import { add, canAfford, has, isFree, pay, roleUnlocked, staffCount, stageOf } from "./economy";
 import { changeSpecialtyTarget, hasJefatura } from "./jefatura";
-import { log, newVillager, type GameState } from "./state";
+import { log, newVillager, ZONE_BY_ID, type GameState, type Villager, type ZoneId } from "./state";
 
 // ---------- Libro ----------
 
@@ -44,22 +44,27 @@ export function dismissIntro(s: GameState) {
 
 // ---------- Construcción ----------
 
-export function canPlace(s: GameState, type: string, x: number, y: number): boolean {
+export function canPlace(s: GameState, type: string, x: number, y: number, zone: ZoneId = "valle"): boolean {
   const def = BUILDING_BY_ID[type];
-  if (x < 0 || y < 0 || x >= s.w || y >= s.h) return false;
-  if (s.tiles[y][x] !== def.place) return false;
-  if (s.nodes.some((n) => n.x === x && n.y === y)) return false;
-  if (s.buildings.some((b) => b.x === x && b.y === y)) return false;
+  const z = s.zones[zone];
+  if (x < 0 || y < 0 || x >= z.w || y >= z.h) return false;
+  if (!def.place.includes(z.tiles[y][x])) return false;
+  if (s.nodes.some((n) => n.zone === zone && n.x === x && n.y === y)) return false;
+  if (s.buildings.some((b) => b.zone === zone && b.x === x && b.y === y)) return false;
   return true;
 }
 
-export function place(s: GameState, type: string, x: number, y: number): string | null {
+/** ¿Se puede construir este edificio en alguna casilla de esta zona? */
+export const placeableIn = (s: GameState, type: string, zone: ZoneId) =>
+  s.zones[zone].tiles.some((row) => row.some((t) => BUILDING_BY_ID[type].place.includes(t)));
+
+export function place(s: GameState, type: string, x: number, y: number, zone: ZoneId = "valle"): string | null {
   const def = BUILDING_BY_ID[type];
   if (!def.unlockedBy || !has(s, def.unlockedBy)) return "Todavía no sabes construir eso.";
-  if (!canPlace(s, type, x, y)) return def.place === "orilla" ? "Tiene que ir en la orilla del río, en una casilla libre." : "Esa casilla no está libre.";
+  if (!canPlace(s, type, x, y, zone)) return def.place.includes("orilla") ? "Tiene que ir en la orilla del río, en una casilla libre." : "Esa casilla no está libre.";
   if (!canAfford(s, def.cost)) return "No alcanzan los materiales.";
   pay(s, def.cost);
-  s.buildings.push({ id: s.nextId++, type, x, y, progress: 0, built: false });
+  s.buildings.push({ id: s.nextId++, type, zone, x, y, progress: 0, built: false });
   log(s, `Plano colocado: ${def.name}. Los aldeanos lo van a construir.`);
   return null;
 }
@@ -111,14 +116,15 @@ export function setRole(s: GameState, villagerId: number, role: Role | null) {
   if (hasJefatura(s)) v.manual = true;
 }
 
-/** +1 / −1 aldeano en una categoría (manual, antes de la Jefatura). */
-export function changeRoleCount(s: GameState, role: Role, delta: 1 | -1) {
+/** +1 / −1 aldeano en una categoría, entre los que están en `zone` (manual, antes de la Jefatura). */
+export function changeRoleCount(s: GameState, role: Role, delta: 1 | -1, zone: ZoneId = "valle") {
   if (!roleUnlocked(s, role)) return;
+  const here = (v: Villager) => v.zone === zone && !v.transit;
   if (delta === 1) {
-    const free = s.villagers.find(isFree);
+    const free = s.villagers.find((v) => isFree(v) && here(v));
     if (free) { free.role = role; free.order = null; free.task = { kind: "idle", t: 0 }; }
   } else {
-    const holder = s.villagers.find((v) => v.role === role && stageOf(v) === "adult");
+    const holder = s.villagers.find((v) => v.role === role && stageOf(v) === "adult" && here(v));
     if (holder) { holder.role = null; holder.task = { kind: "idle", t: 0 }; }
   }
 }
@@ -149,6 +155,36 @@ export function changeSpecialists(s: GameState, buildingId: number, delta: 1 | -
   return null;
 }
 
+// ---------- Zonas ----------
+
+export const zoneUnlocked = (s: GameState, zone: ZoneId) => {
+  const req = ZONE_BY_ID[zone].unlockedBy;
+  return !req || has(s, req);
+};
+
+/** Adultos que están en una zona (sin contar los que van en camino). */
+export const adultsIn = (s: GameState, zone: ZoneId) =>
+  s.villagers.filter((v) => v.zone === zone && !v.transit && stageOf(v) === "adult");
+
+export const travelingTo = (s: GameState, zone: ZoneId) => s.villagers.filter((v) => v.transit === zone).length;
+
+/**
+ * Manda un adulto de una zona a otra. Prefiere a los libres, después a quien esté en la categoría
+ * con más gente. Los especialistas no se mueven (su puesto está en su edificio).
+ */
+export function transferVillager(s: GameState, from: ZoneId, to: ZoneId): string | null {
+  if (!zoneUnlocked(s, to) || !zoneUnlocked(s, from)) return "Esa zona todavía no se puede explorar.";
+  const pool = adultsIn(s, from).filter((v) => v.workplace == null && !v.order);
+  if (!pool.length) return `No hay adultos disponibles en ${ZONE_BY_ID[from].label}.`;
+  const counts = new Map<string, number>();
+  for (const v of pool) counts.set(v.role ?? "", (counts.get(v.role ?? "") ?? 0) + 1);
+  const v = pool.find((x) => x.role === null)
+    ?? pool.find((x) => x.role === [...counts.entries()].sort((a, b) => b[1] - a[1])[0][0])!;
+  v.transit = to;
+  v.task = { kind: "idle", t: 0 };
+  return null;
+}
+
 // ---------- Debug ----------
 
 export function debugSetAmount(s: GameState, res: ResId, value: number) {
@@ -173,7 +209,7 @@ export function debugResetTechs(s: GameState) {
 }
 
 export function debugAddVillagers(s: GameState, n: number) {
-  const pila = s.buildings.find((b) => b.type === "pila")!;
+  const pila = s.buildings.find((b) => b.type === "pila" && b.zone === "valle")!;
   for (let i = 0; i < n; i++) newVillager(s, 18 + Math.random() * 10, pila.x + 0.5 + Math.random() - 0.5, pila.y + 0.5 + Math.random() - 0.5);
   log(s, `🐞 Debug: +${n} aldeanos adultos.`);
 }

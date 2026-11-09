@@ -61,6 +61,9 @@ En desarrollo, el motor también queda en la consola del navegador como `window.
   y el orden de prioridad de las categorías; el resto se reparte solo con la regla de
   Zipf (1, ½, ⅓…), sin mandar gente a donde no hay trabajo. Un aldeano con tarea manual
   queda fuera de la Jefatura hasta que lo devuelves. Los niños llegan a adultos libres.
+- **Zonas:** con Exploración se abre la **Cueva** (ocre, rocas y vetas de cobre que todavía
+  no se pueden explotar). Tocando su entrada se abre una ventana para **enviar o traer
+  aldeanos** (− / +) y entrar a mirarla; arriba del mapa hay pestañas Valle / Cueva.
 - Construcción con planos: los aldeanos libres ayudan; los constructores van más rápido.
   Tocando un edificio se puede **demoler** (recuperas 50% de los materiales) o cancelar
   una obra (se devuelve todo).
@@ -75,8 +78,7 @@ En desarrollo, el motor también queda en la consola del navegador como `window.
 
 - Los materiales de construcción se descuentan al colocar el plano; los aldeanos no
   los acarrean.
-- No hay maestría (Nv1–5), ni zonas aparte de la cueva (se ve, pero no se entra),
-  ni diablo, ni Tienda, ni Crónica.
+- No hay maestría (Nv1–5), ni Montañas ni Costa, ni diablo, ni Tienda, ni Crónica.
 - Herramientas como Piedra tallada o Cestería son bonos directos, sin recurso ni sprite.
 - Cerámica y tela se producen, pero todavía no se usan en nada.
 - Arte provisorio: figuras simples dibujadas por código.

@@ -1,24 +1,28 @@
 // Panel de la Jefatura: especialidades (puestos fijos), prioridades (Zipf) y aldeanos con tarea manual.
 import { BUILDING_BY_ID, ROLE_BY_ID } from "../content";
 import { engine, useEngine } from "../engine";
-import { roleUnlocked, stageOf } from "../sim/economy";
+import { roleUnlocked } from "../sim/economy";
 import {
   changeSpecialtyTarget, manualVillagers, movePriority, returnToJefatura, roleCap, setSpecialtyFull, specialtyConfig,
-  specialtySlots, specialtyStaffed, specialtyTarget, specialtyTypes, zipfTargets,
+  specialtySlots, specialtyStaffed, specialtyTarget, specialtyTypes, zipfTargets, zonePool,
 } from "../sim/jefatura";
+import { zoneUnlocked } from "../sim/actions";
+import { ZONES, ZONE_BY_ID } from "../sim/state";
 
 export function JefaturaPanel() {
-  const { s } = useEngine();
+  const { s, ui } = useEngine();
+  const zone = ui.zone;
+  const multiZone = ZONES.filter((z) => zoneUnlocked(s, z.id)).length > 1;
   const types = specialtyTypes(s);
-  const managedPool = s.villagers.filter((v) => stageOf(v) === "adult" && !v.manual && v.workplace == null);
-  const targets = zipfTargets(s, managedPool.length);
+  const managedPool = zonePool(s, zone);
+  const targets = zipfTargets(s, managedPool.length, zone);
   const visible = s.jefatura.priorities.filter((r) => roleUnlocked(s, r));
   const weightOf = (i: number) => (i === 0 ? "1" : `1/${i + 1}`);
   const manual = manualVillagers(s);
   const n = (fn: () => void) => () => { fn(); engine.notify(); };
 
   // Rango entre las categorías activas (las que tienen trabajo), para mostrar su peso real.
-  const activeRank = new Map(visible.filter((r) => roleCap(s, r) > 0).map((r, i) => [r, i]));
+  const activeRank = new Map(visible.filter((r) => roleCap(s, r, zone) > 0).map((r, i) => [r, i]));
 
   return (
     <div className="jefatura">
@@ -56,11 +60,14 @@ export function JefaturaPanel() {
       )}
 
       <h4>2 · Prioridades</h4>
-      <p className="hint">{managedPool.length} personas para repartir entre las categorías.</p>
+      <p className="hint">
+        {multiZone ? `📍 En ${ZONE_BY_ID[zone].label}: ` : ""}{managedPool.length} personas para repartir entre las categorías.
+        {multiZone ? " Las prioridades valen para todas las zonas; cada zona reparte con su propio trabajo." : ""}
+      </p>
       <div className="list">
         {visible.map((r, i) => {
           const role = ROLE_BY_ID[r];
-          const working = roleCap(s, r) > 0;
+          const working = roleCap(s, r, zone) > 0;
           const now = managedPool.filter((v) => v.role === r).length;
           const rank = activeRank.get(r);
           return (
@@ -72,7 +79,7 @@ export function JefaturaPanel() {
                 <small>
                   {working
                     ? `peso ${weightOf(rank ?? i)} · meta ${targets.get(r) ?? 0} · ahora ${now}`
-                    : "sin trabajo ahora: no recibe gente"}
+                    : `sin trabajo en ${ZONE_BY_ID[zone].label}: no recibe gente`}
                 </small>
               </span>
               <button className="round" onClick={n(() => movePriority(s, r, -1))} disabled={i === 0} aria-label="Subir">↑</button>

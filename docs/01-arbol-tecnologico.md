@@ -361,6 +361,15 @@ lejanas. Y así sucesivamente.
   *Población y rendimiento*).
 - **Aldeanos:** cada aldeano pertenece a **una zona a la vez**. Moverlo a otra zona
   toma un tiempo de viaje.
+- **Traslado (implementado en el prototipo):** al tocar la entrada de la cueva (o la
+  salida, desde adentro) se abre una ventana con *"N aldeanos adentro"*, **Entrar a
+  mirar**, y **− / +** para traer o enviar adultos de a uno. Los enviados **se quedan**
+  en la zona hasta que el jugador los traiga. Se mandan primero los libres y después
+  gente de la categoría con más personas; los especialistas no se mueven de su puesto.
+  Los **niños y ancianos viven en el Valle** (un anciano chamán va a su Círculo).
+- **Jefatura por zona:** las prioridades valen para todas las zonas, pero cada zona
+  reparte a su gente según el trabajo que hay ahí (en la Cueva no hay comida, así que
+  nadie queda en Comida).
 - **Inventario único con eficiencia de transporte:** todas las zonas comparten un solo
   inventario, pero lo que se produce lejos llega con una pérdida. No hay rutas que
   gestionar a mano.
@@ -381,7 +390,7 @@ lejanas. Y así sucesivamente.
 | Zona | Se desbloquea con | Qué tiene |
 |---|---|---|
 | **Valle** (inicio) | — | Río (arcilla y arena en la orilla), árboles, rocas, bayas, animales, entrada de la cueva |
-| **Cueva** | N10 Exploración (Era 2) | Vetas de cobre (se explotan con B01 Minería), pedernal, ocre. Murciélagos |
+| **Cueva** | N10 Exploración (Era 2) | **Ocre** (pigmento abundante), **rocas** (piedra) y **vetas de cobre** visibles que se explotan recién con B01 Minería. Su propia pila. La **Pared pintada** vale el doble aquí (pinturas rupestres). Murciélagos |
 | **Costa** | N10 Exploración (Era 2) | Pesca |
 | **Montañas** | B04 Rueda (Era 3) | **Estaño** (necesario para el Bronce). **Rocas rojas** que todavía no se pueden usar (hierro, Era 4), como pista. Magnetita |
 | **Tierras lejanas** | M09 Brújula (Era 5) | Carbón, petróleo, cuarzo de alta pureza |
@@ -977,6 +986,12 @@ sociedad y al final se construye el PC.
 ---
 
 ## 9. Historial de cambios
+
+### v2.2 (borrador) — Zonas: la Cueva
+- **Zonas implementadas en el prototipo**: Valle y Cueva, cada una con su grilla. La Cueva se abre con N10 Exploración.
+- **Ventana de traslado** al tocar la entrada: aldeanos adentro, entrar a mirar, − / + para traer o enviar.
+- **Cueva en la Era 2**: ocre (pigmento), rocas y vetas de cobre bloqueadas hasta Minería. La Pared pintada vale el doble en la Cueva.
+- **Jefatura por zona**, y los niños y ancianos vuelven solos al Valle.
 
 ### v2.1 (borrador) — Playtest 3: la Jefatura
 - **Jefatura** (N11): especialidades elegidas por el jugador (ocupación total o cantidad) → reparto Zipf por prioridades → nadie donde no hay trabajo. Sin emergencia automática de comida.

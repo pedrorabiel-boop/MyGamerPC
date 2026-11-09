@@ -1,6 +1,7 @@
 import { BUILDING_BY_ID, FOOD_GATHER, MATERIALS, RES_BY_ID, ROLES, type Role } from "../content";
 import { engine, useEngine } from "../engine";
-import { changeRoleCount } from "../sim/actions";
+import { adultsIn, changeRoleCount, zoneUnlocked } from "../sim/actions";
+import { ZONES, ZONE_BY_ID } from "../sim/state";
 import { has, isFree, roleUnlocked, staffCount, stageOf } from "../sim/economy";
 import { hasJefatura } from "../sim/jefatura";
 import type { GameState } from "../sim/state";
@@ -23,11 +24,14 @@ function roleMethod(s: GameState, role: Role): string {
 }
 
 export function VillagersPanel() {
-  const { s } = useEngine();
+  const { s, ui } = useEngine();
+  const zone = ui.zone;
+  const multiZone = ZONES.filter((z) => zoneUnlocked(s, z.id)).length > 1;
   const adults = s.villagers.filter((v) => stageOf(v) === "adult");
+  const adultsHere = adultsIn(s, zone);
   const children = s.villagers.filter((v) => stageOf(v) === "child").length;
   const elders = s.villagers.filter((v) => stageOf(v) === "elder").length;
-  const free = s.villagers.filter(isFree).length;
+  const free = adultsHere.filter(isFree).length;
   const specialistBuildings = s.buildings.filter((b) => b.built && BUILDING_BY_ID[b.type].staff?.by === "especialista");
 
   return (
@@ -46,8 +50,9 @@ export function VillagersPanel() {
         </p>
       ) : (
         <div className="list">
+          {multiZone && <p className="hint">📍 En {ZONE_BY_ID[zone].label}: {adultsHere.length} adultos ({free} libres). Cambia de zona con las pestañas del mapa.</p>}
           {ROLES.filter((r) => roleUnlocked(s, r.id)).map((r) => {
-            const n = adults.filter((v) => v.role === r.id && v.workplace === null).length;
+            const n = adultsHere.filter((v) => v.role === r.id && v.workplace === null).length;
             return (
               <div key={r.id} className="row">
                 <span className="big">{r.icon}</span>
@@ -56,9 +61,9 @@ export function VillagersPanel() {
                   <small>{r.desc}</small>
                   <small className="method">{roleMethod(s, r.id)}</small>
                 </span>
-                <button className="round" onClick={() => { changeRoleCount(s, r.id, -1); engine.notify(); }} disabled={n === 0}>−</button>
+                <button className="round" onClick={() => { changeRoleCount(s, r.id, -1, zone); engine.notify(); }} disabled={n === 0}>−</button>
                 <span className="count">{n}</span>
-                <button className="round" onClick={() => { changeRoleCount(s, r.id, 1); engine.notify(); }} disabled={free === 0}>+</button>
+                <button className="round" onClick={() => { changeRoleCount(s, r.id, 1, zone); engine.notify(); }} disabled={free === 0}>+</button>
               </div>
             );
           })}

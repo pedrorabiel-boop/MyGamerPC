@@ -1,3 +1,5 @@
+import type { Tile } from "./sim/state";
+
 // Contenido jugable del prototipo (Eras 1 y 2): recursos, nodos del mapa, categorías,
 // edificios y tarjetas de novedad. El árbol (qué tecnología existe y qué requiere) viene de
 // data/tech-tree.json; aquí se define qué HACE cada cosa en la simulación.
@@ -26,7 +28,7 @@ export const RES_BY_ID = Object.fromEntries(RESOURCES.map((r) => [r.id, r])) as 
 
 // ---------- Nodos de recursos silvestres (con techo natural: se agotan y regeneran) ----------
 
-export type NodeType = "arbusto" | "arbol" | "roca" | "pasto" | "arcilla" | "manada";
+export type NodeType = "arbusto" | "arbol" | "roca" | "pasto" | "arcilla" | "manada" | "ocre" | "veta";
 
 export const NODE_DEFS: Record<NodeType, { name: string; color: number; stocks: Partial<Record<ResId, { max: number; regen: number }>> }> = {
   arbusto: { name: "Arbusto de bayas", color: 0x4f9a3c, stocks: { comida: { max: 8, regen: 0.1 } } },
@@ -35,6 +37,9 @@ export const NODE_DEFS: Record<NodeType, { name: string; color: number; stocks: 
   pasto: { name: "Pasto alto", color: 0x9cc25a, stocks: { fibras: { max: 8, regen: 0.06 } } },
   arcilla: { name: "Arcilla", color: 0xa0704a, stocks: { arcilla: { max: 15, regen: 0.05 } } },
   manada: { name: "Manada", color: 0x8b5a2b, stocks: { comida: { max: 20, regen: 0.15 }, pieles: { max: 6, regen: 0.02 } } },
+  // Cueva
+  ocre: { name: "Ocre", color: 0xc0623a, stocks: { pigmento: { max: 15, regen: 0.08 } } },
+  veta: { name: "Vetas de cobre", color: 0x3fe07a, stocks: {} }, // se explotan con B01 Minería (Era 3)
 };
 
 // ---------- Categorías de oficio ----------
@@ -63,6 +68,7 @@ export const MATERIALS: { res: ResId; node: NodeType; tech: string }[] = [
   { res: "fibras", node: "pasto", tech: "P01" },
   { res: "madera", node: "arbol", tech: "P02" },
   { res: "pigmento", node: "roca", tech: "P11" },
+  { res: "pigmento", node: "ocre", tech: "P11" }, // en la Cueva: mucho más
   { res: "arcilla", node: "arcilla", tech: "N03" },
 ];
 
@@ -88,7 +94,7 @@ export interface BuildingDef {
   unlockedBy: string | null; // null = no se puede construir (viene puesto)
   cost: Cost;
   buildTime: number; // segundos de trabajo de un constructor
-  place: "pasto" | "orilla";
+  place: Tile[]; // tipos de casilla donde se puede construir
   staff?: StaffDef;
   housing?: number;
   storage?: boolean; // punto de entrega de los recolectores
@@ -98,26 +104,26 @@ export interface BuildingDef {
 }
 
 export const BUILDINGS: BuildingDef[] = [
-  { id: "pila", name: "Pila", icon: "📦", color: 0x6b5a40, unlockedBy: null, cost: {}, buildTime: 0, place: "pasto", storage: true, desc: "Donde la tribu deja lo que recolecta." },
-  { id: "fogata", name: "Fogata", icon: "🔥", color: 0x7a3b1a, unlockedBy: "P04", cost: { ramas: 5, piedra: 3 }, buildTime: 5, place: "pasto", animo: 0.1, desc: "Ánimo ↑ y natalidad ↑. Los ancianos se juntan alrededor." },
-  { id: "choza", name: "Choza de ramas", icon: "🛖", color: 0x7a6a3a, unlockedBy: "P06", cost: { ramas: 10, fibras: 5 }, buildTime: 8, place: "pasto", housing: 3, desc: "+3 de capacidad de población." },
-  { id: "trampa", name: "Trampa", icon: "🪤", color: 0x5a4a2a, unlockedBy: "P05", cost: { ramas: 3, fibras: 2 }, buildTime: 4, place: "pasto", passive: { res: "comida", rate: 0.06 }, desc: "Produce comida de a poco, sin que nadie la atienda." },
-  { id: "pared", name: "Pared pintada", icon: "🖼️", color: 0x6a4a6a, unlockedBy: "P11", cost: { piedra: 5, pigmento: 3 }, buildTime: 6, place: "pasto", animo: 0.05, desc: "Ánimo ↑. El primer RGB de la historia." },
-  { id: "circulo", name: "Círculo de piedras", icon: "🗿", color: 0x5a5a6a, unlockedBy: "P11", cost: { piedra: 10 }, buildTime: 8, place: "pasto", desc: "El chamán genera mucha Comprensión. Los ancianos son los mejores chamanes (×1,5).",
+  { id: "pila", name: "Pila", icon: "📦", color: 0x6b5a40, unlockedBy: null, cost: {}, buildTime: 0, place: ["pasto"], storage: true, desc: "Donde la tribu deja lo que recolecta." },
+  { id: "fogata", name: "Fogata", icon: "🔥", color: 0x7a3b1a, unlockedBy: "P04", cost: { ramas: 5, piedra: 3 }, buildTime: 5, place: ["pasto"], animo: 0.1, desc: "Ánimo ↑ y natalidad ↑. Los ancianos se juntan alrededor." },
+  { id: "choza", name: "Choza de ramas", icon: "🛖", color: 0x7a6a3a, unlockedBy: "P06", cost: { ramas: 10, fibras: 5 }, buildTime: 8, place: ["pasto"], housing: 3, desc: "+3 de capacidad de población." },
+  { id: "trampa", name: "Trampa", icon: "🪤", color: 0x5a4a2a, unlockedBy: "P05", cost: { ramas: 3, fibras: 2 }, buildTime: 4, place: ["pasto"], passive: { res: "comida", rate: 0.06 }, desc: "Produce comida de a poco, sin que nadie la atienda." },
+  { id: "pared", name: "Pared pintada", icon: "🖼️", color: 0x6a4a6a, unlockedBy: "P11", cost: { piedra: 5, pigmento: 3 }, buildTime: 6, place: ["pasto", "suelo"], animo: 0.05, desc: "Ánimo ↑. El primer RGB de la historia. En la Cueva vale el doble: pinturas rupestres de verdad." },
+  { id: "circulo", name: "Círculo de piedras", icon: "🗿", color: 0x5a5a6a, unlockedBy: "P11", cost: { piedra: 10 }, buildTime: 8, place: ["pasto"], desc: "El chamán genera mucha Comprensión. Los ancianos son los mejores chamanes (×1,5).",
     staff: { slots: 1, by: "especialista", title: "Chamán", icon: "🔮", cycle: 2.5, outputs: { comprension: 10 }, elders: true, elderBonus: 1.5 } },
-  { id: "parcela", name: "Parcela", icon: "🌾", color: 0x8a7a30, unlockedBy: "N01", cost: { madera: 4, fibras: 2 }, buildTime: 5, place: "pasto", desc: "La gente de Comida la trabaja sola. Rompe el techo de la naturaleza.",
+  { id: "parcela", name: "Parcela", icon: "🌾", color: 0x8a7a30, unlockedBy: "N01", cost: { madera: 4, fibras: 2 }, buildTime: 5, place: ["pasto"], desc: "La gente de Comida la trabaja sola. Rompe el techo de la naturaleza.",
     staff: { slots: 2, by: "comida", title: "Agricultor", icon: "🌾", cycle: 2.5, outputs: { comida: 1 } } },
-  { id: "granero", name: "Granero", icon: "🏚️", color: 0x7a5a3a, unlockedBy: "N01", cost: { madera: 15, piedra: 8 }, buildTime: 12, place: "pasto", storage: true, desc: "Más almacenamiento. También sirve de punto de entrega." },
-  { id: "corral", name: "Corral", icon: "🐐", color: 0x7a6a50, unlockedBy: "N02", cost: { madera: 8, ramas: 4 }, buildTime: 8, place: "pasto", desc: "El pastor produce comida y lana.",
+  { id: "granero", name: "Granero", icon: "🏚️", color: 0x7a5a3a, unlockedBy: "N01", cost: { madera: 15, piedra: 8 }, buildTime: 12, place: ["pasto"], storage: true, desc: "Más almacenamiento. También sirve de punto de entrega." },
+  { id: "corral", name: "Corral", icon: "🐐", color: 0x7a6a50, unlockedBy: "N02", cost: { madera: 8, ramas: 4 }, buildTime: 8, place: ["pasto"], desc: "El pastor produce comida y lana.",
     staff: { slots: 1, by: "especialista", title: "Pastor", icon: "🐐", cycle: 5, outputs: { comida: 0.75, lana: 0.5 } } },
-  { id: "telar", name: "Telar manual", icon: "🪡", color: 0x8a5a7a, unlockedBy: "N02", cost: { madera: 6, fibras: 6 }, buildTime: 8, place: "pasto", desc: "El tejedor convierte lana en tela.",
+  { id: "telar", name: "Telar manual", icon: "🪡", color: 0x8a5a7a, unlockedBy: "N02", cost: { madera: 6, fibras: 6 }, buildTime: 8, place: ["pasto"], desc: "El tejedor convierte lana en tela.",
     staff: { slots: 1, by: "especialista", title: "Tejedor", icon: "🧶", cycle: 4, inputs: { lana: 1 }, outputs: { tela: 1 } } },
-  { id: "horno", name: "Horno de barro", icon: "🏺", color: 0x8a4a2a, unlockedBy: "N03", cost: { arcilla: 8, piedra: 5 }, buildTime: 8, place: "pasto", desc: "El alfarero convierte arcilla y ramas en cerámica.",
+  { id: "horno", name: "Horno de barro", icon: "🏺", color: 0x8a4a2a, unlockedBy: "N03", cost: { arcilla: 8, piedra: 5 }, buildTime: 8, place: ["pasto"], desc: "El alfarero convierte arcilla y ramas en cerámica.",
     staff: { slots: 1, by: "especialista", title: "Alfarero", icon: "🏺", cycle: 4, inputs: { arcilla: 1, ramas: 1 }, outputs: { ceramica: 1 } } },
-  { id: "adobe", name: "Casa de adobe", icon: "🏠", color: 0x9a6a4a, unlockedBy: "N03", cost: { arcilla: 12, madera: 4 }, buildTime: 12, place: "pasto", housing: 6, desc: "+6 de capacidad de población." },
-  { id: "muelle", name: "Muelle", icon: "⛵", color: 0x4a6a8a, unlockedBy: "N10", cost: { madera: 8 }, buildTime: 8, place: "orilla", desc: "La gente de Comida pesca aquí. Va en la orilla del río.",
+  { id: "adobe", name: "Casa de adobe", icon: "🏠", color: 0x9a6a4a, unlockedBy: "N03", cost: { arcilla: 12, madera: 4 }, buildTime: 12, place: ["pasto"], housing: 6, desc: "+6 de capacidad de población." },
+  { id: "muelle", name: "Muelle", icon: "⛵", color: 0x4a6a8a, unlockedBy: "N10", cost: { madera: 8 }, buildTime: 8, place: ["orilla"], desc: "La gente de Comida pesca aquí. Va en la orilla del río.",
     staff: { slots: 2, by: "comida", title: "Pescador", icon: "🎣", cycle: 3, outputs: { comida: 1 } } },
-  { id: "huerto", name: "Huerto medicinal", icon: "🌱", color: 0x3a7a4a, unlockedBy: "N11", cost: { madera: 4, fibras: 4 }, buildTime: 6, place: "pasto", desc: "Con un curandero trabajando, las enfermedades matan menos.",
+  { id: "huerto", name: "Huerto medicinal", icon: "🌱", color: 0x3a7a4a, unlockedBy: "N11", cost: { madera: 4, fibras: 4 }, buildTime: 6, place: ["pasto"], desc: "Con un curandero trabajando, las enfermedades matan menos.",
     staff: { slots: 1, by: "especialista", title: "Curandero", icon: "🌱", cycle: 5 } },
 ];
 export const BUILDING_BY_ID = Object.fromEntries(BUILDINGS.map((b) => [b.id, b])) as Record<string, BuildingDef>;
@@ -191,7 +197,9 @@ export const TECH_INTRO: Record<string, string[]> = {
   ],
   N10: [
     "Puedes construir el ⛵ Muelle en la orilla: la gente de 🍖 Comida pesca ahí.",
-    "La Cueva y la Costa ya se pueden explorar… en una versión futura del prototipo.",
+    "🕳️ ¡La Cueva! Toca su entrada (arriba a la izquierda del Valle) para enviar aldeanos y entrar a verla.",
+    "Adentro hay mucho 🎨 ocre, piedra y unas vetas verdes que todavía no sabemos aprovechar.",
+    "La Costa llegará en una versión futura.",
   ],
   N11: [
     "¡Jefatura! Ahora la tribu se reparte sola: en 👥 Aldeanos eliges qué especialidades llenar y el orden de prioridad de las categorías.",

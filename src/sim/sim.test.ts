@@ -4,16 +4,17 @@ import { BUILDINGS, MATERIALS, ROLES, TECH_INTRO } from "../content";
 import { TECHS, TECH_BY_ID, techCost } from "../data/tree";
 import {
   changeRoleCount, changeSpecialists, debugAddVillagers, demolish, debugToggleInfinite, place, setRole, study, tapBook, techStatus,
+  transferVillager,
 } from "./actions";
 import { returnToJefatura, setSpecialtyFull, zipfTargets } from "./jefatura";
 import { isTribeLost, pay, staffCount, stageOf } from "./economy";
-import { simulateOffline } from "./save";
+import { parseSave, simulateOffline } from "./save";
 import { createState, type Building, type GameState } from "./state";
 import { step } from "./step";
 
 const run = (s: GameState, seconds: number) => { for (let t = 0; t < seconds; t += 0.1) step(s, 0.1); };
 const addBuilding = (s: GameState, type: string, x: number, y: number): Building => {
-  const b = { id: s.nextId++, type, x, y, progress: 0, built: true };
+  const b: Building = { id: s.nextId++, type, zone: "valle", x, y, progress: 0, built: true };
   s.buildings.push(b);
   return b;
 };
@@ -226,6 +227,83 @@ describe("Jefatura", () => {
     run(s, (config.EDAD_ADULTO - child.age + 1) * config.TIEMPO_POR_AÑO);
     expect(stageOf(child)).toBe("adult");
     expect(child.role).toBeNull();
+  });
+});
+
+describe("zonas", () => {
+  const withCave = (seed: number, adults: number) => {
+    const s = createState(seed);
+    s.techs.P01 = s.techs.P02 = s.techs.P04 = s.techs.P11 = s.techs.N10 = true;
+    s.debug.infinite.comida = true;
+    debugAddVillagers(s, adults);
+    return s;
+  };
+
+  it("la Cueva existe desde el inicio, con ocre, rocas, vetas y su pila", () => {
+    const s = createState(30);
+    expect(s.zones.cueva.tiles[9][3]).toBe("salida");
+    expect(s.nodes.filter((n) => n.zone === "cueva" && n.type === "ocre").length).toBeGreaterThan(0);
+    expect(s.nodes.some((n) => n.zone === "cueva" && n.type === "veta")).toBe(true);
+    expect(s.buildings.some((b) => b.zone === "cueva" && b.type === "pila")).toBe(true);
+  });
+
+  it("sin Exploración no se puede mandar gente a la Cueva", () => {
+    const s = createState(31);
+    expect(transferVillager(s, "valle", "cueva")).not.toBeNull();
+  });
+
+  it("mandar un aldeano: camina hasta la entrada y aparece adentro", () => {
+    const s = withCave(32, 3);
+    expect(transferVillager(s, "valle", "cueva")).toBeNull();
+    const v = s.villagers.find((x) => x.transit === "cueva")!;
+    run(s, 15);
+    expect(v.zone).toBe("cueva");
+    expect(v.transit).toBeNull();
+  });
+
+  it("en la Cueva, la gente de Materiales junta pigmento del ocre", () => {
+    const s = withCave(33, 2);
+    for (const v of s.villagers) if (stageOf(v) === "adult") v.role = "materiales";
+    // Todo lleno salvo el pigmento, para que vayan por él.
+    for (const r of ["ramas", "piedra", "fibras", "madera"] as const) s.inv[r] = 59;
+    const v = s.villagers.find((x) => stageOf(x) === "adult")!;
+    v.zone = "cueva"; v.x = 3.5; v.y = 8.5;
+    s.inv.pigmento = 0;
+    run(s, 30);
+    expect(s.inv.pigmento).toBeGreaterThan(0);
+  });
+
+  it("la Jefatura no deja gente en Comida dentro de la Cueva (no hay comida ahí)", () => {
+    const s = withCave(34, 4);
+    s.techs.N11 = true;
+    for (let i = 0; i < 3; i++) transferVillager(s, "valle", "cueva");
+    run(s, 30);
+    const inCave = s.villagers.filter((v) => v.zone === "cueva" && stageOf(v) === "adult");
+    expect(inCave.length).toBeGreaterThan(0);
+    expect(inCave.some((v) => v.role === "comida")).toBe(false);
+  });
+
+  it("los niños y ancianos vuelven solos al Valle", () => {
+    const s = withCave(35, 0);
+    const kid = s.villagers.find((v) => stageOf(v) === "child")!;
+    kid.zone = "cueva"; kid.x = 3.5; kid.y = 8.5;
+    run(s, 15);
+    expect(kid.zone).toBe("valle");
+  });
+
+  it("una partida guardada antes de las zonas se migra al Valle y gana la Cueva", () => {
+    const s = createState(36) as unknown as Record<string, unknown>;
+    const old = JSON.parse(JSON.stringify(s));
+    old.w = 8; old.h = 12; old.tiles = (s.zones as GameState["zones"]).valle.tiles;
+    delete old.zones;
+    old.nodes = (old.nodes as { zone?: string }[]).filter((n) => n.zone === "valle").map((n) => { delete n.zone; return n; });
+    old.buildings = (old.buildings as { zone?: string }[]).filter((b) => b.zone === "valle").map((b) => { delete b.zone; return b; });
+    for (const v of old.villagers as { zone?: string; transit?: unknown }[]) { delete v.zone; delete v.transit; }
+    const loaded = parseSave(JSON.stringify(old))!;
+    expect(loaded.zones.valle.w).toBe(8);
+    expect(loaded.zones.cueva).toBeTruthy();
+    expect(loaded.villagers.every((v) => v.zone === "valle")).toBe(true);
+    expect(loaded.buildings.filter((b) => b.type === "pila").map((b) => b.zone).sort()).toEqual(["cueva", "valle"]);
   });
 });
 
