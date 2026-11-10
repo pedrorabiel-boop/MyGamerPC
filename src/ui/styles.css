@@ -100,6 +100,7 @@ h4 { margin: 16px 0 6px; font-size: 13px; color: var(--muted); text-transform: u
 .row .grow { flex: 1; display: flex; flex-direction: column; }
 .row small { color: var(--muted); font-size: 11px; }
 .row .cost { font-size: 12px; white-space: nowrap; }
+.paused { color: #ffd166; font-size: 12px; margin-top: 4px; }
 .bcat { margin-bottom: 6px; }
 .bcat-head { display: flex; align-items: center; gap: 8px; width: 100%; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; font-size: 15px; font-weight: 700; color: var(--text); text-align: left; }
 .bcat-head.open { border-color: #6a5a3a; }
@@ -178,7 +179,7 @@ h4 { margin: 16px 0 6px; font-size: 13px; color: var(--muted); text-transform: u
 .staff-row { display: flex; align-items: center; gap: 8px; }
 .staff-row > span:first-child { flex: 1; }
 .dots { display: inline-flex; gap: 4px; }
-.dot { width: 11px; height: 11px; border-radius: 50%; display: inline-block; }
+.dot { width: 9px; height: 9px; display: inline-block; transform: rotate(45deg); margin: 0 1px; } /* rombos, como en el mapa */
 .dot.on { background: #7fe07a; border: 1px solid #1a1a1a; }
 .dot.off { border: 2px solid #ff5a4a; background: rgba(0,0,0,.3); }
 .modal-box.intro ul { padding-left: 18px; margin: 8px 0 14px; display: flex; flex-direction: column; gap: 6px; font-size: 14px; }

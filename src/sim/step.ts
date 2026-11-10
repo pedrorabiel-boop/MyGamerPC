@@ -5,7 +5,7 @@ import {
 } from "../content";
 import { ERAS, IMPLEMENTED_ERAS } from "../data/tree";
 import {
-  add, adultAge, canAfford, countBuilt, has, housing, isResolutionMet, nodeMax, nodeNextUpgrade, nodeRegen, pay, roleUnlocked, stageOf, storageCap, unlimited,
+  add, adultAge, canAfford, countBuilt, has, housing, isResolutionMet, nodeMax, nodeNextUpgrade, nodeRegen, outputsFull, pay, roleUnlocked, stageOf, storageCap, unlimited,
 } from "./economy";
 import { hasJefatura, runJefatura } from "./jefatura";
 import { maintainZoneQuotas } from "./zones";
@@ -143,7 +143,11 @@ function births(s: GameState, dt: number) {
 function elderComprension(s: GameState, dt: number) {
   if (!has(s, "P01")) return;
   // Los ancianos que trabajan de chamán ya producen en su puesto (y más).
-  const elders = s.villagers.filter((v) => stageOf(v) === "elder" && v.workplace == null).length;
+  let elders = 0;
+  for (const v of s.villagers) {
+    if (stageOf(v) !== "elder" || v.workplace != null) continue;
+    elders += inLounge(s, v) ? config.BONO_TERTULIA : 1;
+  }
   add(s, "comprension", elders * config.COMPRENSION_ANCIANO * dt);
 }
 
@@ -311,6 +315,7 @@ function updateVillager(s: GameState, v: Villager, dt: number, occ: Map<number, 
     const b = workplaceB;
     if (b && elderCanWork(s, b.id)) return workAt(s, v, dt, b);
     if (v.workplace != null) v.workplace = null;
+    if (goToLounge(s, v, dt)) return;
     return wander(s, v, dt, a.x + 0.5, a.y + 0.5, 0.8);
   }
 
@@ -553,6 +558,7 @@ function workAt(s: GameState, v: Villager, dt: number, b: Building) {
   }
   if (v.task.kind !== "work") return;
   if (staff.inputs && !canAfford(s, staff.inputs)) return; // espera materiales
+  if (outputsFull(s, staff.outputs)) return; // lo que produce ya está lleno: no gasta insumos
   v.task.t += dt * s.animo * workSpeed(s);
   const cycle = b.type === "mercado" ? config.MERCADO_CICLO : staff.cycle;
   if (v.task.t >= cycle) {
@@ -594,6 +600,46 @@ function goToSchool(s: GameState, v: Villager, dt: number, occ: Map<number, numb
     return true;
   }
   v.adultAge ??= config.EDAD_ADULTO * (1 - config.BONO_ESCUELA);
+  return true;
+}
+
+/** Ancianos libres en tertulia dentro de un edificio (no cuenta a los que trabajan ahí). */
+export function loungeCount(s: GameState, bId: number): number {
+  let n = 0;
+  for (const v of s.villagers) {
+    if (v.workplace == null && stageOf(v) === "elder" && (v.task.kind === "toBuilding" || v.task.kind === "work") && v.task.bId === bId) n++;
+  }
+  return n;
+}
+
+const loungeOf = (s: GameState, v: Villager): Building | undefined => {
+  if (v.task.kind !== "toBuilding" && v.task.kind !== "work") return undefined;
+  const id = v.task.bId;
+  return s.buildings.find((b) => b.id === id && b.built && b.zone === v.zone && BUILDING_BY_ID[b.type].lounge);
+};
+
+/** ¿El anciano está adentro de una Academia o Archivo, en tertulia? (no se dibuja) */
+export const inLounge = (s: GameState, v: Villager) =>
+  v.task.kind === "work" && v.workplace == null && stageOf(v) === "elder" && !!loungeOf(s, v);
+
+/**
+ * Tertulia: el anciano libre camina hasta la Academia o el Archivo con lugar más cercano y se
+ * queda adentro (como los niños en la escuela). false si no hay lugar: sigue junto a la fogata.
+ */
+function goToLounge(s: GameState, v: Villager, dt: number): boolean {
+  let place = loungeOf(s, v);
+  if (!place) {
+    let bd = Infinity;
+    for (const b of s.buildings) {
+      const cap = b.built && b.zone === v.zone ? BUILDING_BY_ID[b.type].lounge ?? 0 : 0;
+      if (!cap) continue;
+      const d = dist(v.x, v.y, b.x + 0.5, b.y + 0.5);
+      if (d < bd && loungeCount(s, b.id) < cap) { bd = d; place = b; }
+    }
+    if (!place) return false;
+    v.task = { kind: "toBuilding", bId: place.id };
+  }
+  if (v.task.kind === "toBuilding" && moveTo(v, place.x + 0.5, place.y + 0.5, dt)) v.task = { kind: "work", bId: place.id, t: 0 };
   return true;
 }
 

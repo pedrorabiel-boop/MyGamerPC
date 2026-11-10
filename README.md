@@ -94,7 +94,7 @@ En desarrollo, el motor también queda en la consola del navegador como `window.
 - **Técnicas de recolección** (Era 2, 🌿): tocando un recurso natural se abre su ficha, y se
   puede **mejorar en su lugar** (Barrero, Cantera, Arboleda, Pastizal, Huerto de bayas…): se
   regenera más rápido y guarda el doble. Lo hacen los constructores.
-- **Edad de Hierro (Era 4, 7 tecnologías):** Academia con filósofos, **mina de hierro** sobre
+- **Edad de Hierro (Era 4, 7 tecnologías):** Academia con filósofos (y **tertulia**: los ancianos libres entran y dejan de verse en el mapa), **mina de hierro** sobre
   las rocas rojas y Forja (herramientas de hierro: todos trabajan más rápido; las Arboledas
   suben a Plantación), **Geometría y arquitectura** (constructores más rápidos, Grúa y **el
   Valle crece a 8×16**), **Mercado** (pides qué comprar y el mercader paga con lo que sobra, un cambio cada 30 s,

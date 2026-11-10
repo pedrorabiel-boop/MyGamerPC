@@ -1,18 +1,18 @@
 import { describe, expect, it } from "vitest";
 import { config } from "../config";
-import { BUILD_CATEGORIES, BUILDINGS, MATERIALS, RESOURCES, ROLES, TECH_INTRO, type ResId } from "../content";
+import { BUILD_CATEGORIES, BUILDING_BY_ID, BUILDINGS, MATERIALS, RESOURCES, ROLES, TECH_INTRO, type ResId } from "../content";
 import { IMPLEMENTED_ERAS, TECHS, TECH_BY_ID, techCost } from "../data/tree";
 import {
   changeRoleCount, changeSpecialists, debugAddVillagers, demolish, debugToggleInfinite, place, setRole, study, tapBook, techStatus,
   transferVillager, adultsIn, startUpgrade, startImproveNode, cancelImproveNode,
 } from "./actions";
 import { movePriority, returnToJefatura, setSpecialtyFull, specialtyShortZones, zipfTargets } from "./jefatura";
-import { housing, isTribeLost, nodeMax, nodeRegen, pay, staffCount, stageOf } from "./economy";
+import { housing, isTribeLost, nodeMax, nodeRegen, outputsFull, pay, staffCount, stageOf, storageCap } from "./economy";
 import { parseSave, simulateOffline } from "./save";
 import { changeZoneQuota, zoneCount } from "./zones";
 import { focusPlan, isFocusable, sourcesOf, usesOf, WILD_LOW, wildState } from "./guide";
 import { createState, type Building, type GameState } from "./state";
-import { step } from "./step";
+import { inLounge, loungeCount, step } from "./step";
 import { marketPrice, marketQuote, resTier, trade } from "./market";
 
 const run = (s: GameState, seconds: number) => { for (let t = 0; t < seconds; t += 0.1) step(s, 0.1); };
@@ -694,6 +694,37 @@ describe("Era 4: Hierro / Clásica", () => {
     s.debug.infinite.comida = true;
     return s;
   };
+
+  it("un taller con lo que produce lleno se pausa y no gasta insumos (playtest 8: arcilla → cerámica a tope)", () => {
+    const s = era4(86);
+    const horno = addBuilding(s, "horno", 3, 3);
+    debugAddVillagers(s, 1);
+    expect(changeSpecialists(s, horno.id, 1)).toBeNull();
+    const cap = storageCap(s, "ceramica");
+    s.inv.ceramica = cap;
+    for (let i = 0; i < 300; i++) { s.inv.arcilla = 50; s.inv.ramas = 50; step(s, 0.1); expect(s.inv.arcilla).toBe(50); }
+    expect(outputsFull(s, BUILDING_BY_ID.horno.staff!.outputs)).toEqual(["ceramica"]);
+    s.inv.ceramica = cap - 10; // se usó cerámica: vuelve a trabajar
+    s.inv.arcilla = 50;
+    run(s, 30);
+    expect(s.inv.arcilla).toBeLessThan(50);
+    expect(s.inv.ceramica).toBeGreaterThan(cap - 10);
+  });
+
+  it("los ancianos libres entran a la Academia (tertulia), no se ven y piensan más; los que no caben siguen afuera", () => {
+    const s = era4(85, ["H05"]);
+    const acad = addBuilding(s, "academia", 3, 3);
+    const comp = () => { const c0 = s.inv.comprension; s.inv.comprension = 0; step(s, 0.1); const d = s.inv.comprension; s.inv.comprension = c0; return d; };
+    debugAddVillagers(s, 15);
+    const elders = s.villagers.slice(-15);
+    for (const v of elders) { v.age = v.lifespan * 0.85; v.lifespan = 999; v.age = 999 * 0.85; }
+    const before = comp();
+    run(s, 30);
+    const cap = BUILDING_BY_ID.academia.lounge!;
+    expect(loungeCount(s, acad.id)).toBe(cap);
+    expect(elders.filter((v) => inLounge(s, v))).toHaveLength(cap);
+    expect(comp()).toBeGreaterThan(before); // +BONO_TERTULIA por los que están adentro
+  });
 
   it("una partida guardada con un árbol encima del sendero lo muda a una casilla libre", () => {
     const s = era4(80);

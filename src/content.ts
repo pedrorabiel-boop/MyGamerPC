@@ -148,6 +148,7 @@ export interface BuildingDef {
   storage?: boolean; // punto de entrega de los recolectores
   passive?: { res: ResId; rate: number }; // producción sin trabajadores, por segundo
   school?: number; // escuela: cuántos niños caben
+  lounge?: number; // tertulia: cuántos ancianos libres caben adentro
   animo?: number;
   desc: string;
 }
@@ -188,7 +189,7 @@ export const BUILDINGS: BuildingDef[] = [
   { id: "vidrieria", name: "Vidriería", icon: "💎", color: 0x4a7a8a, unlockedBy: "B07", cost: { ladrillo: 8, piedra: 4 }, buildTime: 10, place: ["pasto"], desc: "Arena + carbón → vidrio. Raíz del monitor del PC.",
     staff: { slots: 1, by: "especialista", title: "Vidriero", icon: "💎", cycle: 6, inputs: { arena: 2, carbon: 1 }, outputs: { vidrio: 1 } } },
   { id: "casa_ladrillo", name: "Casa de ladrillo", icon: "🏘️", color: 0x9a4a3a, unlockedBy: "B07", cost: { ladrillo: 12, madera: 4 }, buildTime: 15, place: ["pasto"], housing: 10, desc: "+10 de capacidad de población." },
-  { id: "archivo", name: "Archivo", icon: "📜", color: 0x6a5a3a, unlockedBy: "B06", cost: { arcilla: 10, madera: 6 }, buildTime: 10, place: ["pasto"], desc: "Los escribas generan mucha Comprensión. Los ancianos también sirven.",
+  { id: "archivo", name: "Archivo", icon: "📜", color: 0x6a5a3a, unlockedBy: "B06", cost: { arcilla: 10, madera: 6 }, buildTime: 10, place: ["pasto"], lounge: 6, desc: "Los escribas generan mucha Comprensión. Los ancianos también sirven. Además, hasta 6 ancianos libres pasan aquí su tiempo libre (tertulia).",
     staff: { slots: 2, by: "especialista", title: "Escriba", icon: "✍️", cycle: 3, outputs: { comprension: 6 }, elders: true, elderBonus: 1.2 } },
   { id: "piedras", name: "Piedras alineadas", icon: "🌓", color: 0x5a5a5a, unlockedBy: "B06", cost: { piedra: 30 }, buildTime: 40, place: ["pasto"], passive: { res: "comprension", rate: 1.5 }, desc: "El Círculo, en grande: el chamán sigue trabajando y además da Comprensión solo. Nadie sabe para qué sirve. Se ve imponente.",
     staff: { slots: 1, by: "especialista", title: "Chamán", icon: "🔮", cycle: 2.5, outputs: { comprension: 10 }, elders: true, elderBonus: 1.5 } },
@@ -198,7 +199,7 @@ export const BUILDINGS: BuildingDef[] = [
   { id: "huerto", name: "Huerto medicinal", icon: "🌱", color: 0x3a7a4a, unlockedBy: "N11", cost: { madera: 4, fibras: 4 }, buildTime: 6, place: ["pasto"], desc: "Con un curandero trabajando, las enfermedades matan menos.",
     staff: { slots: 1, by: "especialista", title: "Curandero", icon: "🌱", cycle: 5 } },
   // ---------- Era 4 ----------
-  { id: "academia", name: "Academia", icon: "🏛️", color: 0xb0a080, unlockedBy: "H05", cost: { ladrillo: 12, piedra: 10 }, buildTime: 16, place: ["pasto"], desc: "Los filósofos caminan en círculos discutiendo y generan mucha Comprensión. Los ancianos también sirven.",
+  { id: "academia", name: "Academia", icon: "🏛️", color: 0xb0a080, unlockedBy: "H05", cost: { ladrillo: 12, piedra: 10 }, buildTime: 16, place: ["pasto"], lounge: 12, desc: "Los filósofos caminan en círculos discutiendo y generan mucha Comprensión. Los ancianos también sirven. Además, hasta 12 ancianos libres vienen a pasar el tiempo libre discutiendo (tertulia), y piensan más que sueltos.",
     staff: { slots: 2, by: "especialista", title: "Filósofo", icon: "🤔", cycle: 3, outputs: { comprension: 10 }, elders: true, elderBonus: 1.3 } },
   { id: "mina_hierro", name: "Mina de hierro", icon: "⛏️", color: 0x7a3a2a, unlockedBy: "H01", cost: { madera: 8, bronce: 2 }, buildTime: 12, place: ["monte"], onNode: "hierro", desc: "Se construye sobre las rocas rojas de las Montañas. El minero saca mineral de hierro.",
     staff: { slots: 1, by: "especialista", title: "Minero", icon: "⛏️", cycle: 4, outputs: { mineral_hierro: 1 } } },

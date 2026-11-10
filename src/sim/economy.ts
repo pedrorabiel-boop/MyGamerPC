@@ -46,6 +46,18 @@ export function unlimited(s: GameState, res: ResId): boolean {
   return !!s.debug.infinite[res] || !!s.resolved[res];
 }
 
+/**
+ * Lo que produce un taller ya está lleno (o resuelto): no tiene sentido gastar insumos.
+ * Devuelve los recursos llenos, o null si todavía hay lugar.
+ * Con varias salidas (corral: comida y lana), solo cuando todas están llenas.
+ */
+export function outputsFull(s: GameState, outputs: Cost | undefined): ResId[] | null {
+  const outs = Object.keys(outputs ?? {}) as ResId[];
+  if (outs.length === 0) return null;
+  // Lleno = no cabe una tanda completa (así no se gasta arcilla para hacer media cerámica).
+  return outs.every((r) => unlimited(s, r) || s.inv[r] + (outputs![r] ?? 0) > storageCap(s, r)) ? outs : null;
+}
+
 export function amount(s: GameState, res: ResId): number {
   return unlimited(s, res) ? Infinity : s.inv[res];
 }

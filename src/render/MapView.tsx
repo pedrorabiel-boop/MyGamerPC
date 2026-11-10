@@ -4,12 +4,13 @@ import { useEffect, useRef } from "react";
 import { BUILDING_BY_ID, NODE_DEFS, ROLE_BY_ID, SPECIALIST_COLOR, type ResId } from "../content";
 import { engine } from "../engine";
 import { canPlace, orderGather, place, zoneUnlocked } from "../sim/actions";
-import { has, nodeMax, nodeNextUpgrade, staffCount, stageOf } from "../sim/economy";
+import { has, nodeMax, nodeNextUpgrade, outputsFull, staffCount, stageOf } from "../sim/economy";
 import type { Villager, ZoneId } from "../sim/state";
 import { config } from "../config";
 
 /** Niño adentro de la escuela: no se dibuja (ya llegó y está estudiando). */
-const atSchool = (v: Villager) => v.task.kind === "work" && stageOf(v) === "child";
+// Adentro de un edificio (no se dibujan): niños en la escuela y ancianos en tertulia.
+const atSchool = (v: Villager) => v.task.kind === "work" && (stageOf(v) === "child" || (stageOf(v) === "elder" && v.workplace == null));
 
 const TILE_COLORS = { pasto: 0x557a35, rio: 0x2f6fb5, orilla: 0x8a7a50, cueva: 0x1a1a1a, suelo: 0x4a4038, pared: 0x1f1b18, salida: 0x8a7a5a, sendero: 0x8a7a50, monte: 0x6f7a6a, pico: 0xd8dde4 } as const;
 
@@ -249,6 +250,13 @@ export function MapView() {
               buildingsG.poly([bx, by - h, bx + h, by + h * 0.75, bx - h, by + h * 0.75]).fill(0xe0453a).stroke({ width: 1.5, color: 0xffffff });
               buildingsG.rect(bx - r * 0.16, by - r * 0.45, r * 0.32, r * 0.7).fill(0xffffff);
               buildingsG.rect(bx - r * 0.16, by + r * 0.42, r * 0.32, r * 0.28).fill(0xffffff);
+            }
+            // En pausa: lo que produce ya está lleno (no gasta insumos). Cuadrado oscuro con ⏸.
+            if (have > 0 && outputsFull(s, def.staff.outputs)) {
+              const px = x + r * 0.4, py = y + r * 0.4, w = r * 2.2;
+              buildingsG.roundRect(px, py, w, w, r * 0.4).fill({ color: 0x111111, alpha: 0.85 }).stroke({ width: 1, color: 0xffd166 });
+              buildingsG.rect(px + w * 0.28, py + w * 0.25, w * 0.15, w * 0.5).fill(0xffd166);
+              buildingsG.rect(px + w * 0.57, py + w * 0.25, w * 0.15, w * 0.5).fill(0xffd166);
             }
           }
           if (b.built && b.upgradeTo) {

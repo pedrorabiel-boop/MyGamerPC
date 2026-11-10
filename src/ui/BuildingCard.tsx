@@ -3,13 +3,17 @@ import { config } from "../config";
 import { BUILDING_BY_ID, RES_BY_ID, type ResId } from "../content";
 import { engine, useEngine } from "../engine";
 import { cancelUpgrade, changeSpecialists, demolish, startUpgrade, upgradeCost, upgradeTarget } from "../sim/actions";
-import { canAfford, staffCount } from "../sim/economy";
+import { canAfford, outputsFull, stageOf, staffCount } from "../sim/economy";
 import { hasJefatura, specialtyTarget } from "../sim/jefatura";
 import { missingText } from "./format";
 import { MarketOrder } from "./MarketOrder";
+import { loungeCount } from "../sim/step";
 
 const fmtCost = (c: Partial<Record<ResId, number>>) =>
   Object.entries(c).map(([r, n]) => `${RES_BY_ID[r as ResId].icon}${n}`).join(" ");
+
+/** Filósofo → Filósofos, Agricultor → Agricultores. */
+const plural = (w: string) => (/[aeiou]$/i.test(w) ? w + "s" : w + "es");
 
 export function BuildingCard() {
   const { s, ui } = useEngine();
@@ -20,7 +24,8 @@ export function BuildingCard() {
   const upTo = upgradeTarget(s, b.id);
   const staff = def.staff;
   const have = staffCount(s, b);
-  const workers = s.villagers.filter((v) => v.workplace === b.id || ((v.task.kind === "toBuilding" || v.task.kind === "work") && v.task.bId === b.id));
+  // Quienes trabajan aquí (no cuenta a los ancianos libres que vienen de tertulia).
+  const workers = s.villagers.filter((v) => v.workplace === b.id || ((v.task.kind === "toBuilding" || v.task.kind === "work") && v.task.bId === b.id && !(v.workplace == null && stageOf(v) === "elder")));
 
   const change = (d: 1 | -1) => {
     const err = changeSpecialists(s, b.id, d);
@@ -39,7 +44,7 @@ export function BuildingCard() {
       {staff && (
         <div className="staff">
           <div className="staff-row">
-            <span>{staff.icon} {staff.title}{staff.slots > 1 ? "es" : ""}</span>
+            <span>{staff.icon} {staff.slots > 1 ? plural(staff.title) : staff.title}</span>
             <span className="dots">
               {Array.from({ length: staff.slots }, (_, i) => <span key={i} className={i < have ? "dot on" : "dot off"} />)}
             </span>
@@ -63,6 +68,15 @@ export function BuildingCard() {
           )}
           {workers.length > 0 && <div className="muted">Trabajan aquí: {workers.map((w) => w.name).join(", ")}</div>}
         </div>
+      )}
+      {staff && b.built && outputsFull(s, staff.outputs) && (
+        <div className="paused">
+          ⏸️ En pausa: no cabe más {outputsFull(s, staff.outputs)!.map((r) => `${RES_BY_ID[r].icon} ${RES_BY_ID[r].name.toLowerCase()}`).join(" ni ")}
+          {staff.inputs ? `, así que no gasta ${Object.keys(staff.inputs).map((r) => `${RES_BY_ID[r as ResId].icon} ${RES_BY_ID[r as ResId].name.toLowerCase()}`).join(" ni ")}` : ""}. Sigue solo cuando se use o haya más almacén.
+        </div>
+      )}
+      {def.lounge && b.built && (
+        <div className="muted">🧓 En tertulia: {loungeCount(s, b.id)}/{def.lounge} ancianos libres (adentro, sin verse en el mapa; piensan ×{config.BONO_TERTULIA}).</div>
       )}
       {def.school && b.built && (
         <div className="muted">🧒 Niños estudiando: {s.villagers.filter((v) => v.task.kind === "work" && v.task.bId === b.id).length}/{def.school}</div>
