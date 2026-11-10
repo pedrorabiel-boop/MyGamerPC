@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { config } from "../config";
-import { BUILDINGS, MATERIALS, RESOURCES, ROLES, TECH_INTRO, type ResId } from "../content";
+import { BUILD_CATEGORIES, BUILDINGS, MATERIALS, RESOURCES, ROLES, TECH_INTRO, type ResId } from "../content";
 import { IMPLEMENTED_ERAS, TECHS, TECH_BY_ID, techCost } from "../data/tree";
 import {
   changeRoleCount, changeSpecialists, debugAddVillagers, demolish, debugToggleInfinite, place, setRole, study, tapBook, techStatus,
@@ -23,6 +23,12 @@ const addBuilding = (s: GameState, type: string, x: number, y: number): Building
 };
 
 describe("contenido", () => {
+  it("cada edificio construible está en exactamente una categoría del menú Construir", () => {
+    const listed = BUILD_CATEGORIES.flatMap((c) => c.buildings);
+    for (const id of listed) expect(BUILDINGS.some((b) => b.id === id), id).toBe(true);
+    for (const b of BUILDINGS) if (b.unlockedBy) expect(listed.filter((x) => x === b.id), b.id).toHaveLength(1);
+  });
+
   it("todo lo jugable apunta a tecnologías de las eras implementadas", () => {
     for (const r of ROLES) expect(TECH_BY_ID[r.unlockedBy]?.era, r.id).toBeLessThanOrEqual(IMPLEMENTED_ERAS);
     for (const m of MATERIALS) expect(TECH_BY_ID[m.tech]?.era, m.res).toBeLessThanOrEqual(IMPLEMENTED_ERAS);

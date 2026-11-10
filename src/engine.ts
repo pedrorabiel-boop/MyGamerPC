@@ -42,6 +42,7 @@ class Engine {
     bookTab: "tecnologias" as "tecnologias" | "recursos",
     guideRes: null as ResId | null, // recurso abierto en la guía del Libro
     resMenu: null as ResId | null, // menú al tocar un recurso en la barra de arriba
+    buildOpen: {} as Record<string, boolean>, // categorías abiertas en el menú Construir
     toast: null as { msg: string; at: number } | null,
   };
   offlineSummary: OfflineSummary | null = null;

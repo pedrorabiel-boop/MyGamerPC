@@ -1,4 +1,4 @@
-import { BUILDINGS, BUILDING_BY_ID, RESOLUTIONS, RES_BY_ID, type ResId } from "../content";
+import { BUILD_CATEGORIES, BUILDINGS, BUILDING_BY_ID, RESOLUTIONS, RES_BY_ID, type ResId } from "../content";
 import { TECH_BY_ID } from "../data/tree";
 import { engine, useEngine } from "../engine";
 import { placeableIn } from "../sim/actions";
@@ -20,38 +20,59 @@ export function BuildPanel({ onPick }: { onPick: () => void }) {
             : `Todavía no hay nada que se pueda construir en ${ZONE_BY_ID[ui.zone].label}.`}
         </p>
       )}
-      <div className="list">
-        {available.map((b) => {
-          const ok = canAfford(s, b.cost) && here(b.id);
-          return (
-            <button
-              key={b.id}
-              className={"row" + (ok ? "" : " disabled")}
-              onClick={() => {
-                if (!here(b.id)) { engine.toast(`Eso no se puede construir en ${ZONE_BY_ID[ui.zone].label}.`); return; }
-                if (!ok) { engine.toast("No alcanzan los materiales."); return; }
-                engine.ui.placing = b.id;
-                engine.toast(`Toca una casilla marcada para colocar: ${b.name}.`);
-                onPick();
-              }}
-            >
-              <span className="big">{b.icon}</span>
-              <span className="grow">
-                <b>{b.name}</b>
-                <small>{b.desc}</small>
-                {!here(b.id) && <small className="warn">No se puede en {ZONE_BY_ID[ui.zone].label}</small>}
-              </span>
-              <span className="cost">
-                {Object.entries(b.cost).map(([r, a]) => (
-                  <span key={r}>{RES_BY_ID[r as ResId].icon}{a} </span>
-                ))}
-              </span>
+      {BUILD_CATEGORIES.map((cat) => {
+        const items = available.filter((b) => cat.buildings.includes(b.id));
+        if (!items.length) return null;
+        const open = !!ui.buildOpen[cat.id];
+        const affordable = items.filter((b) => canAfford(s, b.cost)).length;
+        return (
+          <div key={cat.id} className="bcat">
+            <button className={"bcat-head" + (open ? " open" : "")} onClick={() => { engine.ui.buildOpen[cat.id] = !open; engine.notify(); }}>
+              <span className="chev">{open ? "▾" : "▸"}</span>
+              <span className="grow">{cat.icon} {cat.name}</span>
+              <small>{items.length} {items.length === 1 ? "tipo" : "tipos"}{affordable ? ` · ${affordable} ${affordable === 1 ? "alcanza" : "alcanzan"}` : ""}</small>
             </button>
-          );
-        })}
-      </div>
+            {open && <div className="list">{items.map((b) => <BuildRow key={b.id} s={s} id={b.id} onPick={onPick} />)}</div>}
+          </div>
+        );
+      })}
       {ui.zone === "valle" && <Autosuficiencia s={s} />}
     </div>
+  );
+}
+
+function BuildRow({ s, id, onPick }: { s: GameState; id: string; onPick: () => void }) {
+  const { ui } = useEngine();
+  const b = BUILDING_BY_ID[id];
+  const here = placeableIn(s, id, ui.zone);
+  const ok = canAfford(s, b.cost) && here;
+  const built = s.buildings.filter((x) => x.built && x.type === id).length;
+  return (
+    <button
+      className={"row" + (ok ? "" : " disabled")}
+      onClick={() => {
+        if (!here) { engine.toast(`Eso no se puede construir en ${ZONE_BY_ID[ui.zone].label}.`); return; }
+        if (!ok) { engine.toast("No alcanzan los materiales."); return; }
+        engine.ui.placing = id;
+        engine.toast(`Toca una casilla marcada para colocar: ${b.name}.`);
+        onPick();
+      }}
+    >
+      <span className="big">{b.icon}</span>
+      <span className="grow">
+        <span className="bname">
+          <b>{b.name}</b>
+          <span className={"count" + (built ? "" : " zero")} title="Construidos">{built}</span>
+        </span>
+        <small>{b.desc}</small>
+        {!here && <small className="warn">No se puede en {ZONE_BY_ID[ui.zone].label}</small>}
+      </span>
+      <span className="cost">
+        {Object.entries(b.cost).map(([r, a]) => (
+          <span key={r}>{RES_BY_ID[r as ResId].icon}{a} </span>
+        ))}
+      </span>
+    </button>
   );
 }
 

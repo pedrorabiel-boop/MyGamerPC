@@ -218,6 +218,18 @@ export const BUILDINGS: BuildingDef[] = [
 ];
 export const BUILDING_BY_ID = Object.fromEntries(BUILDINGS.map((b) => [b.id, b])) as Record<string, BuildingDef>;
 
+/** Categorías del menú Construir (desplegables). Cada edificio construible va en una sola. */
+export const BUILD_CATEGORIES: { id: string; name: string; icon: string; buildings: string[] }[] = [
+  { id: "vivienda", name: "Vivienda", icon: "🏠", buildings: ["choza", "adobe", "casa_ladrillo"] },
+  { id: "alimento", name: "Alimento", icon: "🍖", buildings: ["trampa", "parcela", "corral", "muelle"] },
+  { id: "minerales", name: "Minerales", icon: "⛏️", buildings: ["mina", "mina_estano", "mina_hierro"] },
+  { id: "talleres", name: "Talleres y comercio", icon: "⚒️", buildings: ["telar", "horno", "carbonera", "fundicion", "herreria", "horno_ladrillo", "vidrieria", "forja", "soplador", "taller_engranajes", "mercado"] },
+  { id: "conocimiento", name: "Conocimiento", icon: "💡", buildings: ["circulo", "archivo", "piedras", "academia", "escuela", "escuela_escribas"] },
+  { id: "animo", name: "Ánimo y salud", icon: "😊", buildings: ["fogata", "pared", "huerto", "casa_salud"] },
+  { id: "almacenamiento", name: "Almacenamiento", icon: "📦", buildings: ["granero"] },
+  { id: "potenciacion", name: "Potenciación", icon: "⚡", buildings: ["grua", "canal", "noria", "acueducto"] },
+];
+
 // ---------- Mejoras de edificios ----------
 // Desde la ficha de un edificio se lo puede mejorar al siguiente, con descuento (config.DESCUENTO_MEJORA).
 // Mientras se mejora, el edificio sigue funcionando.
