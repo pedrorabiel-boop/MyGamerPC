@@ -44,8 +44,8 @@ export function migratePriorities(j: JefaturaState) {
 
 export type Task =
   | { kind: "idle"; t: number }
-  | { kind: "toNode"; nodeId: number; res: ResId }
-  | { kind: "gather"; nodeId: number; res: ResId; t: number }
+  | { kind: "toNode"; nodeId: number; res: ResId; amt?: number } // amt: lo que reservó en ese nodo
+  | { kind: "gather"; nodeId: number; res: ResId; t: number; amt?: number }
   | { kind: "toBuilding"; bId: number }
   | { kind: "work"; bId: number; t: number }
   | { kind: "toSite"; bId: number }
@@ -125,7 +125,8 @@ export interface GameState {
   introQueue: string[]; // tarjetas de novedad pendientes (ids de tecnología)
   prototypeEnded: boolean;
   applied: Record<string, boolean>;
-  lastTrade?: { from: ResId; to: ResId }; // último cambio del mercado (para la ficha) // efectos de tecnologías que se aplican una sola vez (crecer el Valle, +vida)
+  marketOrder: ResId | null; // lo que el jugador le pidió al mercader
+  lastTrade?: { from: ResId; to: ResId; price: number }; // último cambio del mercado (para la ficha)
   lostDismissed?: boolean; // el jugador eligió seguir mirando tras perder
   birthAcc: number;
   savedAt: number;
@@ -207,7 +208,7 @@ function valleMap(): ZoneMap {
 /** H02 Geometría y arquitectura: el Valle crece hacia abajo (8×12 → 8×16). */
 export const VALLE_ALTO_GRANDE = 16;
 const VALLE_NUEVOS_NODOS: [NodeType, number, number][] = [
-  ["arbol", 0, 13], ["arbol", 1, 15], ["arbol", 4, 15],
+  ["arbol", 0, 13], ["arbol", 2, 14], ["arbol", 4, 15],
   ["roca", 3, 13], ["arbusto", 2, 12], ["arbusto", 5, 14], ["pasto", 4, 12],
   ["arcilla", 6, 13], ["arcilla", 6, 15], ["arena", 6, 14],
 ];
@@ -226,6 +227,7 @@ export function growValle(s: GameState) {
   z.exits.montanas = sendero;
   z.h = VALLE_ALTO_GRANDE;
   for (const [type, x, y] of VALLE_NUEVOS_NODOS) {
+    if (z.tiles[y][x] === "sendero") continue; // el sendero baja a la última fila: nada encima
     if (s.nodes.some((n) => n.zone === "valle" && n.x === x && n.y === y)) continue;
     if (s.buildings.some((b) => b.zone === "valle" && b.x === x && b.y === y)) continue;
     addNode(s, "valle", type, x, y);
@@ -323,6 +325,7 @@ export function createState(seed = Date.now() % 100000): GameState {
     debug: { infinite: {}, unlockOnTap: false },
     resolved: {},
     focus: null,
+    marketOrder: null,
     introQueue: [],
     prototypeEnded: false,
     applied: {},
@@ -371,6 +374,20 @@ export function migrateToZones(s: GameState & { w?: number; h?: number; tiles?: 
   for (let y = 0; y < valle.h; y++) for (let x = 0; x < valle.w; x++) {
     if (valle.tiles[y][x] === "sendero") valle.exits.montanas = { x, y };
   }
+  // Recursos que quedaron encima del sendero o de la cueva (el Valle creció con un árbol en el
+  // sendero nuevo): se mudan a la casilla de pasto libre más cercana.
+  for (const n of s.nodes) {
+    if (n.zone !== "valle") continue;
+    const t = valle.tiles[n.y]?.[n.x];
+    if (t !== "sendero" && t !== "cueva") continue;
+    let best: { x: number; y: number } | null = null, bd = Infinity;
+    for (let y = 0; y < valle.h; y++) for (let x = 0; x < valle.w; x++) {
+      const d = Math.abs(x - n.x) + Math.abs(y - n.y);
+      if (valle.tiles[y][x] === "pasto" && free(x, y) && d < bd) { bd = d; best = { x, y }; }
+    }
+    if (best) { n.x = best.x; n.y = best.y; } // si no hay lugar, se quita (abajo)
+  }
+  s.nodes = s.nodes.filter((n) => n.zone !== "valle" || (valle.tiles[n.y]?.[n.x] !== "sendero" && valle.tiles[n.y]?.[n.x] !== "cueva"));
   if (!s.zones.cueva) addCave(s);
   s.zones.cueva.exits = { valle: { x: 3, y: 9 } };
   if (!s.zones.montanas) addMontanas(s);

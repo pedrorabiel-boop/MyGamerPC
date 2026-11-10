@@ -232,19 +232,23 @@ export function MapView() {
             const gap = r * 2.5;
             const startX = x + ts / 2 - ((n - 1) * gap) / 2;
             const cy = y + ts - r * 0.4;
-            // Píldora oscura detrás de los puntos, para que se lean sobre cualquier fondo.
-            buildingsG.roundRect(startX - r * 1.5, cy - r * 1.4, (n - 1) * gap + r * 3, r * 2.8, r * 1.4).fill({ color: 0x111111, alpha: 0.85 });
+            // Barra oscura detrás de los puestos, para que se lean sobre cualquier fondo.
+            buildingsG.roundRect(startX - r * 1.5, cy - r * 1.4, (n - 1) * gap + r * 3, r * 2.8, r * 0.5).fill({ color: 0x111111, alpha: 0.85 });
+            // Rombos (no círculos): un círculo verde o rojo se confundía con un aldeano.
+            const diamond = (cx: number, h: number) => [cx, cy - h, cx + h, cy, cx, cy + h, cx - h, cy];
             for (let i = 0; i < n; i++) {
               const cx = startX + i * gap;
-              if (i < have) buildingsG.circle(cx, cy, r).fill(0x7fe07a);
-              else buildingsG.circle(cx, cy, r * 0.8).stroke({ width: 2, color: 0xff5a4a });
+              if (i < have) buildingsG.poly(diamond(cx, r * 1.15)).fill(0x7fe07a);
+              else buildingsG.poly(diamond(cx, r * 0.95)).stroke({ width: 2, color: 0xff5a4a });
             }
             // Marca "!" si le falta gente.
             if (have < n) {
-              const bx = x + ts - r * 0.9, by = y + r * 0.9;
-              buildingsG.circle(bx, by, r * 1.1).fill(0xe0453a).stroke({ width: 1.5, color: 0xffffff });
-              buildingsG.rect(bx - r * 0.18, by - r * 0.65, r * 0.36, r * 0.75).fill(0xffffff);
-              buildingsG.circle(bx, by + r * 0.45, r * 0.2).fill(0xffffff);
+              const bx = x + ts - r * 0.9, by = y + r * 1.4;
+              // Señal de aviso triangular (tampoco un círculo, por lo mismo).
+              const h = r * 1.35;
+              buildingsG.poly([bx, by - h, bx + h, by + h * 0.75, bx - h, by + h * 0.75]).fill(0xe0453a).stroke({ width: 1.5, color: 0xffffff });
+              buildingsG.rect(bx - r * 0.16, by - r * 0.45, r * 0.32, r * 0.7).fill(0xffffff);
+              buildingsG.rect(bx - r * 0.16, by + r * 0.42, r * 0.32, r * 0.28).fill(0xffffff);
             }
           }
           if (b.built && b.upgradeTo) {

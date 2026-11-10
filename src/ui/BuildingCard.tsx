@@ -6,6 +6,7 @@ import { cancelUpgrade, changeSpecialists, demolish, startUpgrade, upgradeCost, 
 import { canAfford, staffCount } from "../sim/economy";
 import { hasJefatura, specialtyTarget } from "../sim/jefatura";
 import { missingText } from "./format";
+import { MarketOrder } from "./MarketOrder";
 
 const fmtCost = (c: Partial<Record<ResId, number>>) =>
   Object.entries(c).map(([r, n]) => `${RES_BY_ID[r as ResId].icon}${n}`).join(" ");
@@ -53,12 +54,7 @@ export function BuildingCard() {
           {staff.by === "especialista" && hasJefatura(s) && b.built && (
             <div className="muted">🏛️ Meta de la Jefatura para esta especialidad: {specialtyTarget(s, b.type)}. Con − / + la cambias.</div>
           )}
-          {b.type === "mercado" && (
-            <div className="muted">
-              ⚖️ Cada {staff.cycle} s cambia {config.MERCADO_TASA} de lo que más sobra por 1 de lo que más falta{s.focus ? ` (ahora compra ${RES_BY_ID[s.focus].icon} ${RES_BY_ID[s.focus].name}, el recurso en 🎯)` : ""}.
-              {s.lastTrade && <> Último cambio: {config.MERCADO_TASA}{RES_BY_ID[s.lastTrade.from].icon} → 1{RES_BY_ID[s.lastTrade.to].icon}.</>}
-            </div>
-          )}
+          {b.type === "mercado" && b.built && <MarketOrder />}
           {staff.by === "comida" && <div className="muted">Lo ocupa sola la gente de 🍖 Comida (más gente en Comida = más puestos llenos).</div>}
           {(staff.inputs || staff.outputs) && (
             <div className="muted">

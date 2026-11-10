@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { config } from "../config";
-import { BUILDINGS, MATERIALS, RESOURCES, ROLES, TECH_INTRO } from "../content";
+import { BUILDINGS, MATERIALS, RESOURCES, ROLES, TECH_INTRO, type ResId } from "../content";
 import { IMPLEMENTED_ERAS, TECHS, TECH_BY_ID, techCost } from "../data/tree";
 import {
   changeRoleCount, changeSpecialists, debugAddVillagers, demolish, debugToggleInfinite, place, setRole, study, tapBook, techStatus,
@@ -12,7 +12,8 @@ import { parseSave, simulateOffline } from "./save";
 import { changeZoneQuota, zoneCount } from "./zones";
 import { focusPlan, isFocusable, sourcesOf, usesOf, WILD_LOW, wildState } from "./guide";
 import { createState, type Building, type GameState } from "./state";
-import { step, trade } from "./step";
+import { step } from "./step";
+import { marketPrice, marketQuote, resTier, trade } from "./market";
 
 const run = (s: GameState, seconds: number) => { for (let t = 0; t < seconds; t += 0.1) step(s, 0.1); };
 const addBuilding = (s: GameState, type: string, x: number, y: number): Building => {
@@ -688,6 +689,18 @@ describe("Era 4: Hierro / Clásica", () => {
     return s;
   };
 
+  it("una partida guardada con un árbol encima del sendero lo muda a una casilla libre", () => {
+    const s = era4(80);
+    s.techs.H02 = true;
+    step(s, 0.1);
+    const tree = s.nodes.find((n) => n.zone === "valle" && n.type === "arbol")!;
+    tree.x = 1; tree.y = 15; // como quedaban las partidas antes del arreglo
+    const loaded = parseSave(JSON.stringify(s))!;
+    const moved = loaded.nodes.find((n) => n.id === tree.id)!;
+    expect(loaded.zones.valle.tiles[moved.y][moved.x]).toBe("pasto");
+    expect(loaded.zones.valle.exits.montanas).toEqual({ x: 1, y: 15 });
+  });
+
   it("con Geometría el Valle crece hacia abajo y el sendero baja al borde", () => {
     const s = era4(80);
     const nodes = s.nodes.length;
@@ -701,6 +714,10 @@ describe("Era 4: Hierro / Clásica", () => {
     expect(z.tiles[11][1]).toBe("pasto");
     expect(z.tiles[14][6]).toBe("orilla");
     expect(s.nodes.length).toBeGreaterThan(nodes);
+    // Nada queda encima del sendero ni de otro recurso (playtest 8: un árbol tapaba la montaña).
+    const valleNodes = s.nodes.filter((n) => n.zone === "valle");
+    for (const n of valleNodes) expect(z.tiles[n.y][n.x], `${n.type} en ${n.x},${n.y}`).not.toBe("sendero");
+    expect(new Set(valleNodes.map((n) => `${n.x},${n.y}`)).size).toBe(valleNodes.length);
     step(s, 0.1); // no vuelve a crecer
     expect(z.h).toBe(16);
     // Se sigue llegando a las Montañas por el sendero nuevo.
@@ -727,17 +744,52 @@ describe("Era 4: Hierro / Clásica", () => {
     expect(s.inv.hierro).toBeGreaterThan(0);
   });
 
-  it("el mercado cambia 3 de lo que sobra por 1 de lo que falta, o del recurso en foco", () => {
+  it("la complejidad sale de las recetas: natural 1, un paso 2, dos pasos 3, tres pasos 4", () => {
+    for (const r of ["comida", "madera", "arcilla", "lana", "mineral", "mineral_hierro"] as ResId[]) expect(resTier(r)).toBe(1);
+    for (const r of ["carbon", "ceramica", "tela"] as ResId[]) expect(resTier(r)).toBe(2);
+    for (const r of ["cobre", "ladrillo", "vidrio", "hierro"] as ResId[]) expect(resTier(r)).toBe(3);
+    for (const r of ["bronce", "vidrio_claro", "engranajes"] as ResId[]) expect(resTier(r)).toBe(4);
+    expect(marketPrice("comida", "madera")).toBe(3);
+    expect(marketPrice("comida", "carbon")).toBe(6);
+    expect(marketPrice("comida", "ladrillo")).toBe(12);
+    expect(marketPrice("comida", "engranajes")).toBe(24);
+    expect(marketPrice("ladrillo", "comida")).toBe(1); // hacia abajo: barato, nunca gratis
+  });
+
+  it("el mercado solo cambia lo que se le pide, pagando con lo que sobra al precio de la complejidad", () => {
     const s = era4(82, ["H07"]);
     for (const r of RESOURCES) s.inv[r.id] = 0;
     s.inv.madera = 90; s.inv.piedra = 10; // almacén: 100
-    expect(trade(s)).toEqual({ from: "madera", to: expect.any(String) });
+    expect(trade(s)).toBeNull(); // sin pedido no hace nada
+    s.marketOrder = "arcilla";
+    expect(trade(s)).toEqual({ from: "madera", to: "arcilla", price: 3 });
     expect(s.inv.madera).toBe(87);
-    s.focus = "arcilla";
-    expect(trade(s)).toEqual({ from: "madera", to: "arcilla" });
-    expect(s.inv.arcilla).toBe(1);
-    s.inv.madera = 2; s.inv.piedra = 2;
-    expect(trade(s)).toBeNull(); // nada sobra
+    s.marketOrder = "ladrillo";
+    expect(marketQuote(s, "ladrillo")).toEqual({ ok: true, from: "madera", price: 12 });
+    expect(trade(s)).not.toBeNull();
+    expect(s.inv.madera).toBe(75);
+    s.inv.madera = 40; // menos de la mitad del almacén: ya no sobra
+    expect(trade(s)).toBeNull();
+    expect(marketQuote(s, "ladrillo").ok).toBe(false);
+  });
+
+  it("el mercader hace un cambio cada MERCADO_CICLO segundos", () => {
+    const s = era4(83, ["H07"]);
+    for (const r of RESOURCES) s.inv[r.id] = 0;
+    const m = addBuilding(s, "mercado", 2, 3);
+    debugAddVillagers(s, 1);
+    expect(changeSpecialists(s, m.id, 1)).toBeNull();
+    s.marketOrder = "arcilla";
+    s.animo = 1;
+    let trades = 0, last = s.lastTrade;
+    for (let i = 0; i < 90 * 10; i++) {
+      s.inv.madera = 90; s.inv.arcilla = 0;
+      step(s, 0.1);
+      if (s.lastTrade !== last) { trades++; last = s.lastTrade; }
+    }
+    // 90 s, con el viaje hasta el mercado y los bonos de velocidad: 2 a 4 cambios (antes eran ~18).
+    expect(trades).toBeGreaterThanOrEqual(2);
+    expect(trades).toBeLessThanOrEqual(4);
   });
 
   it("la grúa y la geometría aceleran las obras", () => {
@@ -787,6 +839,47 @@ describe("Era 4: Hierro / Clásica", () => {
     run(s, 40);
     expect(tree.improved2).toBe(true);
     expect(nodeRegen(tree, "madera")).toBeCloseTo(base * config.MEJORA_PLANTACION);
+  });
+});
+
+describe("reservas de recolección", () => {
+  const crowd = (seed: number, n: number) => {
+    const s = createState(seed);
+    for (const t of ["P01", "P02", "N03"]) s.techs[t] = true;
+    s.debug.infinite.comida = true;
+    debugAddVillagers(s, n - s.villagers.length);
+    for (const v of s.villagers) { v.age = 20; v.lifespan = 999; v.role = "materiales"; }
+    return s;
+  };
+  const countEmpty = (s: GameState, seconds: number) => {
+    let trips = 0, empty = 0;
+    const had = new Map<number, boolean>();
+    for (let i = 0; i < seconds * 10; i++) {
+      for (const r of ["ramas", "piedra", "fibras", "madera", "arcilla"] as const) s.inv[r] = 0;
+      step(s, 0.1);
+      for (const v of s.villagers) {
+        if (v.carry && !had.get(v.id)) { trips++; if (v.carry.amt < 0.05) empty++; }
+        had.set(v.id, !!v.carry);
+      }
+    }
+    return { trips, empty };
+  };
+
+  it("20 aldeanos no hacen viajes vacíos (ni con foco)", () => {
+    const s = crowd(90, 20);
+    s.focus = "arcilla";
+    const r = countEmpty(s, 180);
+    expect(r.trips).toBeGreaterThan(50);
+    expect(r.empty).toBe(0);
+  });
+
+  it("si todo está agotado, esperan junto a la pila en vez de ir y volver", () => {
+    const s = crowd(91, 10);
+    for (const n of s.nodes) for (const r of Object.keys(n.stock)) n.stock[r as keyof typeof n.stock] = 0;
+    const r = countEmpty(s, 3);
+    expect(r.trips).toBe(0);
+    const pila = s.buildings.find((b) => b.type === "pila")!;
+    for (const v of s.villagers) expect(Math.hypot(v.x - pila.x - 0.5, v.y - pila.y - 0.5)).toBeLessThan(4);
   });
 });
 

@@ -1,6 +1,6 @@
 import { config } from "../config";
 import {
-  BUILDING_BY_ID, FOOD_GATHER, MATERIALS, NODE_DEFS, RES_BY_ID, RESOURCES, RESOLUTIONS,
+  BUILDING_BY_ID, FOOD_GATHER, MATERIALS, NODE_DEFS, RES_BY_ID, RESOLUTIONS,
   type NodeType, type ResId,
 } from "../content";
 import { ERAS, IMPLEMENTED_ERAS } from "../data/tree";
@@ -10,6 +10,7 @@ import {
 import { hasJefatura, runJefatura } from "./jefatura";
 import { maintainZoneQuotas } from "./zones";
 import { focusTargets } from "./guide";
+import { trade } from "./market";
 import { growValle, log, newVillager, rand, type Building, type GameState, type ResNode, type Villager, type ZoneId } from "./state";
 
 /** Avanza la simulación `dt` segundos de juego. Usar pasos pequeños (≤ 0,5 s). */
@@ -26,6 +27,7 @@ export function step(s: GameState, dt: number) {
   maintainZoneQuotas(s, dt);
   if (hasJefatura(s)) runJefatura(s, dt);
   const occ = occupancy(s);
+  rebuildClaims(s);
   for (const v of s.villagers) updateVillager(s, v, dt, occ);
   elderComprension(s, dt);
   checkEras(s);
@@ -245,10 +247,44 @@ function nearestStore(s: GameState, v: Villager): Building {
   return best!;
 }
 
-function nearestNode(s: GameState, v: Villager, type: NodeType, res: ResId): ResNode | null {
+// ---------- Reservas de recolección ----------
+// Cada aldeano que va hacia un recurso natural aparta lo que piensa cargar. Así no van 20
+// personas al mismo árbol que alcanza para 2 viajes: el resto elige otro lugar u otro material.
+
+let claims = new Map<string, number>(); // "nodo:recurso" → cantidad reservada
+const claimKey = (nodeId: number, res: ResId) => `${nodeId}:${res}`;
+
+function rebuildClaims(s: GameState) {
+  claims = new Map();
+  for (const v of s.villagers) {
+    if (v.carry || (v.task.kind !== "toNode" && v.task.kind !== "gather")) continue;
+    const k = claimKey(v.task.nodeId, v.task.res);
+    claims.set(k, (claims.get(k) ?? 0) + (v.task.amt ?? config.CARGA_BASE));
+  }
+}
+
+const claimed = (n: ResNode, res: ResId) => claims.get(claimKey(n.id, res)) ?? 0;
+function claim(n: ResNode, res: ResId, amt: number) {
+  const k = claimKey(n.id, res);
+  claims.set(k, Math.max(0, (claims.get(k) ?? 0) + amt));
+}
+
+/** Cuánto carga un aldeano por viaje. */
+const carryCapacity = (s: GameState, carryMult: number) =>
+  config.CARGA_BASE * (has(s, "P02") ? config.BONO_CESTA : 1) * (has(s, "B04") ? config.BONO_RUEDA : 1) * carryMult;
+
+/** Lo que queda sin reservar en un nodo. */
+export const unclaimed = (n: ResNode, res: ResId) => (n.stock[res] ?? 0) - claimed(n, res);
+
+/**
+ * El nodo más cercano donde todavía queda algo sin reservar (al menos media carga, o 1).
+ * null si todo está agotado o reservado por otros.
+ */
+function nearestNode(s: GameState, v: Villager, type: NodeType, res: ResId, carryMult = 1): ResNode | null {
+  const need = Math.max(1, Math.min(carryCapacity(s, carryMult) * 0.5, 2));
   let best: ResNode | null = null, bd = Infinity;
   for (const n of s.nodes) {
-    if (n.type !== type || n.zone !== v.zone || (n.stock[res] ?? 0) < 1) continue;
+    if (n.type !== type || n.zone !== v.zone || unclaimed(n, res) < need) continue;
     const d = dist(v.x, v.y, n.x + 0.5, n.y + 0.5);
     if (d < bd) { bd = d; best = n; }
   }
@@ -328,10 +364,10 @@ function foodWork(s: GameState, v: Villager, dt: number, occ: Map<number, number
     return workAt(s, v, dt, best);
   }
   for (const m of FOOD_GATHER) {
-    if (!has(s, m.tech) || !nearestNode(s, v, m.node, "comida")) continue;
+    if (!has(s, m.tech) || !nearestNode(s, v, m.node, "comida", m.carryMult)) continue;
     return gather(s, v, dt, { node: m.node, res: "comida", carryMult: m.carryMult, bonus: m.bonus }, null);
   }
-  wander(s, v, dt, v.x, v.y, 1);
+  waitNearStore(s, v, dt);
 }
 
 /** Materiales: junta el material que más falta (en proporción a su límite de almacenamiento). */
@@ -355,8 +391,14 @@ function materialsWork(s: GameState, v: Villager, dt: number) {
     const ratio = s.inv[m.res] / storageCap(s, m.res) + rand(s) * 0.05; // un poco de azar para repartir
     if (ratio < low) { low = ratio; pick = m; }
   }
-  if (!pick) return wander(s, v, dt, v.x, v.y, 1);
+  if (!pick) return waitNearStore(s, v, dt);
   gather(s, v, dt, { node: pick.node, res: pick.res, carryMult: 1 }, null);
+}
+
+/** No hay nada sin reservar: espera cerca de la pila (en vez de caminar en vano) hasta que algo crezca. */
+function waitNearStore(s: GameState, v: Villager, dt: number) {
+  const store = nearestStore(s, v);
+  wander(s, v, dt, store.x + 0.5, store.y + 0.5, 1.5);
 }
 
 /** Qué está recolectando ahora (para continuar el viaje en curso). */
@@ -384,25 +426,32 @@ function gather(s: GameState, v: Villager, dt: number, spec: GatherSpec | null, 
   }
   if (!spec) { v.task = { kind: "idle", t: 0 }; return; }
   if (v.task.kind !== "toNode" && v.task.kind !== "gather") {
-    const node = fixedNode != null ? s.nodes.find((n) => n.id === fixedNode) : nearestNode(s, v, spec.node, spec.res);
+    const node = fixedNode != null ? s.nodes.find((n) => n.id === fixedNode) : nearestNode(s, v, spec.node, spec.res, spec.carryMult);
     if (!node || (node.stock[spec.res] ?? 0) < 0.5) {
       if (v.order) v.order = null;
-      return wander(s, v, dt, v.x, v.y, 1);
+      return waitNearStore(s, v, dt);
     }
-    v.task = { kind: "toNode", nodeId: node.id, res: spec.res };
+    const amt = Math.min(carryCapacity(s, spec.carryMult), Math.max(0, unclaimed(node, spec.res)));
+    claim(node, spec.res, amt);
+    v.task = { kind: "toNode", nodeId: node.id, res: spec.res, amt };
   }
   const task = v.task;
   const node = s.nodes.find((n) => n.id === task.nodeId);
   if (!node) { v.task = { kind: "idle", t: 0 }; return; }
   if (task.kind === "toNode") {
-    if (moveTo(v, node.x + 0.5, node.y + 0.5, dt)) v.task = { kind: "gather", nodeId: node.id, res: task.res, t: 0 };
+    if (moveTo(v, node.x + 0.5, node.y + 0.5, dt)) {
+      if ((node.stock[task.res] ?? 0) < 0.5) { v.task = { kind: "idle", t: 0 }; return; } // se le adelantaron: elige de nuevo
+      v.task = { kind: "gather", nodeId: node.id, res: task.res, t: 0, amt: task.amt };
+    }
     return;
   }
   const speed = (has(s, "P02") ? config.BONO_HERRAMIENTAS : 1) * workSpeed(s) * s.animo;
   task.t += dt * speed;
   if (task.t >= config.TIEMPO_RECOLECTAR) {
-    const capacity = config.CARGA_BASE * (has(s, "P02") ? config.BONO_CESTA : 1) * (has(s, "B04") ? config.BONO_RUEDA : 1) * spec.carryMult;
+    const capacity = carryCapacity(s, spec.carryMult);
     const take = Math.min(node.stock[task.res] ?? 0, capacity);
+    claim(node, task.res, -(task.amt ?? capacity));
+    if (take < 0.05) { v.task = { kind: "idle", t: 0 }; if (v.order) v.order = null; return; } // vacío: no vuelve con las manos vacías
     node.stock[task.res] = (node.stock[task.res] ?? 0) - take;
     v.carry = { res: task.res, amt: take };
     if (spec.bonus) {
@@ -505,7 +554,8 @@ function workAt(s: GameState, v: Villager, dt: number, b: Building) {
   if (v.task.kind !== "work") return;
   if (staff.inputs && !canAfford(s, staff.inputs)) return; // espera materiales
   v.task.t += dt * s.animo * workSpeed(s);
-  if (v.task.t >= staff.cycle) {
+  const cycle = b.type === "mercado" ? config.MERCADO_CICLO : staff.cycle;
+  if (v.task.t >= cycle) {
     v.task.t = 0;
     if (b.type === "mercado") { trade(s); return; }
     if (staff.inputs) pay(s, staff.inputs);
@@ -515,32 +565,6 @@ function workAt(s: GameState, v: Villager, dt: number, b: Building) {
     bonus *= zoneEfficiency(b.zone);
     for (const [r, amt] of Object.entries(staff.outputs ?? {})) add(s, r as ResId, (amt ?? 0) * bonus);
   }
-}
-
-/**
- * Mercado: cambia MERCADO_TASA de lo que más sobra (proporcionalmente al almacén) por 1 de lo
- * que más falta. Si hay un recurso en 🎯, compra ese.
- */
-export function trade(s: GameState): { from: ResId; to: ResId } | null {
-  const known = RESOURCES.map((r) => r.id).filter((r) => r !== "comprension" && !unlimited(s, r) && s.inv[r] > 0);
-  const fill = (r: ResId) => s.inv[r] / storageCap(s, r);
-  const sellable = known.filter((r) => s.inv[r] >= config.MERCADO_TASA && fill(r) >= 0.5);
-  if (sellable.length === 0) return null;
-  const from = sellable.reduce((a, b) => (fill(b) > fill(a) ? b : a));
-  let to: ResId | null | undefined = s.focus && s.focus !== from && !unlimited(s, s.focus) && fill(s.focus) < 1 ? s.focus : null;
-  if (!to) {
-    // Lo que más falta entre lo que la tribu usa (recolecta o tiene).
-    const wanted = RESOURCES.map((r) => r.id).filter((r) => r !== "comprension" && r !== from && !unlimited(s, r)
-      && (s.inv[r] > 0 || MATERIALS.some((m) => m.res === r && has(s, m.tech))));
-    if (wanted.length === 0) return null;
-    to = wanted.reduce((a, b) => (fill(b) < fill(a) ? b : a));
-    if (fill(to) >= fill(from)) return null;
-  }
-  if (!to) return null;
-  s.inv[from] -= config.MERCADO_TASA;
-  add(s, to, 1);
-  s.lastTrade = { from, to };
-  return { from, to };
 }
 
 /**

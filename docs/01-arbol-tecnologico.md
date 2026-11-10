@@ -603,8 +603,13 @@ La aldea pasa a ser **ciudad**: hierro, filosofía, comercio y obras grandes.
   de hierro**; la **Forja** convierte mineral de hierro + carbón vegetal en hierro. Esto
   **duplica la demanda de carbón vegetal** y presiona la madera: con N12, las Arboledas
   pueden subir a **Plantación** (segundo nivel).
-- **Mercado (en lugar de las Monedas):** un mercader cambia lo que sobra por lo que
-  falta. La Tienda del diablo sigue pospuesta.
+- **Mercado (en lugar de las Monedas):** el jugador **pide** qué comprar y el mercader
+  paga con lo que sobra, **un cambio cada 30 s** (una caravana). El precio depende de la
+  **complejidad** del recurso: cuántos pasos de fabricación tiene detrás (natural = 1,
+  carbón = 2, ladrillo = 3, bronce = 4…). Mismo nivel: 3 por 1; **cada nivel que sube
+  duplica el precio** (6, 12, 24 por 1); hacia abajo es barato, nunca gratis (mínimo 1
+  por 1). Sirve para destrabar un faltante, no para reemplazar una cadena. La Tienda del
+  diablo sigue pospuesta.
 - **Urbanismo:** el Valle **crece hacia abajo** (de 8×12 a 8×16): el río y la orilla
   siguen donde están. Todos los mapas ocupan el ancho de la pantalla y se recorren con
   **scroll vertical**, con margen arriba y abajo para que el HUD no tape nada.
@@ -618,7 +623,7 @@ Las 13 tecnologías originales se fusionaron en **7** (playtest 7).
 | H05 | Filosofía y lógica | B06 | 🏗️ Academia · 👤 Filósofo · ✋ Piedra imán · 📖 | *(Filosofía + Lógica + Magnetita)*. **Academia** con filósofos: mucha Comprensión (los ancianos también sirven). **Raíz del software** (lógica) y del magnetismo: la piedra imán de Tales. Filósofos que caminan en círculos: *"Si p entonces GPU."* |
 | H01 | Hierro | B03, B07 | 🏗️ Mina de hierro, Forja · 👤 Herrero de hierro · 📦 Mineral de hierro, Hierro · ✋ Herram. de hierro | *(Hierro + Silvicultura)*. Mina sobre las rocas rojas de las Montañas y Forja (mineral + carbón → hierro). **Herramientas de hierro: todos trabajan más rápido.** Con N12, la Arboleda sube a **Plantación**. *"Plantar árboles para quemarlos. El ciclo de la vida."* |
 | H02 | Geometría y arquitectura | B06 | 🏗️ Grúa · ✋ Escuadra y compás | *(Geometría + Arco y arquitectura + Palanca y polea)*. **Los constructores van más rápido**, la **Grúa** acelera las obras vecinas y **el Valle crece** (8×12 → 8×16). Base de la matemática |
-| H07 | Mercado | B04, B03 | 🏗️ Mercado · 👤 Mercader | *(antes Moneda)*. El mercader **cambia 3 de lo que más sobra por 1 de lo que más falta** (o del recurso en 🎯). Raíz de los Gremios y la Banca |
+| H07 | Mercado | B04, B03 | 🏗️ Mercado · 👤 Mercader | *(antes Moneda)*. Tú eliges qué comprar; el mercader paga con lo que sobra, **un cambio cada 30 s**, a un **precio según la complejidad** (3 por 1 en el mismo nivel, ×2 por cada nivel que sube). Raíz de los Gremios y la Banca |
 | H08 | Vidrio soplado | B07, H01 | 📦 Vidrio claro · ✋ Caña de soplar | La vidriería hace **vidrio claro** (vidrio + carbón). Lentes, tubos, matraces y (mucho después) pantallas |
 | H13 | Engranajes | H02, B03 | 🏗️ Noria · 📦 Engranajes | **Noria** junto al río o a un canal: las parcelas vecinas rinden mucho más. Primera máquina con engranajes; adelanta al Molino |
 | H04 | Acueducto y medicina 🌿 | H02, B09, N11 | 🏗️ Acueducto, Casa de salud | *(Acueducto + Medicina clásica)*. **Canales lejos del río** y **Casa de salud: +10 años de vida** (50 → 60). La salud pública romana |
@@ -1046,7 +1051,7 @@ sociedad y al final se construye el PC.
 
 ### v2.9 (borrador) — Era 4 consolidada
 - **13 → 7 tecnologías:** Filosofía y lógica (+ Magnetita), Hierro (+ Silvicultura: Plantación), Geometría y arquitectura (+ Arco, + Palanca y polea), Mercado, Vidrio soplado, Engranajes y Acueducto y medicina (🌿).
-- **H07 Moneda → Mercado**: trueque de lo que sobra por lo que falta, sin Monedas (la Tienda sigue pospuesta).
+- **H07 Moneda → Mercado**: trueque de lo que sobra por lo que falta, sin Monedas (la Tienda sigue pospuesta). Tras el playtest 8: pedido manual, un cambio cada 30 s y precio según la complejidad del recurso.
 - **El Valle crece hacia abajo** (8×16) con H02, y todos los mapas pasan a ocupar el ancho de la pantalla con scroll vertical.
 - Requisitos de eras siguientes reapuntados: H06/H09 → H05, H03/H11 → H02 (Física clásica → H13), H10 → H04, H12 → H01.
 

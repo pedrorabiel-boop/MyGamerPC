@@ -89,13 +89,16 @@ En desarrollo, el motor también queda en la consola del navegador como `window.
   recurso sale de un edificio (ladrillo, vidrio…), Materiales junta lo que alimenta su
   cadena (arcilla, madera…) y el menú avisa si falta construir algo o poner un trabajador.
 - La enfermedad solo mata cuando la tribu llega a 10 habitantes.
+- Los recolectores **reservan** lo que van a cargar: no van todos al mismo árbol ni vuelven
+  con las manos vacías; si no queda nada, esperan junto a la pila.
 - **Técnicas de recolección** (Era 2, 🌿): tocando un recurso natural se abre su ficha, y se
   puede **mejorar en su lugar** (Barrero, Cantera, Arboleda, Pastizal, Huerto de bayas…): se
   regenera más rápido y guarda el doble. Lo hacen los constructores.
 - **Edad de Hierro (Era 4, 7 tecnologías):** Academia con filósofos, **mina de hierro** sobre
   las rocas rojas y Forja (herramientas de hierro: todos trabajan más rápido; las Arboledas
   suben a Plantación), **Geometría y arquitectura** (constructores más rápidos, Grúa y **el
-  Valle crece a 8×16**), **Mercado** (cambia 3 de lo que sobra por 1 de lo que falta),
+  Valle crece a 8×16**), **Mercado** (pides qué comprar y el mercader paga con lo que sobra, un cambio cada 30 s,
+  más caro cuanto más complejo es el recurso),
   vidrio soplado, engranajes y Noria, y Acueducto y medicina (🌿: canales en cualquier
   parte, +10 años de vida).
 - Todos los mapas ocupan el ancho de la pantalla; si no caben, se recorren **arrastrando

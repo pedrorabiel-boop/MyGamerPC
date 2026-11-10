@@ -28,6 +28,8 @@ export function parseSave(text: string): GameState | null {
     s.resolved ??= {};
     s.introQueue ??= [];
     s.focus ??= null;
+    s.marketOrder ??= null;
+    if (s.lastTrade && s.lastTrade.price == null) delete s.lastTrade; // partidas de antes del pedido manual
     s.applied ??= {};
     s.jefatura ??= defaultJefatura();
     migratePriorities(s.jefatura);
