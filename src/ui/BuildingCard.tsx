@@ -41,6 +41,16 @@ export function BuildingCard() {
         <button className="x" onClick={() => { engine.ui.selectedBuilding = null; engine.notify(); }}>✕</button>
       </div>
       <div className="muted">{def.desc}</div>
+      {def.onNode === "arbol" && (() => {
+        const tree = s.nodes.find((n) => n.zone === b.zone && n.x === b.x && n.y === b.y);
+        if (!tree) return null;
+        return (
+          <div className="inline">
+            <span className="muted">{tree.improved2 ? "Sobre una Plantación: rinden ×" + String(config.BONO_LENADOR_PLANTACION).replace(".", ",") : "Sobre una Arboleda"}</span>
+            <button className="chip" onClick={() => { engine.ui.selectedNode = tree.id; engine.ui.selectedBuilding = null; engine.notify(); }}>🌳 Ver el árbol</button>
+          </div>
+        );
+      })()}
       {staff && (
         <div className="staff">
           <div className="staff-row">

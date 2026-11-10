@@ -877,6 +877,36 @@ describe("Era 4: Hierro / Clásica", () => {
     expect(tree.improved2).toBe(true);
     expect(nodeRegen(tree, "madera")).toBeCloseTo(base * config.MEJORA_PLANTACION);
   });
+
+  it("el Leñador solo va sobre un árbol mejorado (playtest 9)", () => {
+    const s = era4(87);
+    s.inv.madera = 50; s.inv.piedra = 50;
+    const tree = s.nodes.find((n) => n.zone === "valle" && n.type === "arbol")!;
+    expect(place(s, "lenador", tree.x, tree.y)).toMatch(/Arboleda/);
+    expect(place(s, "lenador", 3, 3)).toMatch(/Arboleda/); // tampoco en pasto libre
+    tree.improved = true;
+    expect(place(s, "lenador", tree.x, tree.y)).toBeNull();
+  });
+
+  it("los leñadores dan madera a ritmo fijo aunque el árbol esté pelado, y más en una Plantación (playtest 9)", () => {
+    const s = era4(88);
+    const tree = s.nodes.find((n) => n.zone === "valle" && n.type === "arbol")!;
+    tree.improved = true;
+    const hut = addBuilding(s, "lenador", tree.x, tree.y);
+    debugAddVillagers(s, 4);
+    setSpecialtyFull(s, "lenador", true); // con Jefatura: ocupación total
+    run(s, 15); // la Jefatura los pone y llegan al puesto
+    expect(staffCount(s, hut)).toBe(2);
+    const madera = () => { s.inv.madera = 0; for (const n of s.nodes) if (n.type === "arbol") n.stock.madera = 0; run(s, 60); return s.inv.madera; };
+    const arboleda = madera();
+    expect(arboleda).toBeGreaterThan(10); // 2 leñadores, 1 cada 6 s
+    tree.improved2 = true;
+    expect(madera()).toBeGreaterThan(arboleda * 1.3);
+  });
+
+  it("las minas tienen dos puestos (playtest 9)", () => {
+    for (const id of ["mina", "mina_estano", "mina_hierro"]) expect(BUILDING_BY_ID[id].staff?.slots, id).toBe(2);
+  });
 });
 
 describe("reservas de recolección", () => {

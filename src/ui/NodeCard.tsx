@@ -1,7 +1,7 @@
 // Ficha de un recurso natural (árbol, rocas, arcilla…): cuánto tiene, cuánto se regenera y,
 // con N12 Técnicas de recolección, el botón para mejorarlo en su lugar (Barrero, Cantera…).
 import { config } from "../config";
-import { NODE_DEFS, NODE_UPGRADES, RES_BY_ID, type ResId } from "../content";
+import { BUILDING_BY_ID, NODE_DEFS, NODE_UPGRADES, RES_BY_ID, type ResId } from "../content";
 import { engine, useEngine } from "../engine";
 import { cancelImproveNode, nodeNextUpgrade, nodeUpgradeBlock, startImproveNode } from "../sim/actions";
 import { canAfford, nodeMax, nodeRegen } from "../sim/economy";
@@ -35,6 +35,20 @@ export function NodeCard() {
         </div>
       ))}
       <div className="muted">Para recolectar a mano: toca un aldeano y luego toca aquí.</div>
+      {(() => {
+        const hut = s.buildings.find((b) => b.zone === n.zone && b.x === n.x && b.y === n.y);
+        if (!hut) return null;
+        return (
+          <div className="inline">
+            <button className="chip" onClick={() => { engine.ui.selectedBuilding = hut.id; engine.ui.selectedNode = null; engine.notify(); }}>
+              {BUILDING_BY_ID[hut.type].icon} Ver {BUILDING_BY_ID[hut.type].name}
+            </button>
+          </div>
+        );
+      })()}
+      {n.type === "arbol" && n.improved && !s.buildings.some((b) => b.zone === n.zone && b.x === n.x && b.y === n.y) && s.techs.B02 && (
+        <div className="muted">🪓 Puedes poner un Leñador encima (🔨 Construir): dos leñadores dan madera a ritmo fijo.</div>
+      )}
       {up && next && n.improving == null && (
         block ? (
           <div className="muted">🌱 Mejorable a {next.name} — {block}</div>

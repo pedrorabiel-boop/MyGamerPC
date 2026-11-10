@@ -174,12 +174,14 @@ export const BUILDINGS: BuildingDef[] = [
   { id: "muelle", name: "Muelle", icon: "⛵", color: 0x4a6a8a, unlockedBy: "N10", cost: { madera: 8 }, buildTime: 8, place: ["orilla"], desc: "La gente de Comida pesca aquí. Va en la orilla del río.",
     staff: { slots: 2, by: "comida", title: "Pescador", icon: "🎣", cycle: 3, outputs: { comida: 1 } } },
   // ---------- Era 3 ----------
-  { id: "mina", name: "Mina de cobre", icon: "⛏️", color: 0x3a5a3a, unlockedBy: "B01", cost: { madera: 6, piedra: 4 }, buildTime: 10, place: ["suelo"], onNode: "veta", desc: "Se construye sobre una veta verde de la Cueva. El minero saca mineral de cobre.",
-    staff: { slots: 1, by: "especialista", title: "Minero", icon: "⛏️", cycle: 4, outputs: { mineral: 1 } } },
-  { id: "mina_estano", name: "Mina de estaño", icon: "⛏️", color: 0x6a6a7a, unlockedBy: "B01", cost: { madera: 6, piedra: 4 }, buildTime: 10, place: ["monte"], onNode: "estano", desc: "Se construye sobre una veta de estaño de las Montañas.",
-    staff: { slots: 1, by: "especialista", title: "Minero", icon: "⛏️", cycle: 4, outputs: { estano: 1 } } },
+  { id: "mina", name: "Mina de cobre", icon: "⛏️", color: 0x3a5a3a, unlockedBy: "B01", cost: { madera: 6, piedra: 4 }, buildTime: 10, place: ["suelo"], onNode: "veta", desc: "Se construye sobre una veta verde de la Cueva. Dos mineros sacan mineral de cobre.",
+    staff: { slots: 2, by: "especialista", title: "Minero", icon: "⛏️", cycle: 4, outputs: { mineral: 1 } } },
+  { id: "mina_estano", name: "Mina de estaño", icon: "⛏️", color: 0x6a6a7a, unlockedBy: "B01", cost: { madera: 6, piedra: 4 }, buildTime: 10, place: ["monte"], onNode: "estano", desc: "Se construye sobre una veta de estaño de las Montañas. Caben dos mineros.",
+    staff: { slots: 2, by: "especialista", title: "Minero", icon: "⛏️", cycle: 4, outputs: { estano: 1 } } },
   { id: "carbonera", name: "Carbonera", icon: "♨️", color: 0x3a3030, unlockedBy: "B02", cost: { piedra: 6, arcilla: 4 }, buildTime: 8, place: ["pasto", "monte"], desc: "Madera → carbón vegetal, el combustible de los hornos.",
     staff: { slots: 1, by: "especialista", title: "Carbonero", icon: "♨️", cycle: 4, inputs: { madera: 2 }, outputs: { carbon: 1 } } },
+  { id: "lenador", name: "Leñador", icon: "🪓", color: 0x5a4020, unlockedBy: "B02", cost: { madera: 4, piedra: 4 }, buildTime: 6, place: ["pasto", "monte"], onNode: "arbol", desc: "Va encima de una Arboleda o Plantación (un árbol mejorado). Dos leñadores plantan y talan: dan madera a ritmo fijo, sin esperar a que el árbol vuelva a crecer. En una Plantación rinden ×1,5.",
+    staff: { slots: 2, by: "especialista", title: "Leñador", icon: "🪓", cycle: 6, outputs: { madera: 1 } } },
   { id: "fundicion", name: "Horno de fundición", icon: "🏭", color: 0x7a3a20, unlockedBy: "B02", cost: { piedra: 10, arcilla: 8 }, buildTime: 12, place: ["pasto"], desc: "Mineral de cobre + carbón → cobre.",
     staff: { slots: 1, by: "especialista", title: "Fundidor", icon: "🔥", cycle: 5, inputs: { mineral: 1, carbon: 1 }, outputs: { cobre: 1 } } },
   { id: "herreria", name: "Herrería", icon: "⚒️", color: 0x5a4a4a, unlockedBy: "B03", cost: { piedra: 10, madera: 6, cobre: 4 }, buildTime: 12, place: ["pasto"], desc: "Cobre + estaño → bronce.",
@@ -201,8 +203,8 @@ export const BUILDINGS: BuildingDef[] = [
   // ---------- Era 4 ----------
   { id: "academia", name: "Academia", icon: "🏛️", color: 0xb0a080, unlockedBy: "H05", cost: { ladrillo: 12, piedra: 10 }, buildTime: 16, place: ["pasto"], lounge: 12, desc: "Los filósofos caminan en círculos discutiendo y generan mucha Comprensión. Los ancianos también sirven. Además, hasta 12 ancianos libres vienen a pasar el tiempo libre discutiendo (tertulia), y piensan más que sueltos.",
     staff: { slots: 2, by: "especialista", title: "Filósofo", icon: "🤔", cycle: 3, outputs: { comprension: 10 }, elders: true, elderBonus: 1.3 } },
-  { id: "mina_hierro", name: "Mina de hierro", icon: "⛏️", color: 0x7a3a2a, unlockedBy: "H01", cost: { madera: 8, bronce: 2 }, buildTime: 12, place: ["monte"], onNode: "hierro", desc: "Se construye sobre las rocas rojas de las Montañas. El minero saca mineral de hierro.",
-    staff: { slots: 1, by: "especialista", title: "Minero", icon: "⛏️", cycle: 4, outputs: { mineral_hierro: 1 } } },
+  { id: "mina_hierro", name: "Mina de hierro", icon: "⛏️", color: 0x7a3a2a, unlockedBy: "H01", cost: { madera: 8, bronce: 2 }, buildTime: 12, place: ["monte"], onNode: "hierro", desc: "Se construye sobre las rocas rojas de las Montañas. Dos mineros sacan mineral de hierro.",
+    staff: { slots: 2, by: "especialista", title: "Minero", icon: "⛏️", cycle: 4, outputs: { mineral_hierro: 1 } } },
   { id: "forja", name: "Forja", icon: "🔥", color: 0x4a2a2a, unlockedBy: "H01", cost: { ladrillo: 10, piedra: 8 }, buildTime: 14, place: ["pasto", "monte"], desc: "Mineral de hierro + mucho carbón → hierro.",
     staff: { slots: 1, by: "especialista", title: "Forjador", icon: "🔨", cycle: 6, inputs: { mineral_hierro: 1, carbon: 2 }, outputs: { hierro: 1 } } },
   { id: "grua", name: "Grúa", icon: "🏗️", color: 0x9a7a3a, unlockedBy: "H02", cost: { madera: 10, fibras: 6, piedra: 4 }, buildTime: 10, place: ["pasto"], desc: "Palanca y polea: las obras a 2 casillas o menos avanzan ×1,5." },
@@ -223,7 +225,7 @@ export const BUILDING_BY_ID = Object.fromEntries(BUILDINGS.map((b) => [b.id, b])
 export const BUILD_CATEGORIES: { id: string; name: string; icon: string; buildings: string[] }[] = [
   { id: "vivienda", name: "Vivienda", icon: "🏠", buildings: ["choza", "adobe", "casa_ladrillo"] },
   { id: "alimento", name: "Alimento", icon: "🍖", buildings: ["trampa", "parcela", "corral", "muelle"] },
-  { id: "minerales", name: "Minerales", icon: "⛏️", buildings: ["mina", "mina_estano", "mina_hierro"] },
+  { id: "minerales", name: "Madera y minerales", icon: "⛏️", buildings: ["lenador", "mina", "mina_estano", "mina_hierro"] },
   { id: "talleres", name: "Talleres y comercio", icon: "⚒️", buildings: ["telar", "horno", "carbonera", "fundicion", "herreria", "horno_ladrillo", "vidrieria", "forja", "soplador", "taller_engranajes", "mercado"] },
   { id: "conocimiento", name: "Conocimiento", icon: "💡", buildings: ["circulo", "archivo", "piedras", "academia", "escuela", "escuela_escribas"] },
   { id: "animo", name: "Ánimo y salud", icon: "😊", buildings: ["fogata", "pared", "huerto", "casa_salud"] },
@@ -361,11 +363,12 @@ export const TECH_INTRO: Record<string, string[]> = {
 Object.assign(TECH_INTRO, {
   B01: [
     "Puedes construir ⛏️ Minas sobre las vetas verdes de la 🕳️ Cueva (abre 🔨 Construir estando dentro de la Cueva).",
-    "Cada mina necesita un minero: saca 🟩 mineral de cobre.",
+    "Cada mina tiene dos puestos de minero: saca 🟩 mineral de cobre.",
   ],
   B02: [
     "Puedes construir la ♨️ Carbonera (madera → ⚫ carbón vegetal) y el 🏭 Horno de fundición (mineral + carbón → 🟠 cobre).",
     "Los dos necesitan un especialista. ¡Es tu primera cadena de producción!",
+    "El carbón se come la madera: pon un 🪓 Leñador encima de una Arboleda y dos leñadores darán madera a ritmo fijo.",
   ],
   B03: [
     "Puedes construir la ⚒️ Herrería: 🟠 cobre + ⚪ estaño (de las Montañas) → 🥉 bronce.",

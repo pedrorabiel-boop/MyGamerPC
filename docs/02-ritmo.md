@@ -70,7 +70,6 @@ ajusta en los playtests.
 | `TIEMPO_POR_AÑO` | Segundos reales por año de juego (hoy: 6 s) |
 | `C0`, `R`, `G` | Costo de Comprensión (ver la fórmula) |
 | `PRODUCCION_BASE[oficio]` | Cuánto produce cada oficio por segundo |
-| `BONO_MAESTRIA[nivel]` | Multiplicador de producción por nivel de maestría |
 | `TOQUE_BASE` | Comprensión que da cada toque del Libro |
 | `NATALIDAD`, `ESPERANZA_VIDA` | Crecimiento de la población |
 | `TECHO_NATURAL` | Personas que alimenta la naturaleza sin agricultura (≈ 12–15) |
@@ -161,3 +160,10 @@ abajo y se vuelve a probar.
 - **El menú Construir era una sola lista larga** → categorías desplegables (Vivienda, Alimento, Minerales, Talleres y comercio, Conocimiento, Ánimo y salud, Almacenamiento, Potenciación), cada una con cuántos tipos hay y cuántos alcanzan; junto al nombre de cada edificio, cuántos hay construidos.
 - **25–30 ancianos alrededor de la fogata tapaban el mapa** → **tertulia**: como los niños en la escuela, los ancianos libres entran a la **Academia** (12 lugares) o al **Archivo** (6) y no se ven en el mapa. Adentro generan +25% de Comprensión (`BONO_TERTULIA`). Los que no caben siguen junto a la fogata.
 - **Los talleres gastaban insumos aunque lo que producen estuviera lleno** (arcilla → cerámica a tope: la arcilla se perdía) → si no cabe una tanda completa de lo que produce (o está resuelto), el taller **se pausa** y no gasta nada; con varias salidas (corral), solo cuando todas están llenas. La ficha explica por qué. (Hubo un ⏸ en la esquina del edificio en el mapa, pero parpadeaba con recursos que se gastan rápido, como la comida, y no se entendía: se quitó.)
+
+### Playtest 9 (2026-11-14)
+- **219 habitantes y 50–60 sin nada que hacer** junto al centro, mientras la madera, el carbón y el cobre siempre faltaban. Medido: la madera sale solo de lo que los árboles vuelven a crecer; todo el Valle en Plantaciones da ≈2 por segundo y una Carbonera gasta 0,5 (una Forja, ≈0,67 a través del carbón). Con 4 carboneras el bosque se acaba, haya 50 o 200 personas, y Materiales no tiene qué juntar. → **🪓 Leñador** (con B02, junto con la Carbonera): se construye **encima de una Arboleda o Plantación** y tiene **2 puestos**; los leñadores plantan y talan, así que dan madera a ritmo fijo (1 cada 6 s, ×1,5 en una Plantación: `BONO_LENADOR_PLANTACION`) sin esperar a que el árbol crezca. Lo que el árbol regenera sigue siendo para Materiales.
+- **El cobre siempre corto** → **las minas tienen 2 puestos** («la veta da para dos»): cobre, estaño y hierro.
+- Tocar una casilla con un edificio encima de un recurso (mina, leñador) abre la ficha del edificio (antes, en las minas salía el aviso de la veta). La ficha del leñador y la del árbol se enlazan entre sí.
+- **El hito «Reino» (200 habitantes) queda igual:** ya se pasa sin problema.
+- **Diseño:** se descarta la **maestría** (Nv1–5): sumaba una barra por oficio sin decisiones nuevas. La Comprensión es la única moneda de progreso. **Era 5 consolidada** (11 → 7, la Brújula pasa a la Era 6).

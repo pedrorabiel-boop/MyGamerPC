@@ -25,17 +25,16 @@ en detalle.
 | **Legible** | Se lee el título y el dibujo, pero el texto está tachado | La era está abierta, pero faltan prerrequisitos |
 | **Estudiable** | Página clara con costo visible | Se cumplen todos los prerrequisitos |
 | **Comprendida** | Sello de "APROBADO" del Departamento | Se pagó la **Comprensión** (y recursos, si aplica) |
-| **Dominada Nv1–5** | Estrellas en la esquina de la página | Los aldeanos la **practican**, usando el edificio, la herramienta o el oficio |
 
-### Dos monedas de progreso
+### Una sola moneda de progreso
 
 - **Comprensión** (global): la generan los "pensadores" de cada época y se gasta para
   pasar una página de *Estudiable* a *Comprendida*.
-- **Maestría** (por oficio o tecnología): la ganan los aldeanos **haciendo** el trabajo.
-  Desbloquea mejoras y manifestaciones de nivel superior. Por ejemplo, *Bronce Nv1*
-  permite construir el horno y *Bronce Nv3* mejora las herramientas de todos.
-  **Techo de maestría:** ningún oficio pasa de **Nv3** hasta que existen los
-  **M05 Gremios**, que desbloquean Nv4 y Nv5.
+- **Sin maestría** (descartada en el playtest 9): el diseño original tenía una segunda
+  moneda, la maestría por oficio (Nv1–5, que subía practicando y se perdía al morir un
+  maestro). Sumaba una barra por oficio sin decisiones nuevas: lo que "se gana
+  trabajando" ya lo dan los talleres, las cadenas, las mejoras de edificios y las
+  herramientas de cada tecnología.
 
 ### Fuentes de Comprensión por era (escalera de pensadores)
 
@@ -70,7 +69,7 @@ porque ahora toda la tribu lee a la vez.
   - **Anciano:** el **último 20% de la vida** (no una edad fija, para que con 80 años
     de vida no haya ancianos durante 40). Deja el trabajo físico y genera Comprensión.
     Con **M07 Lentes**, además sigue trabajando en oficios de precisión (vidriero,
-    escriba, relojero).
+    soplador, mecánico, relojero, pulidor, alquimista).
 - **Sin día/noche ni estaciones.**
 - El tiempo de juego no sigue la historia real: cada era dura lo que el ritmo pida, no
   lo que duró en la realidad.
@@ -78,25 +77,11 @@ porque ahora toda la tribu lee a la vez.
   magnético** (*"respaldo automático"*) pasa a rendir el **100%**. Falta definir cómo se
   resumen las generaciones que pasan mientras no juegas.
 
-### Conservación del saber (mecánica clave)
+### Conservación del saber
 
-Los aldeanos envejecen y mueren. **Antes de la Escritura**, cuando muere un maestro se
-pierde parte de la maestría de su oficio. Cada hito posterior mejora la transmisión.
-
-> ⚠️ Con vidas de 5–7 minutos, la maestría tiene que subir en **minutos**, no en horas.
-> Propuesta: la maestría se guarda **por tecnología a nivel tribu**. Los individuos
-> la hacen crecer mientras trabajan, y la muerte de un maestro antes de la Escritura le
-> resta un porcentaje. Así, que la gente muera rápido no castiga demasiado y la pérdida
-> de saber se sigue notando.
-
-| Tecnología | Efecto sobre la transmisión |
-|---|---|
-| N09 Conteo y tradición oral | Se pierde **menos** maestría cuando muere un maestro (los ancianos la cuentan junto al fuego) |
-| B06 Escritura | La maestría deja de perderse con la muerte (queda en el Archivo) |
-| M05 Gremios | Desbloquean la maestría **Nv4–5** (hasta entonces el techo es Nv3) |
-| R01 Imprenta | Todos los aldeanos aprenden oficios más rápido |
-| I12 Escuela pública | Los niños estudian (dan Comprensión) y entran a su primer oficio **sin período de aprendizaje** |
-| D09 Internet | Bonus global de aprendizaje (y memes) |
+> **Descartada junto con la maestría (playtest 9).** Las tecnologías que la mejoraban
+> conservan sus otros efectos: N09 (números exactos, escuela), B06 (Archivo, escribas),
+> R01 (multiplica el toque del Libro), I12 Escuela pública y D09 Internet.
 
 ### Reemplazo generacional y Jefatura
 
@@ -131,10 +116,8 @@ oficios a mano a ese ritmo sería un castigo. La solución es la **Jefatura**.
   queda **fuera de la Jefatura** (sirve para emergencias: tocar varios rápido y mandarlos
   a algo). Al final del panel de la Jefatura aparece la lista **"Con tarea manual"**, con
   un botón para **devolver** a cada uno (o a todos) a la línea de trabajo de la Jefatura.
-- **Cambio de oficio:** cuando un aldeano cambia de oficio pasa por un período de
-  **aprendizaje** con productividad reducida. **R01 Imprenta** lo acorta mucho (hay
-  manuales para todo), así que desde ahí redistribuir a la tribu entre oficios es
-  rápido y barato. *(Todavía no implementado en el prototipo.)*
+- **Cambio de oficio:** inmediato, sin período de aprendizaje (se descartó junto con la
+  maestría en el playtest 9).
 
 ### Genios (incidental)
 
@@ -237,8 +220,8 @@ tecnologías nuevas. Por eso cada recurso básico tiene un **nivel máximo**: qu
 | Comida | B09 Arado e irrigación | 4 parcelas **junto a un canal** + 1 granero | 8 agricultores | 3 |
 | Ramas, piedra, fibras | B04 Rueda | 1 granero + 1 depósito *(edificio por definir)* | 2 recolectores de cada uno | 3 |
 | Arcilla, cerámica | Alfarería Nv2 (torno) | 2 hornos | 2 alfareros + 2 arcilleros | 3–4 |
-| Madera | H01 Hierro (Plantación) | 3 plantaciones | 3 leñadores | 4 |
-| Carbón vegetal | H01 Hierro (Plantación) | 2 carboneras | 2 carboneros | 4–5 |
+| Madera | — | *(playtest 9: no se resuelve; la dan los 🪓 Leñadores sobre las Arboledas, a ritmo fijo)* | | — |
+| Carbón vegetal | — | *(sigue a la madera: más leñadores, más carboneras)* | | — |
 | Lana, pieles, tela | I03 Fábrica | Fábrica textil | por definir | 7 |
 | Cobre, estaño, bronce, hierro | I03 Fábrica + I05 Ferrocarril | Fábricas + estación | por definir | 7 |
 
@@ -345,7 +328,7 @@ adelante, I12 Escuela pública sigue esta misma línea.
 | 📖 | **Saber** | Bonus pasivo, o abre una zona o capítulo del Libro. No ocupa espacio en el mapa |
 | 🏗️ | **Edificio / máquina** | Se coloca en la **grilla**. Los aldeanos caminan hasta él para trabajar |
 | ✋ | **Herramienta** | Objeto que el aldeano **lleva en la mano**. Cambia su sprite y su rendimiento |
-| 👤 | **Oficio** | Nuevo rol asignable a aldeanos, con su propia maestría |
+| 👤 | **Oficio** | Nuevo rol asignable a aldeanos |
 | 📦 | **Recurso** | Nuevo material en el inventario |
 | ⚙️ | **Automatización** | Algo que trabaja solo o reduce la microgestión (el corazón idle) |
 | 🏛️ | **Institución** | Gestión social: auto-asignación, orden, felicidad, economía |
@@ -453,7 +436,7 @@ lejanas. Y así sucesivamente.
 | **Cueva** | N10 Exploración (Era 2) | **Ocre** (pigmento abundante), **rocas** (piedra) y **vetas de cobre** visibles que se explotan recién con B01 Minería. Su propia pila. La **Pared pintada** vale el doble aquí (pinturas rupestres). Murciélagos |
 | **Costa** | N10 Exploración (Era 2) | Pesca |
 | **Montañas** | B04 Rueda (Era 3) | **Estaño** (necesario para el Bronce). **Rocas rojas** que todavía no se pueden usar (hierro, Era 4), como pista. Magnetita |
-| **Tierras lejanas** | M09 Brújula (Era 5) | Carbón, petróleo, cuarzo de alta pureza |
+| **Tierras lejanas** | R13 Brújula (Era 6) | Carbón, petróleo, cuarzo de alta pureza |
 | **La Fab** (sala limpia) | X07 Sala limpia (Era 9) | Mundo interior, blanco y luminoso, con aldeanos en traje de conejo. **Único lugar donde se pueden construir fotolitógrafos** |
 
 ### Ramas de soporte
@@ -552,7 +535,7 @@ Las 12 tecnologías originales se fusionaron en **6**; el playtest 7 sumó **N12
 | N01 | Agricultura | P02 | 🏗️ Parcela, Granero · 📦 Grano | *(Agricultura + Granero)*. **Rompe el techo natural**: la gente de Comida trabaja las parcelas. Granero: almacenamiento ↑ y punto de entrega. **Nv2 = Pan** |
 | N02 | Ganadería y tejido | P05 | 🏗️ Corral, Telar · 👤 Pastor, Tejedor · 📦 Lana, Tela | *(Domesticación + Tejido)*. Especialistas: **pastor** (comida y lana) y **tejedor** (lana → tela). Raíz lejana de las tarjetas perforadas |
 | N03 | Alfarería | P04, P06 | 🏗️ Horno de barro, Casa de adobe · 👤 Alfarero · 📦 Arcilla, Cerámica · ✋ Vasija | *(Alfarería + Adobe)*. **Vasijas: almacenamiento ↑.** Materiales junta **arcilla** en la orilla. **Alfarero** (especialista del horno). Casa de adobe: +6 de capacidad. **Nv2 = Torno** |
-| N09 | Conteo y tradición oral | P01, N01 | ✋ Palitos de conteo · 📖 | *(Conteo + Tradición oral)*. **Números exactos en la interfaz** (antes: "pocos / muchos") y se pierde menos maestría al morir un maestro. Raíz de la matemática y de la Escritura. *"Contar el grano antes de que alguien se lo coma."* |
+| N09 | Conteo y tradición oral | P01, N01 | ✋ Palitos de conteo · 📖 | *(Conteo + Tradición oral)*. **Números exactos en la interfaz** (antes: "pocos / muchos"). Raíz de la matemática y de la Escritura. *"Contar el grano antes de que alguien se lo coma."* |
 | N10 | Exploración | P02, P04 | ✋ Antorcha · 🏗️ Muelle · 👤 Pescador | *(Antorcha + Balsa y pesca)*. **Abre la Cueva y la Costa.** Muelle: la gente de Comida pesca. *"Ahora podemos ver a los murciélagos. No sé si eso es mejor."* |
 | N11 | Aldea organizada | P11, N01 + pob. 15 | 🏛️ · ⚙️ · 🏗️ Huerto medicinal · 👤 Curandero | *(Jefatura + Herbolaria)*. **Jefatura**: eliges especialidades y prioridades, y la tribu se reparte sola (Zipf). **Curandero** (especialista del huerto): enfermedad ↓ |
 | N12 | Técnicas de recolección 🌿 | N01, N03 | ✋ Cuidado de lo silvestre | **Mejora los recursos naturales en su lugar** (sin edificio aparte): tocando un depósito de arcilla, unas rocas, un árbol, pasto alto o un arbusto se lo mejora a Barrero, Cantera, Arboleda, Pastizal o Huerto de bayas: **se regenera más rápido y guarda el doble**. *"Si no se los come todos de una vez, vuelven. Revolucionario."* |
@@ -582,8 +565,8 @@ Las 13 tecnologías originales se fusionaron en **7** (playtest 3).
 
 | ID | Tecnología | Requiere | Se manifiesta como | Qué aporta |
 |---|---|---|---|---|
-| B01 | Minería | P02, N10 | 🏗️ Mina (sobre las vetas) · 👤 Minero · ✋ Pico · 📦 Mineral de cobre | Se construyen **minas sobre las vetas verdes de la Cueva** (y luego sobre el estaño de las Montañas) |
-| B02 | Fundición | N03, B01 | 🏗️ Carbonera, Horno de fundición · 👤 Carbonero, Fundidor · 📦 Carbón vegetal, Cobre | *(Fundición + Carbón vegetal)*. **Cobre: el metal del PC.** *"Quemar árboles para hacer piedras brillantes. Tiene lógica."* |
+| B01 | Minería | P02, N10 | 🏗️ Mina (sobre las vetas) · 👤 Minero · ✋ Pico · 📦 Mineral de cobre | Se construyen **minas sobre las vetas verdes de la Cueva** (y luego sobre el estaño de las Montañas), con **2 puestos de minero** cada una |
+| B02 | Fundición | N03, B01 | 🏗️ Carbonera, Horno de fundición, Leñador · 👤 Carbonero, Fundidor, Leñador · 📦 Carbón vegetal, Cobre | *(Fundición + Carbón vegetal)*. **Cobre: el metal del PC.** El **Leñador** va encima de una Arboleda o Plantación: 2 leñadores dan madera a ritmo fijo (playtest 9). *"Quemar árboles para hacer piedras brillantes. Tiene lógica."* |
 | B03 | Bronce | B02, B04 | 🏗️ Herrería · 👤 Herrero · 📦 Bronce · ✋ Herram. de bronce | Cobre + estaño → bronce. **Herramientas de bronce: todos trabajan más rápido** |
 | B04 | Rueda y comercio | P02, N02, N09 | ✋ Carretilla · ⚙️ | *(Rueda + Comercio)*. Se carga más por viaje. **Abre la zona Montañas.** La Tienda del diablo queda pospuesta |
 | B06 | Escritura | N09, P11, N11 | 👤 Escriba · 🏗️ Archivo, Piedras alineadas · 🏛️ | *(Escritura + Astronomía + Código de leyes)*. **Escribas** en el Archivo (mucha Comprensión; los ancianos también sirven). El Archivo es además **lugar de tertulia** para 6 ancianos libres (entran y no se ven en el mapa). **Leyes**: la sobrepoblación baja menos el Ánimo. **Piedras alineadas**: proyecto grande que da Comprensión. *(La Crónica, más adelante.)* |
@@ -629,35 +612,44 @@ Las 13 tecnologías originales se fusionaron en **7** (playtest 7).
 | H04 | Acueducto y medicina 🌿 | H02, B09, N11 | 🏗️ Acueducto, Casa de salud | *(Acueducto + Medicina clásica)*. **Canales lejos del río** y **Casa de salud: +10 años de vida** (50 → 60). La salud pública romana |
 
 ### Era 5 — Medieval
-*Recursos nuevos: Papel, Acero (caro), Lentes*
+*Recursos nuevos: Papel, Lentes, Acero*
 > *"Aviso: su tribu ha comenzado a rezarle a usted. El Departamento le recuerda que el
 > que tiene el contrato soy yo."*
 
 Llegan las **máquinas que trabajan solas** (molinos, reloj) y las instituciones del
-saber (universidad, gremios).
+saber (universidad, gremios). La tribu **venera al niño**.
 
 #### Mecánicas que introduce esta era
 
-- **Energía mecánica por adyacencia**: primer salto del *Arco de energía*.
-- **Techo de maestría Nv3**, que se rompe con los Gremios.
-- **Etapas de la vida** con anciano en el último 20% (ver *Escala de tiempo*).
-- **Primer proyecto de varias generaciones:** la Catedral.
-- **Tono:** la tribu **venera al niño**. El Libro pasa a ser "sagrado", aparecen vitrales
-  con su cara y los aldeanos le rezan para pedir cosechas. El diablo está celoso.
+- **Energía mecánica por adyacencia** (primer salto del *Arco de energía*): un **Molino**
+  hace trabajar más rápido a los talleres que lo **tocan** (las 4 casillas vecinas). No
+  necesita trabajador. El de **agua da ×2** y va junto al río, un canal o un acueducto; el
+  de **viento da ×1,5** y va en cualquier parte, también en las Montañas. Dos molinos no
+  se suman: vale el mejor. Un taller más rápido también **gasta más rápido** (para eso
+  están los Leñadores del playtest 9).
+- **Talleres** (para molinos, Gremios y reloj): todo lo de la categoría *Talleres y
+  comercio* menos el Mercado, más la Papelera, el Pulidor de lentes y el Horno de crisol.
+- **Gremios: maestro y aprendiz.** Cada taller tiene **un puesto más**. Así un molino
+  rinde el doble sin ocupar más lugar.
+- **Ancianos con anteojos** (Lentes): pueden trabajar en **oficios de precisión**
+  (vidriero, soplador, mecánico, relojero, pulidor, alquimista; los escribas, filósofos
+  y profesores ya lo hacían). Cada uno toma **1 lente** al empezar.
+- **Primer proyecto de varias generaciones:** la Catedral, por etapas.
+- **Tono:** el Libro pasa a ser "sagrado", los vitrales de la Catedral tienen la cara del
+  niño y los aldeanos le rezan. El diablo está celoso (tarjetas de novedad).
+- Sin maestría (descartada) y sin Tierras lejanas (la Brújula pasa a la Era 6).
+
+Las 11 tecnologías originales se fusionaron en **7** (playtest 9).
 
 | ID | Tecnología | Requiere | Se manifiesta como | Qué aporta |
 |---|---|---|---|---|
-| M01 | Molino de agua | H13, B09 | 🏗️ Molino (junto a un río o canal) · ⚙️ | **Da energía a los edificios vecinos** (aserradero, forja, batán): trabajan más rápido y con menos aldeanos |
-| M02 | Molino de viento 🌿 | H13 | 🏗️ Molino de viento · ⚙️ | Igual que el de agua, pero **más débil**. Se pone en cualquier parte, incluidas las Montañas |
-| M03 | Papel | N02, M01 | 🏗️ Papelera · 📦 Papel | La escritura escala |
-| M04 | Universidad | H05, M03, B06 | 🏗️ Universidad · 👤 Profesor | Comprensión ↑↑ y especialización más rápida |
-| M05 | Gremios | H07, B06 | 🏛️ | **Desbloquean la maestría Nv4–5** (hasta ahora el techo era Nv3) |
-| M06 | Reloj mecánico | H13, H01 | 🏗️ Torre del reloj · 👤 Relojero | **Bono de productividad en un radio**: los edificios cercanos "trabajan con horario". *"Primer reloj de CPU: 1 Hz."* |
-| M07 | Lentes | H08, H02 | ✋ Anteojos · 📦 Lentes | **Los ancianos siguen trabajando en oficios de precisión.** Raíz de la óptica y la fotolitografía |
-| M08 | Alquimia | H08, B02, H05 | 👤 Alquimista · 🏗️ Laboratorio | Intentan hacer oro: **de vez en cuando generan Monedas**. Explosiones cómicas que dañan el laboratorio. Comprensión. Precursora de la química. Diablo: *"Por fin alguien con iniciativa."* |
-| M09 | Brújula | H05 | ✋ Brújula | **Abre la zona Tierras lejanas** |
-| M10 | Acero de crisol | H01, M08 | 📦 Acero · ✋ Herram. de acero | Acero artesanal y caro. Herramientas de acero: productividad ↑ |
-| M11 | Catedral 🌿 | H02, H08 | 🏗️ Catedral (muy grande) | **Proyecto de varias generaciones** (unos 30 min reales) con vitrales. Bono permanente y fuerte al Ánimo. La Crónica registra quién puso la primera piedra y quién la última. *"La terminarán tus tataranietos. Literalmente."* |
+| M01 | Molinos | H13, B09 | 🏗️ Molino de agua, Molino de viento · ⚙️ | *(Molino de agua + Molino de viento)*. **Energía por adyacencia**: los talleres que tocan un molino trabajan **×2** (agua, junto al río o a un canal) o **×1,5** (viento, en cualquier parte). Se construyen con engranajes |
+| M03 | Papel | N02, M01 | 🏗️ Papelera · 👤 Papelero · 📦 Papel | Tela → papel. La Papelera **solo funciona si toca un molino** (el batán golpea los trapos). Los escribas del Archivo con papel dan **el doble de Comprensión** y lo van gastando |
+| M07 | Lentes | H08, H02 | 🏗️ Pulidor de lentes · 👤 Pulidor · 📦 Lentes · ✋ Anteojos | Vidrio claro → lentes. **Anteojos: los ancianos trabajan en oficios de precisión** (1 lente cada uno). Raíz de la óptica y la fotolitografía |
+| M08 | Alquimia y acero | H08, H05 | 🏗️ Laboratorio, Horno de crisol · 👤 Alquimista, Acerero · 📦 Acero · ✋ Herram. de acero | *(Alquimia + Acero de crisol)*. El **alquimista** da Comprensión y de vez en cuando **transmuta** (un poco de algo complejo al azar) o **explota**: el laboratorio queda dañado hasta que los constructores lo reparan. Diablo: *"Por fin alguien con iniciativa."* El **Horno de crisol** hace acero (hierro + carbón). **Herramientas de acero**: se forjan una vez desde el Horno (con acero) y todos trabajan más rápido |
+| M05 | Gremios y reloj | H07, B06, H13, H01 | 🏛️ · 🏗️ Torre del reloj · 👤 Relojero | *(Gremios + Reloj mecánico)*. **Gremios: cada taller tiene un puesto más** (maestro y aprendiz). **Torre del reloj** con relojero: los edificios a 3 casillas o menos trabajan ×1,25 (como la Grúa, pero para el trabajo). *"Primer reloj de CPU: 1 Hz."* |
+| M04 | Universidad | H05, M03, B06 | 🏗️ Universidad · 👤 Profesor | **Mejora de la Academia** (no ocupa otra casilla): profesores que gastan papel y dan **mucha más Comprensión**; tertulia para 16 ancianos |
+| M11 | Catedral 🌿 | H02, H08 | 🏗️ Catedral | **Proyecto de varias generaciones** (≈30 min reales) por etapas: cimientos, muros, techo y vitrales, cada una con sus materiales. Terminada: **Ánimo ↑↑ permanente**. Los **adultos libres van a rezar adentro** (no se ven en el mapa). *"La terminarán tus tataranietos. Literalmente."* |
 
 ### Era 6 — Renacimiento / Científica
 *Recursos nuevos: Libros, Ácidos, Sales, Químicos*
@@ -669,25 +661,26 @@ saber (universidad, gremios).
 - **Cadena del conocimiento:** Papel → **Imprenta** → Libros → **Universidad** →
   Comprensión.
 - **El toque se multiplica** gracias a las copias del Libro.
-- **Cambiar de oficio se vuelve rápido** (ver *Reemplazo generacional*).
+- **Tierras lejanas** (Brújula, que viene de la Era 5): la era de los descubrimientos.
 - **Interés pasivo sobre las Monedas** (Banca).
 - **Panel de estadísticas** (ver *Interfaz que evoluciona*).
 - **Edad de oro de los genios** (incidental).
 
 | ID | Tecnología | Requiere | Se manifiesta como | Qué aporta |
 |---|---|---|---|---|
-| R01 | Imprenta | M03, B03 | 🏗️ Imprenta · 👤 Impresor · 📦 Libros | **Comprensión ↑** (la Universidad consume Libros). **Cambiar de oficio es rápido y barato.** **Multiplica el toque** (copias de bolsillo del Libro) |
+| R01 | Imprenta | M03, B03 | 🏗️ Imprenta · 👤 Impresor · 📦 Libros | **Comprensión ↑** (la Universidad consume Libros). **Multiplica el toque** (copias de bolsillo del Libro) |
 | R02 | Método científico | R01, M04, M08 | 👤 Científico · 📖 | **Hito.** Los alquimistas se reconvierten en químicos y se acaba su producción de Monedas: *"La ciencia ha demostrado que el oro no se fabrica. El Departamento está decepcionado."* |
 | R03 | Química | R02, M08 | 🏗️ Laboratorio · 👤 Químico · 📦 Ácidos, Sales | Base de los materiales modernos |
 | R04 | Cálculo | R02, H02 | 📖 | Física, ingeniería y gráficos 3D (mucho después) |
 | R05 | Física clásica | R04, H13 | 📖 | **Molinos ×1,5.** Le cae una manzana a Isaac Manzana (si está vivo, aparece como genio) |
 | R06 | Telescopio y microscopio | M07, R02 | 🏗️ Observatorio | Comprensión ↑ y descubrimiento de los gérmenes (se ven sobre los aldeanos, como chiste) |
-| R07 | Calculadora mecánica | M06, R04 | 🏗️ Calculadora de engranajes | **Abre el panel de estadísticas.** *"El primer computador. Solo suma. Mal. Pero suma."* |
+| R07 | Calculadora mecánica | M05, R04 | 🏗️ Calculadora de engranajes | **Abre el panel de estadísticas.** *"El primer computador. Solo suma. Mal. Pero suma."* |
 | R08 | Electricidad estática | R02, H08, H05 | ✋ Botella de Leyden | Aldeanos con el pelo de punta. Raíz de la electricidad |
 | R09 | Pararrayos 🌿 | R08, H01 | 🏗️ Pararrayos | Protege del evento "rayo" |
 | R10 | Banca 🌿 | H07, R01 | 🏗️ Banco del Departamento · 🏛️ | **Interés pasivo sobre las Monedas guardadas**: ahorrar o gastar en pactos. *"Tasa de interés competitiva. Tasa de condenación: también."* |
 | R11 | Higiene y vacunas | R06, R03 | 🏗️ Hospital | **+10 años de vida** (60 → 70). Mortalidad ↓↓↓. Explosión demográfica. **Necesaria para la Sala limpia** |
 | R12 | Sistema binario | H05, R04 | 📖 | *"Solo dos números. Revolucionario."* |
+| R13 | Brújula | H05 | ✋ Brújula | *(antes M09)*. **Abre la zona Tierras lejanas** (antes en la Era 5, donde todavía no había nada que usar ahí) |
 
 ### Era 7 — Industrial
 *Recursos nuevos: Carbón, Acero industrial, Petróleo, Energía (vapor), Tela de lujo, Tarjetas perforadas*
@@ -712,10 +705,10 @@ Cambia la **escala**: miles de habitantes, energía de vapor y fábricas.
 
 | ID | Tecnología | Requiere | Se manifiesta como | Qué aporta |
 |---|---|---|---|---|
-| I01 | Carbón | B01, M09 (+ yacimiento) | 🏗️ Mina de carbón (Tierras lejanas) · 📦 Carbón | Combustible denso para el vapor |
-| I02 | Máquina de vapor | I01, R05, M10 | 🏗️ Máquina de vapor · ⚙️ | **Gran salto idle**: quema Carbón y produce **energía**, como balance por zona (no se almacena; el déficit ralentiza) |
+| I01 | Carbón | B01, R13 (+ yacimiento) | 🏗️ Mina de carbón (Tierras lejanas) · 📦 Carbón | Combustible denso para el vapor |
+| I02 | Máquina de vapor | I01, R05, M08 | 🏗️ Máquina de vapor · ⚙️ | **Gran salto idle**: quema Carbón y produce **energía**, como balance por zona (no se almacena; el déficit ralentiza) |
 | I03 | Fábrica | I02, M05 | 👤 Obrero / Ingeniero · ⚙️ | **Mejora los edificios artesanales a su versión fábrica**: consumen vapor, producen varias veces más y necesitan menos aldeanos |
-| I04 | Acero industrial | I02, R03, M10 | 🏗️ Acería · 📦 Acero | Acero barato (gabinete) |
+| I04 | Acero industrial | I02, R03, M08 | 🏗️ Acería · 📦 Acero | Acero barato (gabinete) |
 | I05 | Ferrocarril 🌿 | I02, I04 | 🏗️ Vías y estación · ⚙️ | **Lo producido en zonas lejanas llega al 100%** (a pie, 40%; con Rueda, 60%) |
 | I06 | Telar de tarjetas | N02, I03, R07 | 🏗️ Telar programable · 📦 Tarjetas perforadas, Tela de lujo | **Tela de lujo** que se vende cara en la Tienda del diablo. *"Primer programa de la historia: un estampado de flores."* |
 | I07 | Máquina analítica | I06, R07, R12 | 🏗️ Máquina analítica · ⚙️ | **Cuotas automáticas óptimas**: el juego calcula las cuotas de cada oficio según la demanda. *"En la realidad nunca se terminó. Aquí sí. Tarda 3 días. Se equivoca."* |
@@ -977,14 +970,14 @@ flowchart LR
   N09[Conteo] --> B06
   N10[Exploración] --> B01[Minería] --> B02
   B04[Rueda] --> B03
-  B02 --> B03[Bronce] --> H01[Hierro] --> M10[Acero de crisol]
+  B02 --> B03[Bronce] --> H01[Hierro] --> M08[Alquimia y acero]
   B02 --> B07[Vidrio] --> H08[Vidrio soplado] --> M07[Lentes]
   B06 --> H05[Filosofía y lógica] --> R12[Binario] --> E12[Boole]
   H05 --> M04[Universidad] --> R02[Método científico]
   R02 --> R03[Química]
   R02 --> R04[Cálculo] --> R05[Física]
   R02 --> R08[Electricidad estática] --> I08[Pila] --> I09[Electromagnetismo]
-  M10 --> I02[Vapor]
+  M08 --> I02[Vapor]
   R05 --> I02
   I02 --> E01[Generador]
   I09 --> E01
@@ -1013,17 +1006,17 @@ flowchart LR
 | Era | Nodos | Opcionales 🌿 | Nuevos oficios |
 |---|---|---|---|
 | Piedra | 6 | 0 | Categorías 🍖 Comida, 🧱 Materiales, 🔨 Construcción · Anciano · Chamán |
-| Neolítico | 6 | 0 | Pastor, Tejedor, Alfarero, Curandero (especialistas) |
-| Bronce | 7 | 0 | Minero, Carbonero, Fundidor, Herrero, Escriba, Ladrillero, Vidriero (especialistas) |
-| Hierro | 13 | 4 | Vidriero, Filósofo |
-| Medieval | 11 | 2 | Relojero, Profesor, Alquimista |
-| Renacimiento | 12 | 2 | Impresor, Científico, Químico |
+| Neolítico | 7 | 1 | Pastor, Tejedor, Alfarero, Curandero (especialistas) |
+| Bronce | 7 | 0 | Minero, Carbonero, Leñador, Fundidor, Herrero, Escriba, Ladrillero, Vidriero (especialistas) |
+| Hierro | 7 | 1 | Filósofo, Forjador, Soplador, Mecánico, Mercader |
+| Medieval | 7 | 1 | Papelero, Pulidor, Alquimista, Acerero, Relojero, Profesor |
+| Renacimiento | 13 | 2 | Impresor, Científico, Químico |
 | Industrial | 13 | 3 | Obrero / Ingeniero, Maquinista |
 | Eléctrica | 14 | 2 | — |
 | Electrónica | 14 | 1 | Investigador, Programador |
 | Digital | 13 | 0 | Desarrollador de juegos |
 | Gamer | 9 | 1 | — |
-| **Total** | **118** | **15** | — |
+| **Total** | **110** | **12** | — |
 
 Los nodos opcionales se concentran en las primeras eras: al principio se construye la
 sociedad y al final se construye el PC.
@@ -1033,7 +1026,7 @@ sociedad y al final se construye el PC.
 ## 8. Próximas iteraciones
 
 1. ~~**Revisar el árbol era por era**~~ ✅ Hecho (v0.2 a v1.0).
-2. **Ficha detallada por nodo**: costos, efectos numéricos, niveles de maestría, sprite
+2. **Ficha detallada por nodo**: costos, efectos numéricos, sprite
    de herramienta, tamaño del edificio en la grilla y texto cómico del Libro.
 3. **Recursos**: cadena productiva completa (qué edificio convierte qué en qué).
 4. **Ritmo**: marco inicial en [02-ritmo.md](02-ritmo.md). Se afina con playtests.
@@ -1048,6 +1041,12 @@ sociedad y al final se construye el PC.
 ---
 
 ## 9. Historial de cambios
+
+### v3.0 (borrador) — Playtest 9: leñadores, sin maestría y Era 5 consolidada
+- **🪓 Leñador** (B02) encima de una Arboleda o Plantación: 2 leñadores dan madera a ritmo fijo; la madera ya no depende solo de lo que regeneran los árboles. **Minas con 2 puestos.** La madera y el carbón dejan de estar en la tabla de recursos resueltos.
+- **Se descarta la maestría** (Nv1–5) y con ella la conservación del saber y el aprendizaje al cambiar de oficio. La Comprensión es la única moneda de progreso.
+- **Era 5: 11 → 7 tecnologías:** Molinos (agua ×2 + viento ×1,5), Papel, Lentes, Alquimia y acero (+ Acero de crisol), Gremios y reloj (aprendiz + Torre del reloj), Universidad (mejora de la Academia) y Catedral (🌿, con adultos libres que rezan adentro).
+- **La Brújula pasa a la Era 6** como R13 (antes M09). Requisitos reapuntados: R07 → M05, I02/I04 → M08, I01 → R13.
 
 ### v2.9 (borrador) — Era 4 consolidada
 - **13 → 7 tecnologías:** Filosofía y lógica (+ Magnetita), Hierro (+ Silvicultura: Plantación), Geometría y arquitectura (+ Arco, + Palanca y polea), Mercado, Vidrio soplado, Engranajes y Acueducto y medicina (🌿).

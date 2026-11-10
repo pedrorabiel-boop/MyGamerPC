@@ -22,7 +22,7 @@ conocimiento necesario para fabricar un PC gamer desde cero.
 | El ente | Diablo de oficina: burocracia, formularios, letra chica, "tratos" |
 | Estructura | Campaña única con final. Después: **modo libre** y **reinicio opcional con prestigio** (todo rinde ×1,5) |
 | Final | **Recursivo:** el juego que carga en el PC es su propia civilización. Un niño de la aldea dice *"haría lo que fuera por un PC gamer"* y el diablo le guiña un ojo. Antes, el diablo presenta el **Informe final del pacto** |
-| Simulación | Aldeanos individuales con nombre, edad, oficio y maestría |
+| Simulación | Aldeanos individuales con nombre, edad y oficio |
 | Duración | Idle clásico (semanas). **Es lo que más vamos a iterar.** |
 | Mapa | Edificios y máquinas en una grilla; los aldeanos caminan libremente (sin estar atados a las casillas) |
 | Zonas | El mundo son **zonas separadas** (Valle, Cueva, Montañas…), cada una con su propia grilla y desbloqueada por tecnología. Al entrar a una zona solo se ve esa zona. Las zonas que no se miran se simulan con tasas agregadas |
@@ -40,7 +40,6 @@ conocimiento necesario para fabricar un PC gamer desde cero.
 | Conflictos | **Sin guerras ni ejércitos.** Las amenazas son eventos cómicos |
 | Energía | Tres saltos: **mecánica por adyacencia** (molinos) → **vapor como recurso** → **red eléctrica** en la grilla |
 | Etapas de la vida | Niño 0–12 años → adulto → anciano en el último 20% de la vida (da Comprensión) |
-| Maestría | Techo en Nv3 hasta los Gremios, que desbloquean Nv4–5 |
 | Población | **Sin cuadrillas**: todos los aldeanos se simulan como datos individuales, y solo se dibuja un máximo por zona (≈ 100). Los obreros trabajan dentro de las fábricas |
 | Logística | Inventario único con **eficiencia de transporte** entre zonas: a pie 40%, Rueda 60%, Ferrocarril 100% |
 | Industria | Las fábricas son **mejoras en el lugar** de los edificios artesanales. Sin contaminación |
@@ -71,7 +70,7 @@ Ver [01-arbol-tecnologico.md](01-arbol-tecnologico.md).
   con playtests, no en papel.
 - **Consecuencias de la escala de tiempo:** una vida laboral dura unos 3–4 minutos y
   8 horas offline equivalen a unos 4.800 años (~80 generaciones). Ya está definido
-  cuánto rinde (50% → 100%) y que la maestría vive en la tribu; falta definir **cómo se
+  cuánto rinde (50% → 100%); falta definir **cómo se
   resumen** esas generaciones al volver.
 - **Pactos con el diablo:** el catálogo, sus precios en Monedas, sus cláusulas y cómo escalan.
 - **Prestigio:** si el ×1,5 se acumula con cada reinicio, y si el reinicio se cuenta como

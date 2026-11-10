@@ -59,6 +59,7 @@ export const config = {
   BONO_GRUA: 1.5, // obras a 2 casillas o menos de una Grúa
   MERCADO_TASA: 3, // precio en el mismo nivel de complejidad (×2 por cada nivel que sube lo que se compra)
   MERCADO_CICLO: 30, // segundos por cambio del mercader (una caravana)
+  BONO_LENADOR_PLANTACION: 1.5, // leñadores sobre una Plantación (Playtest 9)
   BONO_NORIA: 1.5, // parcelas junto a una Noria
   VIDA_MEDICINA: 10, // H04: años de vida extra
   MEJORA_PLANTACION: 2, // H01: la Arboleda sube a Plantación (multiplica otra vez la regeneración)

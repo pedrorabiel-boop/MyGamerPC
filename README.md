@@ -94,6 +94,8 @@ En desarrollo, el motor también queda en la consola del navegador como `window.
 - **Técnicas de recolección** (Era 2, 🌿): tocando un recurso natural se abre su ficha, y se
   puede **mejorar en su lugar** (Barrero, Cantera, Arboleda, Pastizal, Huerto de bayas…): se
   regenera más rápido y guarda el doble. Lo hacen los constructores.
+- **🪓 Leñador** (con la Carbonera): va encima de una Arboleda o Plantación y sus 2 leñadores
+  dan madera a ritmo fijo, sin esperar a que el árbol crezca. Las minas tienen 2 puestos.
 - **Edad de Hierro (Era 4, 7 tecnologías):** Academia con filósofos (y **tertulia**: los ancianos libres entran y dejan de verse en el mapa), **mina de hierro** sobre
   las rocas rojas y Forja (herramientas de hierro: todos trabajan más rápido; las Arboledas
   suben a Plantación), **Geometría y arquitectura** (constructores más rápidos, Grúa y **el
@@ -114,7 +116,7 @@ En desarrollo, el motor también queda en la consola del navegador como `window.
 
 - Los materiales de construcción se descuentan al colocar el plano; los aldeanos no
   los acarrean.
-- No hay maestría (Nv1–5), ni Costa, ni diablo, ni Tienda (pospuesta), ni Crónica.
+- No hay Costa, ni diablo, ni Tienda (pospuesta), ni Crónica.
 - El cobre, el bronce y el vidrio todavía no tienen usos más allá de la herrería: los usará la Era 4.
 - Herramientas como Piedra tallada o Cestería son bonos directos, sin recurso ni sprite.
 - Cerámica y tela se producen, pero todavía no se usan en nada.

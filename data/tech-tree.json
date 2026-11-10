@@ -186,7 +186,7 @@
     },
     {
       "name": "Tierras lejanas",
-      "unlockedBy": "M09",
+      "unlockedBy": "R13",
       "contents": "Carbón, petróleo, cuarzo de alta pureza"
     },
     {
@@ -587,7 +587,7 @@
           "name": null
         }
       ],
-      "effect": "*(Conteo + Tradición oral)*. **Números exactos en la interfaz** (antes: \"pocos / muchos\") y se pierde menos maestría al morir un maestro. Raíz de la matemática y de la Escritura. *\"Contar el grano antes de que alguien se lo coma.\"*",
+      "effect": "*(Conteo + Tradición oral)*. **Números exactos en la interfaz** (antes: \"pocos / muchos\"). Raíz de la matemática y de la Escritura. *\"Contar el grano antes de que alguien se lo coma.\"*",
       "advancesPcPieces": [
         "RAM"
       ]
@@ -699,7 +699,7 @@
           "name": "Mineral de cobre"
         }
       ],
-      "effect": "Se construyen **minas sobre las vetas verdes de la Cueva** (y luego sobre el estaño de las Montañas)"
+      "effect": "Se construyen **minas sobre las vetas verdes de la Cueva** (y luego sobre el estaño de las Montañas), con **2 puestos de minero** cada una"
     },
     {
       "id": "B02",
@@ -715,11 +715,11 @@
       "manifestations": [
         {
           "type": "building",
-          "name": "Carbonera, Horno de fundición"
+          "name": "Carbonera, Horno de fundición, Leñador"
         },
         {
           "type": "job",
-          "name": "Carbonero, Fundidor"
+          "name": "Carbonero, Fundidor, Leñador"
         },
         {
           "type": "resource",
@@ -730,7 +730,7 @@
           "name": "Cobre"
         }
       ],
-      "effect": "*(Fundición + Carbón vegetal)*. **Cobre: el metal del PC.** *\"Quemar árboles para hacer piedras brillantes. Tiene lógica.\"*",
+      "effect": "*(Fundición + Carbón vegetal)*. **Cobre: el metal del PC.** El **Leñador** va encima de una Arboleda o Plantación: 2 leñadores dan madera a ritmo fijo (playtest 9). *\"Quemar árboles para hacer piedras brillantes. Tiene lógica.\"*",
       "advancesPcPieces": [
         "Placa madre"
       ]
@@ -817,7 +817,7 @@
           "name": null
         }
       ],
-      "effect": "*(Escritura + Astronomía + Código de leyes)*. **Escribas** en el Archivo (mucha Comprensión; los ancianos también sirven). **Leyes**: la sobrepoblación baja menos el Ánimo. **Piedras alineadas**: proyecto grande que da Comprensión. *(La Crónica, más adelante.)*",
+      "effect": "*(Escritura + Astronomía + Código de leyes)*. **Escribas** en el Archivo (mucha Comprensión; los ancianos también sirven). El Archivo es además **lugar de tertulia** para 6 ancianos libres (entran y no se ven en el mapa). **Leyes**: la sobrepoblación baja menos el Ánimo. **Piedras alineadas**: proyecto grande que da Comprensión. *(La Crónica, más adelante.)*",
       "advancesPcPieces": [
         "RAM",
         "Almacenamiento",
@@ -915,7 +915,7 @@
           "name": null
         }
       ],
-      "effect": "*(Filosofía + Lógica + Magnetita)*. **Academia** con filósofos: mucha Comprensión (los ancianos también sirven). **Raíz del software** (lógica) y del magnetismo: la piedra imán de Tales. Filósofos que caminan en círculos: *\"Si p entonces GPU.\"*",
+      "effect": "*(Filosofía + Lógica + Magnetita)*. **Academia** con filósofos: mucha Comprensión (los ancianos también sirven). Además, **tertulia para 12 ancianos libres**: entran a discutir (no se ven en el mapa) y generan +25% de Comprensión. **Raíz del software** (lógica) y del magnetismo: la piedra imán de Tales. Filósofos que caminan en círculos: *\"Si p entonces GPU.\"*",
       "advancesPcPieces": [
         "Fuente de poder",
         "Sistema operativo"
@@ -1002,7 +1002,7 @@
           "name": "Mercader"
         }
       ],
-      "effect": "*(antes Moneda)*. El mercader **cambia 3 de lo que más sobra por 1 de lo que más falta** (o del recurso en 🎯). Raíz de los Gremios y la Banca"
+      "effect": "*(antes Moneda)*. Tú eliges qué comprar; el mercader paga con lo que sobra, **un cambio cada 30 s**, a un **precio según la complejidad** (3 por 1 en el mismo nivel, ×2 por cada nivel que sube). Raíz de los Gremios y la Banca"
     },
     {
       "id": "H08",
@@ -1075,7 +1075,7 @@
     },
     {
       "id": "M01",
-      "name": "Molino de agua",
+      "name": "Molinos",
       "era": 5,
       "order": 0,
       "optional": false,
@@ -1087,45 +1087,23 @@
       "manifestations": [
         {
           "type": "building",
-          "name": "Molino (junto a un río o canal)"
+          "name": "Molino de agua, Molino de viento"
         },
         {
           "type": "automation",
           "name": null
         }
       ],
-      "effect": "**Da energía a los edificios vecinos** (aserradero, forja, batán): trabajan más rápido y con menos aldeanos",
+      "effect": "*(Molino de agua + Molino de viento)*. **Energía por adyacencia**: los talleres que tocan un molino trabajan **×2** (agua, junto al río o a un canal) o **×1,5** (viento, en cualquier parte). Se construyen con engranajes",
       "advancesPcPieces": [
         "Refrigeración"
       ]
     },
     {
-      "id": "M02",
-      "name": "Molino de viento",
-      "era": 5,
-      "order": 1,
-      "optional": true,
-      "requires": [
-        "H13"
-      ],
-      "requiresPopulation": null,
-      "manifestations": [
-        {
-          "type": "building",
-          "name": "Molino de viento"
-        },
-        {
-          "type": "automation",
-          "name": null
-        }
-      ],
-      "effect": "Igual que el de agua, pero **más débil**. Se pone en cualquier parte, incluidas las Montañas"
-    },
-    {
       "id": "M03",
       "name": "Papel",
       "era": 5,
-      "order": 2,
+      "order": 1,
       "optional": false,
       "requires": [
         "N02",
@@ -1138,20 +1116,115 @@
           "name": "Papelera"
         },
         {
+          "type": "job",
+          "name": "Papelero"
+        },
+        {
           "type": "resource",
           "name": "Papel"
         }
       ],
-      "effect": "La escritura escala",
+      "effect": "Tela → papel. La Papelera **solo funciona si toca un molino** (el batán golpea los trapos). Los escribas del Archivo con papel dan **el doble de Comprensión** y lo van gastando",
       "advancesPcPieces": [
         "Almacenamiento"
       ]
     },
     {
+      "id": "M07",
+      "name": "Lentes",
+      "era": 5,
+      "order": 2,
+      "optional": false,
+      "requires": [
+        "H08",
+        "H02"
+      ],
+      "requiresPopulation": null,
+      "manifestations": [
+        {
+          "type": "building",
+          "name": "Pulidor de lentes"
+        },
+        {
+          "type": "job",
+          "name": "Pulidor"
+        },
+        {
+          "type": "resource",
+          "name": "Lentes"
+        },
+        {
+          "type": "tool",
+          "name": "Anteojos"
+        }
+      ],
+      "effect": "Vidrio claro → lentes. **Anteojos: los ancianos trabajan en oficios de precisión** (1 lente cada uno). Raíz de la óptica y la fotolitografía"
+    },
+    {
+      "id": "M08",
+      "name": "Alquimia y acero",
+      "era": 5,
+      "order": 3,
+      "optional": false,
+      "requires": [
+        "H08",
+        "H05"
+      ],
+      "requiresPopulation": null,
+      "manifestations": [
+        {
+          "type": "building",
+          "name": "Laboratorio, Horno de crisol"
+        },
+        {
+          "type": "job",
+          "name": "Alquimista, Acerero"
+        },
+        {
+          "type": "resource",
+          "name": "Acero"
+        },
+        {
+          "type": "tool",
+          "name": "Herram. de acero"
+        }
+      ],
+      "effect": "*(Alquimia + Acero de crisol)*. El **alquimista** da Comprensión y de vez en cuando **transmuta** (un poco de algo complejo al azar) o **explota**: el laboratorio queda dañado hasta que los constructores lo reparan. Diablo: *\"Por fin alguien con iniciativa.\"* El **Horno de crisol** hace acero (hierro + carbón). **Herramientas de acero**: se forjan una vez desde el Horno (con acero) y todos trabajan más rápido"
+    },
+    {
+      "id": "M05",
+      "name": "Gremios y reloj",
+      "era": 5,
+      "order": 4,
+      "optional": false,
+      "requires": [
+        "H07",
+        "B06",
+        "H13",
+        "H01"
+      ],
+      "requiresPopulation": null,
+      "manifestations": [
+        {
+          "type": "institution",
+          "name": null
+        },
+        {
+          "type": "building",
+          "name": "Torre del reloj"
+        },
+        {
+          "type": "job",
+          "name": "Relojero"
+        }
+      ],
+      "effect": "*(Gremios + Reloj mecánico)*. **Gremios: cada taller tiene un puesto más** (maestro y aprendiz). **Torre del reloj** con relojero: los edificios a 3 casillas o menos trabajan ×1,25 (como la Grúa, pero para el trabajo). *\"Primer reloj de CPU: 1 Hz.\"*"
+    },
+    {
       "id": "M04",
       "name": "Universidad",
       "era": 5,
-      "order": 3,
+      "order": 5,
       "optional": false,
       "requires": [
         "H05",
@@ -1169,144 +1242,13 @@
           "name": "Profesor"
         }
       ],
-      "effect": "Comprensión ↑↑ y especialización más rápida"
-    },
-    {
-      "id": "M05",
-      "name": "Gremios",
-      "era": 5,
-      "order": 4,
-      "optional": false,
-      "requires": [
-        "H07",
-        "B06"
-      ],
-      "requiresPopulation": null,
-      "manifestations": [
-        {
-          "type": "institution",
-          "name": null
-        }
-      ],
-      "effect": "**Desbloquean la maestría Nv4–5** (hasta ahora el techo era Nv3)"
-    },
-    {
-      "id": "M06",
-      "name": "Reloj mecánico",
-      "era": 5,
-      "order": 5,
-      "optional": false,
-      "requires": [
-        "H13",
-        "H01"
-      ],
-      "requiresPopulation": null,
-      "manifestations": [
-        {
-          "type": "building",
-          "name": "Torre del reloj"
-        },
-        {
-          "type": "job",
-          "name": "Relojero"
-        }
-      ],
-      "effect": "**Bono de productividad en un radio**: los edificios cercanos \"trabajan con horario\". *\"Primer reloj de CPU: 1 Hz.\"*"
-    },
-    {
-      "id": "M07",
-      "name": "Lentes",
-      "era": 5,
-      "order": 6,
-      "optional": false,
-      "requires": [
-        "H08",
-        "H02"
-      ],
-      "requiresPopulation": null,
-      "manifestations": [
-        {
-          "type": "tool",
-          "name": "Anteojos"
-        },
-        {
-          "type": "resource",
-          "name": "Lentes"
-        }
-      ],
-      "effect": "**Los ancianos siguen trabajando en oficios de precisión.** Raíz de la óptica y la fotolitografía"
-    },
-    {
-      "id": "M08",
-      "name": "Alquimia",
-      "era": 5,
-      "order": 7,
-      "optional": false,
-      "requires": [
-        "H08",
-        "B02",
-        "H05"
-      ],
-      "requiresPopulation": null,
-      "manifestations": [
-        {
-          "type": "job",
-          "name": "Alquimista"
-        },
-        {
-          "type": "building",
-          "name": "Laboratorio"
-        }
-      ],
-      "effect": "Intentan hacer oro: **de vez en cuando generan Monedas**. Explosiones cómicas que dañan el laboratorio. Comprensión. Precursora de la química. Diablo: *\"Por fin alguien con iniciativa.\"*"
-    },
-    {
-      "id": "M09",
-      "name": "Brújula",
-      "era": 5,
-      "order": 8,
-      "optional": false,
-      "requires": [
-        "H05"
-      ],
-      "requiresPopulation": null,
-      "manifestations": [
-        {
-          "type": "tool",
-          "name": "Brújula"
-        }
-      ],
-      "effect": "**Abre la zona Tierras lejanas**",
-      "unlocksZone": "Tierras lejanas"
-    },
-    {
-      "id": "M10",
-      "name": "Acero de crisol",
-      "era": 5,
-      "order": 9,
-      "optional": false,
-      "requires": [
-        "H01",
-        "M08"
-      ],
-      "requiresPopulation": null,
-      "manifestations": [
-        {
-          "type": "resource",
-          "name": "Acero"
-        },
-        {
-          "type": "tool",
-          "name": "Herram. de acero"
-        }
-      ],
-      "effect": "Acero artesanal y caro. Herramientas de acero: productividad ↑"
+      "effect": "**Mejora de la Academia** (no ocupa otra casilla): profesores que gastan papel y dan **mucha más Comprensión**; tertulia para 16 ancianos"
     },
     {
       "id": "M11",
       "name": "Catedral",
       "era": 5,
-      "order": 10,
+      "order": 6,
       "optional": true,
       "requires": [
         "H02",
@@ -1316,10 +1258,10 @@
       "manifestations": [
         {
           "type": "building",
-          "name": "Catedral (muy grande)"
+          "name": "Catedral"
         }
       ],
-      "effect": "**Proyecto de varias generaciones** (unos 30 min reales) con vitrales. Bono permanente y fuerte al Ánimo. La Crónica registra quién puso la primera piedra y quién la última. *\"La terminarán tus tataranietos. Literalmente.\"*"
+      "effect": "**Proyecto de varias generaciones** (≈30 min reales) por etapas: cimientos, muros, techo y vitrales, cada una con sus materiales. Terminada: **Ánimo ↑↑ permanente**. Los **adultos libres van a rezar adentro** (no se ven en el mapa). *\"La terminarán tus tataranietos. Literalmente.\"*"
     },
     {
       "id": "R01",
@@ -1346,7 +1288,7 @@
           "name": "Libros"
         }
       ],
-      "effect": "**Comprensión ↑** (la Universidad consume Libros). **Cambiar de oficio es rápido y barato.** **Multiplica el toque** (copias de bolsillo del Libro)",
+      "effect": "**Comprensión ↑** (la Universidad consume Libros). **Multiplica el toque** (copias de bolsillo del Libro)",
       "advancesPcPieces": [
         "Teclado y mouse"
       ]
@@ -1473,7 +1415,7 @@
       "order": 6,
       "optional": false,
       "requires": [
-        "M06",
+        "M05",
         "R04"
       ],
       "requiresPopulation": null,
@@ -1589,6 +1531,25 @@
       ]
     },
     {
+      "id": "R13",
+      "name": "Brújula",
+      "era": 6,
+      "order": 12,
+      "optional": false,
+      "requires": [
+        "H05"
+      ],
+      "requiresPopulation": null,
+      "manifestations": [
+        {
+          "type": "tool",
+          "name": "Brújula"
+        }
+      ],
+      "effect": "*(antes M09)*. **Abre la zona Tierras lejanas** (antes en la Era 5, donde todavía no había nada que usar ahí)",
+      "unlocksZone": "Tierras lejanas"
+    },
+    {
       "id": "I01",
       "name": "Carbón",
       "era": 7,
@@ -1596,7 +1557,7 @@
       "optional": false,
       "requires": [
         "B01",
-        "M09"
+        "R13"
       ],
       "requiresPopulation": null,
       "requiresNotes": [
@@ -1623,7 +1584,7 @@
       "requires": [
         "I01",
         "R05",
-        "M10"
+        "M08"
       ],
       "requiresPopulation": null,
       "manifestations": [
@@ -1670,7 +1631,7 @@
       "requires": [
         "I02",
         "R03",
-        "M10"
+        "M08"
       ],
       "requiresPopulation": null,
       "manifestations": [

@@ -568,6 +568,7 @@ function workAt(s: GameState, v: Villager, dt: number, b: Building) {
     let bonus = stageOf(v) === "elder" ? staff.elderBonus ?? 1 : 1; // los ancianos chamanes rinden más
     if (b.type === "parcela" && has(s, "B09")) bonus *= config.BONO_ARADO * (hasNeighbor(s, b, "canal") || hasNeighbor(s, b, "acueducto") ? config.BONO_CANAL : 1);
     if (b.type === "parcela" && hasNeighbor(s, b, "noria")) bonus *= config.BONO_NORIA;
+    if (b.type === "lenador" && s.nodes.some((n) => n.zone === b.zone && n.x === b.x && n.y === b.y && n.improved2)) bonus *= config.BONO_LENADOR_PLANTACION;
     bonus *= zoneEfficiency(b.zone);
     for (const [r, amt] of Object.entries(staff.outputs ?? {})) add(s, r as ResId, (amt ?? 0) * bonus);
   }

@@ -53,6 +53,7 @@ export function canPlace(s: GameState, type: string, x: number, y: number, zone:
   const node = s.nodes.find((n) => n.zone === zone && n.x === x && n.y === y);
   // Las minas van encima de su veta; el resto, en casillas sin recursos.
   if (def.onNode ? node?.type !== def.onNode : !!node) return false;
+  if (def.onNode === "arbol" && !node?.improved) return false; // el leñador va sobre un árbol mejorado
   if (def.nearWater) {
     const water = (tx: number, ty: number) => {
       const tile = z.tiles[ty]?.[tx];
@@ -67,11 +68,18 @@ export function canPlace(s: GameState, type: string, x: number, y: number, zone:
 export const placeableIn = (s: GameState, type: string, zone: ZoneId) =>
   s.zones[zone].tiles.some((row) => row.some((t) => BUILDING_BY_ID[type].place.includes(t)));
 
+const ON_NODE_TEXT: Partial<Record<string, string>> = {
+  veta: "una veta verde (Cueva)",
+  hierro: "unas rocas rojas (Montañas)",
+  estano: "una veta de estaño (Montañas)",
+  arbol: "una Arboleda o Plantación (primero mejora el árbol: tócalo y 🌱 Mejorar)",
+};
+
 export function place(s: GameState, type: string, x: number, y: number, zone: ZoneId = "valle"): string | null {
   const def = BUILDING_BY_ID[type];
   if (!def.unlockedBy || !has(s, def.unlockedBy)) return "Todavía no sabes construir eso.";
   if (!canPlace(s, type, x, y, zone)) {
-    if (def.onNode) return `Tiene que ir encima de: ${def.onNode === "veta" ? "una veta verde (Cueva)" : def.onNode === "hierro" ? "unas rocas rojas (Montañas)" : "una veta de estaño (Montañas)"}.`;
+    if (def.onNode) return `Tiene que ir encima de: ${ON_NODE_TEXT[def.onNode] ?? def.onNode}.`;
     if (def.nearWater) return "Tiene que tocar el río, la orilla, un canal o un acueducto.";
     return def.place.includes("orilla") ? "Tiene que ir en la orilla del río, en una casilla libre." : "Esa casilla no está libre.";
   }

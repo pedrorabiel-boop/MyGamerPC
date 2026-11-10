@@ -106,7 +106,10 @@ export function MapView() {
             }
           }
         }
-        for (const lbl of labelById.values()) lbl.style.fontSize = ts * 0.55;
+        for (const [id, lbl] of labelById) {
+          const bt = engine.s.buildings.find((b) => b.id === id)?.type;
+          lbl.style.fontSize = ts * (bt && BUILDING_BY_ID[bt].onNode === "arbol" ? 0.32 : 0.55);
+        }
         // Íconos de las entradas a otras zonas.
         entranceLabels.removeChildren().forEach((c) => c.destroy());
         for (let y = 0; y < z.h; y++) for (let x = 0; x < z.w; x++) {
@@ -206,7 +209,15 @@ export function MapView() {
           const def = BUILDING_BY_ID[b.type];
           const x = b.x * ts, y = b.y * ts;
           seen.add(b.id);
-          if (b.built) {
+          // El leñador va encima del árbol: no lo tapa, solo lo enmarca y pone el hacha en una esquina.
+          const overNode = def.onNode === "arbol";
+          if (overNode) {
+            buildingsG.roundRect(x + 2, y + 2, ts - 4, ts - 4, ts * 0.15).stroke({ width: 2, color: def.color, alpha: b.built ? 0.9 : 0.5 });
+            if (!b.built) {
+              const p = def.buildTime ? Math.min(1, b.progress / def.buildTime) : 1;
+              buildingsG.rect(x + 4, y + ts - 8, (ts - 8) * p, 4).fill(0xf0a030);
+            }
+          } else if (b.built) {
             buildingsG.roundRect(x + 2, y + 2, ts - 4, ts - 4, ts * 0.15).fill(def.color);
           } else {
             buildingsG.roundRect(x + 2, y + 2, ts - 4, ts - 4, ts * 0.15).fill({ color: def.color, alpha: 0.3 });
@@ -216,13 +227,18 @@ export function MapView() {
           }
           let lbl = labelById.get(b.id);
           if (!lbl) {
-            lbl = new Text({ text: def.icon, style: { fontSize: ts * 0.55 } });
+            lbl = new Text({ text: def.icon, style: { fontSize: ts * (def.onNode === "arbol" ? 0.32 : 0.55) } });
             lbl.anchor.set(0.5);
             labels.addChild(lbl);
             labelById.set(b.id, lbl);
           }
-          lbl.x = x + ts / 2;
-          lbl.y = y + ts / 2 - (def.staff ? ts * 0.08 : 0);
+          if (overNode) {
+            lbl.x = x + ts * 0.22;
+            lbl.y = y + ts * 0.22;
+          } else {
+            lbl.x = x + ts / 2;
+            lbl.y = y + ts / 2 - (def.staff ? ts * 0.08 : 0);
+          }
           lbl.alpha = b.built ? 1 : 0.5;
 
           // Puestos de trabajo: llenos = ocupados (verde), vacíos = falta gente (rojo).
@@ -333,6 +349,11 @@ export function MapView() {
 
         // Con un aldeano seleccionado, tocar un recurso = señalar.
         const node = s.nodes.find((n) => n.zone === zone && n.x === tx && n.y === ty);
+        const onTile = s.buildings.find((x) => x.zone === zone && x.x === tx && x.y === ty);
+        // Un edificio encima de un recurso (mina, leñador) abre su ficha, salvo que se esté señalando con un aldeano.
+        if (onTile && !(engine.ui.selected != null && node && node.type === "arbol")) {
+          engine.ui.selectedBuilding = onTile.id; engine.ui.selected = null; engine.ui.selectedNode = null; engine.notify(); return;
+        }
         if (node?.type === "veta" || node?.type === "estano") {
           const name = node.type === "veta" ? "Vetas de cobre" : "Vetas de estaño";
           engine.toast(has(s, "B01") ? `${name}: construye encima una ⛏️ Mina (🔨 Construir).` : `${name}: brillan, pero todavía no sabemos sacarlas. Hace falta Minería.`);
